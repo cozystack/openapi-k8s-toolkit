@@ -1,0 +1,20 @@
+{
+  "name": "@prorobotech/openapi-k8s-toolkit",
+  "version": "0.0.1-alpha.1",
+  "description": "ProRobotech OpenAPI k8s tools",
+  "main": "./build/index.js",
+  "module": "./build/index.js",
+  "files": [
+    "build"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PRO-Robotech/openapi-k8s-toolkit.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}
