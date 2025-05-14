@@ -16,6 +16,7 @@ const CustomMenu = styled(Menu)`
 
   && .ant-menu-item-only-child {
     /* stylelint-disable declaration-no-important */
+
     /* padding-left: 24px !important; */
   }
 
