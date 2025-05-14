@@ -1,16 +1,7 @@
 import { Link, matchPath } from 'react-router-dom'
 import { BreadcrumbItemType } from 'antd/es/breadcrumb/Breadcrumb'
+import { prepareTemplate } from 'utils/prepareTemplate'
 import { TLink } from './types'
-
-export const prepareTemplate = ({
-  template,
-  replaceValues,
-}: {
-  template: string
-  replaceValues: Record<string, string | undefined>
-}): string => {
-  return template.replaceAll(/{(.*?)}/g, (_, key) => replaceValues[key] || '')
-}
 
 const mapLinksFromRaw = ({
   rawLinks,
