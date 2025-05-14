@@ -15,15 +15,17 @@ export const prepareTemplate = ({
 const mapLinksFromRaw = ({
   rawLinks,
   replaceValues,
+  ReactRouterLink,
 }: {
   rawLinks: TLink[]
   replaceValues: Record<string, string | undefined>
+  ReactRouterLink: typeof Link
 }): BreadcrumbItemType[] => {
   return rawLinks.map(({ key, label, link }) => {
     return {
       key,
       title: link ? (
-        <Link
+        <ReactRouterLink
           to={prepareTemplate({
             template: link,
             replaceValues,
@@ -33,7 +35,7 @@ const mapLinksFromRaw = ({
             template: label,
             replaceValues,
           })}
-        </Link>
+        </ReactRouterLink>
       ) : (
         prepareTemplate({
           template: label,
@@ -48,10 +50,14 @@ export const prepareDataForManageableBreadcrumbs = ({
   data,
   replaceValues,
   pathname,
+  ReactRouterLink,
+  reactRouterMatchPath,
 }: {
   data: { pathToMatch: string; breadcrumbItems: TLink[] }[]
   replaceValues: Record<string, string | undefined>
   pathname: string
+  ReactRouterLink: typeof Link
+  reactRouterMatchPath: typeof matchPath
 }): { pathToMatch: string; breadcrumbItems: BreadcrumbItemType[] } | undefined => {
   const preparedData = data.map(({ pathToMatch, breadcrumbItems }) => ({
     pathToMatch: prepareTemplate({
@@ -61,8 +67,9 @@ export const prepareDataForManageableBreadcrumbs = ({
     breadcrumbItems: mapLinksFromRaw({
       rawLinks: breadcrumbItems,
       replaceValues,
+      ReactRouterLink,
     }),
   }))
 
-  return preparedData.find(({ pathToMatch }) => matchPath(pathToMatch, pathname))
+  return preparedData.find(({ pathToMatch }) => reactRouterMatchPath(pathToMatch, pathname))
 }
