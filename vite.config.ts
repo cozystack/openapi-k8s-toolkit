@@ -18,10 +18,21 @@ export default defineConfig({
       fileName: format => `openapi-k8s-toolkit.${format}.js`,
     },
     rollupOptions: {
-      // Externalize deps that shouldn't be bundled
-      external: [], // e.g., 'react', 'lodash' etc.
+      external: [
+        'react',
+        'react-dom',
+        'react-router-dom',
+        '@tanstack/react-query',
+        '@tanstack/react-query-devtools',
+        'antd',
+        '@ant-design/icons',
+      ],
       output: {
-        globals: {}, // map externals here if needed
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+          'react-router-dom': 'ReactRouterDOM',
+        },
       },
     },
     sourcemap: true,
