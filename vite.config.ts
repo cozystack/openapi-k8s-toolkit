@@ -24,6 +24,7 @@ export default defineConfig({
         globals: {}, // map externals here if needed
       },
     },
+    sourcemap: true,
   },
   publicDir: 'public',
   plugins: [

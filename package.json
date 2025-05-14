@@ -4,6 +4,7 @@
   "description": "ProRobotech OpenAPI k8s tools",
   "main": "dist/openapi-k8s-toolkit.cjs.js",
   "module": "dist/openapi-k8s-toolkit.es.js",
+  "types": "dist/types/index.d.ts",
   "files": [
     "dist"
   ],
@@ -13,7 +14,7 @@
   },
   "scripts": {
     "dev": "cross-env BASEPREFIX=/toolkit vite --open --port 3002 --strictPort",
-    "build": "tsc && vite build",
+    "build": "vite build && tsc",
     "serve": "vite preview --port 3002 --strictPort",
     "preview": "vite preview --port 3002 --strictPort",
     "tsc": "tsc --project tsconfig.json",
