@@ -1,0 +1,87 @@
+import React, { FC } from 'react'
+import { Spin } from 'antd'
+import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
+import { TSidebarResponse } from './types'
+import { prepareDataForManageableSidebar } from './utils'
+import { Styled } from './styled'
+
+export type TManageableSidebarProps = {
+  data: TSidebarResponse
+  replaceValues: Record<string, string | undefined>
+  pathname: string
+}
+
+export const ManageableSidebar: FC<TManageableSidebarProps> = ({ data, replaceValues, pathname }) => {
+  const parsedData = data?.items.map(({ spec }) => spec)
+
+  if (!parsedData) {
+    return null
+  }
+
+  const result = prepareDataForManageableSidebar({
+    data: parsedData,
+    replaceValues,
+    pathname,
+  })
+
+  if (result) {
+    return (
+      <Styled.CustomMenu
+        selectedKeys={result.selectedKeys}
+        onSelect={() => {}}
+        onDeselect={() => {}}
+        mode="inline"
+        items={result.menuItems}
+      />
+    )
+  }
+
+  return null
+}
+
+export type TManageableSidebarWithDataProviderProps = {
+  uri: string
+  refetchInterval?: number | false
+  isEnabled?: boolean
+  replaceValues: Record<string, string | undefined>
+  pathname: string
+  hidden?: boolean
+}
+
+export const ManageableSidebarWithDataProvider: FC<TManageableSidebarWithDataProviderProps> = ({
+  uri,
+  refetchInterval,
+  isEnabled,
+  replaceValues,
+  pathname,
+  hidden,
+}) => {
+  const {
+    data: rawData,
+    isError: rawDataError,
+    isLoading: rawDataLoading,
+  } = useDirectUnknownResource<TSidebarResponse>({
+    uri,
+    refetchInterval,
+    queryKey: ['sidebar', uri],
+    isEnabled,
+  })
+
+  if (rawDataError) {
+    return null
+  }
+
+  if (rawDataLoading) {
+    return <Spin />
+  }
+
+  if (!rawData) {
+    return null
+  }
+
+  if (hidden) {
+    return null
+  }
+
+  return <ManageableSidebar data={rawData} replaceValues={replaceValues} pathname={pathname} />
+}

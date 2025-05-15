@@ -1,1 +1,4 @@
 export * from './ManageableBreadcrumbs'
+export * from './ManageableSidebar'
+export * from './EnrichedTable'
+export * from './EnrichedTableProvider'

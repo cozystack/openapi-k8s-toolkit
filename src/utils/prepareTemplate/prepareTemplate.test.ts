@@ -1,4 +1,4 @@
-import { prepareTemplate } from './utils'
+import { prepareTemplate } from './prepareTemplate'
 
 describe('prepareTemplate', () => {
   it('replaces all placeholders with provided values', () => {
