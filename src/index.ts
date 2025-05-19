@@ -1,2 +1,6 @@
 export * from './components'
 export * from './utils'
+export { usePermissions } from './hooks/usePermissions'
+export { useDirectUnknownResource } from './hooks/useDirectUnknownResource'
+export type { TUrlParams } from 'localTypes/form'
+export type { TFormsPrefillsData, TFormsOverridesData } from 'localTypes/formExtensions'

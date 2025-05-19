@@ -1,4 +1,4 @@
-import { TFormOverride } from './types'
+import { TFormOverride } from 'localTypes/formExtensions'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type SafeShallowShape<Type extends {}> = {

@@ -3,7 +3,7 @@ import { TJSON } from 'localTypes/JSON'
 import { OpenAPIV2 } from 'openapi-types'
 import { overwriteMatchingKeys } from 'utils/overwriteMatchingKeys'
 import { checkIfApiInstanceNamespaceScoped, checkIfBuiltInInstanceNamespaceScoped } from 'utils/openApi'
-import { TFormOverride } from './types'
+import { TFormOverride } from 'localTypes/formExtensions'
 import { isFormOverride } from './guards'
 
 export const getSwaggerPathAndIsNamespaceScoped = ({

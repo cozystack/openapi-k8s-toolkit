@@ -5,22 +5,27 @@ import { Alert } from 'antd'
 import _ from 'lodash'
 import { TJSON } from 'localTypes/JSON'
 import { OpenAPIV2 } from 'openapi-types'
+import { TUrlParams } from 'localTypes/form'
+import { TFormsPrefillsData, TFormsOverridesData } from 'localTypes/formExtensions'
 import { YamlEditorSingleton } from '../../molecules/YamlEditorSingleton'
 import { BlackholeForm } from '../BlackholeForm'
 import { getPathsWithAdditionalProperties, getPropertiesToMerge } from './helpers'
-import { TFormOverride } from './types'
 import { getSwaggerPathAndIsNamespaceScoped, getBodyParametersSchema, processOverride } from './utils'
 
 export type TBlackholeFormDataProviderProps = {
   theme: 'light' | 'dark'
   cluster: string
+  urlParams: TUrlParams
+  urlParamsForPermissions: {
+    apiGroup?: string
+    typeName?: string
+  }
   swagger: OpenAPIV2.Document | undefined
   namespacesData?: {
     items: ({ metadata: { name: string } & unknown } & unknown)[]
   }
-  formsOverridesData?: {
-    items: (TFormOverride & unknown)[]
-  }
+  formsPrefillsData?: TFormsPrefillsData
+  formsOverridesData?: TFormsOverridesData
   data:
     | {
         type: 'builtin'
@@ -48,6 +53,9 @@ export type TBlackholeFormDataProviderProps = {
 export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
   theme,
   cluster,
+  urlParams,
+  urlParamsForPermissions,
+  formsPrefillsData,
   swagger,
   namespacesData,
   formsOverridesData,
@@ -172,6 +180,11 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
 
   return (
     <BlackholeForm
+      cluster={cluster}
+      theme={theme}
+      urlParams={urlParams}
+      urlParamsForPermissions={urlParamsForPermissions}
+      formsPrefillsData={formsPrefillsData}
       staticProperties={properties}
       required={required}
       hiddenPaths={hiddenPaths}
