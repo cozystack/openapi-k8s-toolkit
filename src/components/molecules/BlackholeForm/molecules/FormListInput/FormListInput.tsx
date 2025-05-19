@@ -1,0 +1,150 @@
+/* eslint-disable no-unneeded-ternary */
+/* eslint-disable no-nested-ternary */
+import React, { FC } from 'react'
+import { Typography, Tooltip, Select, Form } from 'antd'
+import { QuestionCircleOutlined } from '@ant-design/icons'
+import _ from 'lodash'
+import { TFormName, TPersistedControls, TUrlParams } from 'localTypes/form'
+import { TListInputCustomProps } from 'localTypes/formExtensions'
+import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
+import { getStringByName } from 'utils/getStringByName'
+import { filterSelectOptions } from 'utils/filterSelectOptions'
+import { prepareTemplate } from 'utils/prepareTemplate'
+import { CursorPointerText, PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem } from '../../atoms'
+
+type TFormListInputProps = {
+  name: TFormName
+  arrKey?: number
+  arrName?: TFormName
+  persistName?: TFormName
+  required?: string[]
+  forceNonRequired?: boolean
+  isHidden?: boolean
+  description?: string
+  isAdditionalProperties?: boolean
+  removeField: ({ path }: { path: TFormName }) => void
+  persistedControls: TPersistedControls
+  customProps: TListInputCustomProps
+  urlParams: TUrlParams
+}
+
+export const FormListInput: FC<TFormListInputProps> = ({
+  name,
+  arrKey,
+  arrName,
+  persistName,
+  required,
+  forceNonRequired,
+  isHidden,
+  description,
+  isAdditionalProperties,
+  removeField,
+  persistedControls,
+  customProps,
+  urlParams,
+}) => {
+  const { clusterName, namespace, syntheticProject, entryName } = urlParams
+  const form = Form.useFormInstance()
+  const fieldValue = Form.useWatch(name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name, form)
+
+  const uri = prepareTemplate({
+    template: customProps.valueUri,
+    replaceValues: { clusterName, namespace, syntheticProject, entryName },
+  })
+
+  const {
+    data: optionsObj,
+    isError: isErrorOptionsObj,
+    isLoading: isLoadingOptionsObj,
+  } = useDirectUnknownResource({
+    uri,
+    refetchInterval: false,
+    queryKey: [uri || '', JSON.stringify(name)],
+    isEnabled: !!uri,
+  })
+
+  if (isLoadingOptionsObj) {
+    return <div>Loading</div>
+  }
+
+  if (isErrorOptionsObj) {
+    return <div>Error</div>
+  }
+
+  const items = _.get(optionsObj, ['items'])
+  const filteredItems = customProps.criteria
+    ? items.filter((item: object) => {
+        const objValue = _.get(item, customProps.criteria?.keysToValue || [])
+        if (customProps.criteria?.type === 'equals') {
+          return objValue === customProps.criteria?.value
+        }
+        return objValue !== customProps.criteria?.value
+      })
+    : items
+  const itemForPrefilledValue =
+    customProps.criteria?.keepPrefilled !== false
+      ? items.find((item: object) => _.get(item, customProps.keysToValue) === fieldValue)
+      : undefined
+  const filteredItemsAndPrefilledValue = itemForPrefilledValue
+    ? [itemForPrefilledValue, ...filteredItems]
+    : filteredItems
+  const options = Array.isArray(filteredItemsAndPrefilledValue)
+    ? filteredItemsAndPrefilledValue
+        .map((item: object) => ({
+          value: _.get(item, customProps.keysToValue),
+          label: customProps.keysToLabel ? _.get(item, customProps.keysToLabel) : _.get(item, customProps.keysToValue),
+        }))
+        .map(({ value, label }: { value: unknown; label: unknown }) => ({
+          label: typeof label === 'string' ? label : JSON.stringify(label),
+          value: typeof value === 'string' ? value : JSON.stringify(value),
+        }))
+    : []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const uniqueOptions = options.reduce<{ value: any; label: any }[]>((acc, current) => {
+    const exists = acc.some(item => item.value === current.value)
+    if (!exists) {
+      acc.push(current)
+    }
+    return acc
+  }, [])
+
+  const fixedName = name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name
+
+  return (
+    <PossibleHiddenContainer $isHidden={isHidden}>
+      <Typography.Text>
+        {getStringByName(name)}
+        {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
+        {description && (
+          <Tooltip title={description}>
+            {' '}
+            <QuestionCircleOutlined />
+          </Tooltip>
+        )}
+        {isAdditionalProperties && (
+          <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
+            Удалить
+          </CursorPointerText>
+        )}
+        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
+      </Typography.Text>
+      <ResetedFormItem
+        key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
+        name={arrName || fixedName}
+        rules={[{ required: forceNonRequired === false && required?.includes(getStringByName(name)) }]}
+        validateTrigger="onBlur"
+        hasFeedback
+      >
+        <Select
+          mode={customProps.mode}
+          placeholder="Select"
+          options={uniqueOptions}
+          filterOption={filterSelectOptions}
+          allowClear
+          showSearch
+        />
+      </ResetedFormItem>
+    </PossibleHiddenContainer>
+  )
+}

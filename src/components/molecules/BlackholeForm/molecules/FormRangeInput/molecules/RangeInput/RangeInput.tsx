@@ -1,0 +1,101 @@
+/* eslint-disable no-unneeded-ternary */
+/* eslint-disable no-nested-ternary */
+import React, { FC, useState, useEffect } from 'react'
+import { InputNumber, Typography, Tooltip, Row, Col, Slider, Flex } from 'antd'
+import { SliderBaseProps } from 'antd/es/slider'
+import { QuestionCircleOutlined } from '@ant-design/icons'
+import { TFormName, TPersistedControls } from 'localTypes/form'
+import { getStringByName } from 'utils/getStringByName'
+import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem } from '../../../../atoms'
+
+export type TRangeInputProps = {
+  name: TFormName
+  arrKey?: number
+  arrName?: TFormName
+  persistName?: TFormName
+  required?: string[]
+  forceNonRequired?: boolean
+  isHidden?: boolean
+  persistedControls: TPersistedControls
+  description?: string
+  max: number
+  min: number
+  step?: number
+  initialValue?: number
+} & SliderBaseProps
+
+export const RangeInput: FC<TRangeInputProps> = ({
+  name,
+  arrKey,
+  arrName,
+  persistName,
+  required,
+  forceNonRequired,
+  isHidden,
+  persistedControls,
+  description,
+  initialValue,
+  max,
+  min,
+  step = 1,
+  ...props
+}) => {
+  const [value, setValue] = useState<number>(initialValue || min)
+
+  useEffect(() => {
+    if (Number.isNaN(value) || value < min) {
+      setValue(min)
+    }
+    if (value > max) {
+      setValue(max)
+    }
+
+    setValue(value)
+  }, [value, min, max])
+
+  return (
+    <PossibleHiddenContainer $isHidden={isHidden}>
+      <Typography.Text>
+        {getStringByName(name)}
+        {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
+        {description && (
+          <Tooltip title={description}>
+            {' '}
+            <QuestionCircleOutlined />
+          </Tooltip>
+        )}
+        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
+      </Typography.Text>
+      <Row>
+        <Col span={12}>
+          <ResetedFormItem
+            key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
+            name={arrName || name}
+            rules={[{ required: forceNonRequired === false && required?.includes(getStringByName(name)) }]}
+            validateTrigger="onBlur"
+            hasFeedback
+          >
+            <Slider min={min} max={max} step={step} {...props} />
+          </ResetedFormItem>
+          <Typography.Text>
+            <Flex justify="space-between">
+              <span>{min}</span>
+              <span>{max}</span>
+            </Flex>
+          </Typography.Text>
+        </Col>
+        <Col span={4}>
+          <ResetedFormItem
+            key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
+            name={arrName || name}
+            rules={[{ required: forceNonRequired === false && required?.includes(getStringByName(name)) }]}
+            validateTrigger="onBlur"
+            hasFeedback
+          >
+            <InputNumber min={min} max={max} step={step} value={value} disabled={props.disabled} />
+          </ResetedFormItem>
+        </Col>
+      </Row>
+    </PossibleHiddenContainer>
+  )
+}
