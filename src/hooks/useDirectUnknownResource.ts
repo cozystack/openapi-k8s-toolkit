@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { getDirectUnknownResource } from 'api/getDirectUnknownResource'
 
 export const useDirectUnknownResource = <T>({
@@ -11,7 +11,7 @@ export const useDirectUnknownResource = <T>({
   queryKey: string[]
   refetchInterval?: number | false
   isEnabled?: boolean
-}) => {
+}): UseQueryResult<T, Error> => {
   return useQuery({
     queryKey,
     queryFn: async () =>

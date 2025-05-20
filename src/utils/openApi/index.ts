@@ -1,1 +1,1 @@
-export * from './openApi'
+export { checkIfApiInstanceNamespaceScoped, checkIfBuiltInInstanceNamespaceScoped } from './openApi'

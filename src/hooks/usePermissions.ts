@@ -19,7 +19,7 @@ export const usePermissions = ({
   enabler?: boolean
 }) => {
   return useQuery({
-    queryKey: ['apiCheckPermissions', clusterName, namespace, apiGroup, typeName, verb],
+    queryKey: ['usePermissions', clusterName, namespace, apiGroup, typeName, verb],
     queryFn: async () =>
       (
         await checkPermission({

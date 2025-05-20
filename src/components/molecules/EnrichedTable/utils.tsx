@@ -6,7 +6,7 @@ import {
   TAdditionalPrinterColumnsColWidths,
   TAdditionalPrinterColumnsTrimLengths,
   TAdditionalPrinterColumnsUndefinedValues,
-} from 'localTypes/RichTable'
+} from 'localTypes/richTable'
 import { TJSON } from 'localTypes/JSON'
 import { isFlatObject } from 'utils/isFlatObject'
 import { ShortenedTextWithTooltip, FilterDropdown, TrimmedTags, TextAlignContainer, TinyButton } from './atoms'

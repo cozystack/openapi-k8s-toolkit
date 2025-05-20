@@ -2,7 +2,7 @@ import { TableProps } from 'antd'
 import jp from 'jsonpath'
 import { v4 as uuidv4 } from 'uuid'
 import { TJSON } from 'localTypes/JSON'
-import { TAdditionalPrinterColumns } from 'localTypes/RichTable'
+import { TAdditionalPrinterColumns } from 'localTypes/richTable'
 
 export const prepareDataForEnrichedColumns = ({
   dataItems,
