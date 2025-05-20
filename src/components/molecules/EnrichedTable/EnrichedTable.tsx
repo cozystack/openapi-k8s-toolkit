@@ -7,7 +7,7 @@ import {
   TAdditionalPrinterColumnsColWidths,
   TAdditionalPrinterColumnsTrimLengths,
   TAdditionalPrinterColumnsUndefinedValues,
-} from 'localTypes/RichTable'
+} from 'localTypes/richTable'
 import { TableComponents } from './atoms'
 import { TInternalDataForControls } from './types'
 import { getEnrichedColumns, getEnrichedColumnsWithControls } from './utils'

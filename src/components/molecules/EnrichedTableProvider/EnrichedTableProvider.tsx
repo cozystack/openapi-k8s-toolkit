@@ -4,7 +4,7 @@ import {
   TAdditionalPrinterColumnsUndefinedValues,
   TAdditionalPrinterColumnsTrimLengths,
   TAdditionalPrinterColumnsColWidths,
-} from 'localTypes/RichTable'
+} from 'localTypes/richTable'
 import { TJSON } from 'localTypes/JSON'
 import { EnrichedTable } from '../EnrichedTable'
 import { prepareDataForEnrichedColumns } from './utils'

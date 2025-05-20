@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-type TSpacerProps = {
+export type TSpacerProps = {
   $space?: number
   $spaceMob?: number
   $samespace?: boolean
