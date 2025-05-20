@@ -1,3 +1,4 @@
+import { ReactElement } from 'react'
 // A map where keys are item types and values are the data shape for each
 /*
   type MyItemTypeMap = {
@@ -14,7 +15,11 @@ export type TItemTypeMap = Record<string, unknown>
     | { type: "image"; data: { src: string; alt: string } }
 */
 export type TRenderableItem<T extends TItemTypeMap> = {
-  [K in keyof T]: { type: K; data: T[K] }
+  [K in keyof T]: {
+    type: K
+    data: T[K]
+    children?: readonly TRenderableItem<T>[] // Add optional children
+  }
 }[keyof T]
 
 // Component mapping
@@ -25,5 +30,8 @@ export type TRenderableItem<T extends TItemTypeMap> = {
   }
 */
 export type TRendererComponents<T extends TItemTypeMap> = {
-  [K in keyof T]: React.ComponentType<{ data: T[K] }>
+  [K in keyof T]: React.ComponentType<{
+    data: T[K]
+    children?: ReactElement | ReactElement[]
+  }>
 }
