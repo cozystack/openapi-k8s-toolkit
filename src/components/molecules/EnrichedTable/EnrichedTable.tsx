@@ -116,7 +116,7 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
                   const recordValueRaw = get(record, recordKeysForNavigation)
                   const recordValue =
                     typeof recordValueRaw === 'string' ? recordValueRaw : JSON.stringify(recordValueRaw)
-                  const newPath = pathToNavigate.replaceAll('{recordValue}', recordValue)
+                  const newPath = pathToNavigate.replaceAll('~recordValue~', recordValue)
                   navigate(newPath)
                 }
               },
