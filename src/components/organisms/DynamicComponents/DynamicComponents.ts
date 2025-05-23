@@ -1,10 +1,10 @@
 import { TRendererComponents } from 'localTypes/dynamicRender'
-import { TestComponentFirst, TestComponentSecond, TestComponentThird, FlexComponent } from './molecules'
+import { AntdText, AntdCard, PartsOfUrl, FlexComponent } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
 export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap> = {
-  user: TestComponentFirst,
-  product: TestComponentSecond,
-  partsOfUrl: TestComponentThird,
+  antdText: AntdText,
+  antdCard: AntdCard,
+  partsOfUrl: PartsOfUrl,
   flexComponent: FlexComponent,
 }

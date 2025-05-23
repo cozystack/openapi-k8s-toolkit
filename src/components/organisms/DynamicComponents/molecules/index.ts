@@ -1,4 +1,4 @@
-export * from './TestComponentFirst'
-export * from './TestComponentSecond'
-export * from './TestComponentThird'
+export * from './AntdText'
+export * from './AntdCard'
 export * from './FlexComponent'
+export * from './PartsOfUrl'

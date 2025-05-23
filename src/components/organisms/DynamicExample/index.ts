@@ -1,1 +1,1 @@
-export { DynamicExample } from './DynamicExample'
+export { DynamicExample, dynamicExampleItems } from './DynamicExample'
