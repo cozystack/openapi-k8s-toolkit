@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
-import { Flex } from 'antd'
+import { Card } from 'antd'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 
-export const FlexComponent: FC<{ data: TDynamicComponentsAppTypeMap['flexComponent']; children?: any }> = ({
+export const AntdCard: FC<{ data: TDynamicComponentsAppTypeMap['antdCard']; children?: any }> = ({
   data,
   children,
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, ...flexProps } = data
+  const { id, ...cardProps } = data
 
-  return <Flex {...flexProps}>{children}</Flex>
+  return <Card {...cardProps}>{children}</Card>
 }
