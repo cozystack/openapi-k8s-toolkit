@@ -1,4 +1,6 @@
 export * from './AntdText'
 export * from './AntdCard'
-export * from './FlexComponent'
+export * from './AntdFlex'
+export * from './AntdRow'
+export * from './AntdCol'
 export * from './PartsOfUrl'
