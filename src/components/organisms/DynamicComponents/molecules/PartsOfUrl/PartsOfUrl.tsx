@@ -1,13 +1,20 @@
 import React, { FC } from 'react'
+import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
-import { usePartsOfUrl } from '../../../DynamicExample/partsOfUrlContext'
+import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 
 export const PartsOfUrl: FC<{ data: TDynamicComponentsAppTypeMap['partsOfUrl'] }> = ({ data }) => {
   const partsOfUrl = usePartsOfUrl()
 
-  return (
-    <div>
-      {data.text}: {JSON.stringify(partsOfUrl.partsOfUrl)}
-    </div>
-  )
+  const replaceValues = partsOfUrl.partsOfUrl.reduce<Record<string, string | undefined>>((acc, value, index) => {
+    acc[index.toString()] = value
+    return acc
+  }, {})
+
+  const preparedText = prepareTemplate({
+    template: data.text,
+    replaceValues,
+  })
+
+  return <span>{preparedText}</span>
 }

@@ -3,7 +3,7 @@ import React, { FC } from 'react'
 import { Flex } from 'antd'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 
-export const FlexComponent: FC<{ data: TDynamicComponentsAppTypeMap['flexComponent']; children?: any }> = ({
+export const AntdFlex: FC<{ data: TDynamicComponentsAppTypeMap['antdFlex']; children?: any }> = ({
   data,
   children,
 }) => {
