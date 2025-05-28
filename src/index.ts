@@ -46,4 +46,11 @@ export type {
   TCrdResources,
   TCRD,
 } from './localTypes/k8s'
-export type { TItemTypeMap, TRenderableItem, TRendererComponents } from './localTypes/dynamicRender'
+export type {
+  TItemTypeMap,
+  TRenderableItem,
+  TRendererComponents,
+  TFactoryResponse,
+  TFactoryResource,
+  TFactoryDataK8s,
+} from './localTypes/dynamicRender'

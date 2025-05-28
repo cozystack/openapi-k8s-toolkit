@@ -35,3 +35,19 @@ export type TRendererComponents<T extends TItemTypeMap> = {
     children?: ReactElement | ReactElement[]
   }>
 }
+
+export type TFactoryDataK8s<T extends TItemTypeMap> = {
+  key: string
+  data: TRenderableItem<T>[]
+}
+
+export type TFactoryResource<T extends TItemTypeMap> = {
+  apiVersion: string
+  kind: string
+  spec: TFactoryDataK8s<T>
+} & unknown
+
+export type TFactoryResponse<T extends TItemTypeMap> = {
+  apiVersion: string
+  items: TFactoryResource<T>[]
+}
