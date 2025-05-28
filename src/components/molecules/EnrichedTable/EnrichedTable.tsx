@@ -27,6 +27,7 @@ export type TEnrichedTableProps = {
     onChange: (selectedRowKeys: React.Key[], selectedRowsData: { name: string; endpoint: string }[]) => void
     selectedRowKeys: React.Key[]
   }
+  withoutControls?: boolean
 }
 
 export const EnrichedTable: FC<TEnrichedTableProps> = ({
@@ -40,6 +41,7 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
   additionalPrinterColumnsTrimLengths,
   additionalPrinterColumnsColWidths,
   selectData,
+  withoutControls = false,
 }) => {
   const navigate = useNavigate()
 
@@ -58,11 +60,13 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
     return null
   }
 
-  const columnsWithControls = getEnrichedColumnsWithControls({
-    enrichedColumns,
-    navigate,
-    baseprefix,
-  })
+  const columnsWithControls = withoutControls
+    ? enrichedColumns
+    : getEnrichedColumnsWithControls({
+        enrichedColumns,
+        navigate,
+        baseprefix,
+      })
 
   if (!columnsWithControls) {
     return null
