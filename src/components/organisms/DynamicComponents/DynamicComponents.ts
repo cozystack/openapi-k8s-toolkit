@@ -1,5 +1,5 @@
 import { TRendererComponents } from 'localTypes/dynamicRender'
-import { AntdText, AntdCard, PartsOfUrl, AntdFlex, AntdRow, AntdCol } from './molecules'
+import { AntdText, AntdCard, PartsOfUrl, AntdFlex, AntdRow, AntdCol, MultiQuery, ParsedText } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
 export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap> = {
@@ -9,4 +9,6 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   antdFlex: AntdFlex,
   antdRow: AntdRow,
   antdCol: AntdCol,
+  multiQuery: MultiQuery,
+  parsedText: ParsedText,
 }

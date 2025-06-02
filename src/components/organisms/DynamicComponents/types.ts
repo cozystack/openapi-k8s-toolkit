@@ -9,4 +9,6 @@ export type TDynamicComponentsAppTypeMap = {
   antdRow: { id: number } & Omit<RowProps, 'id' | 'children'>
   antdCol: { id: number } & Omit<ColProps, 'id' | 'children'>
   partsOfUrl: { id: number; text: string }
+  multiQuery: { id: number; text: string }
+  parsedText: { id: number; text: string }
 }

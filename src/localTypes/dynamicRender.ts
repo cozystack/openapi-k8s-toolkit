@@ -38,6 +38,7 @@ export type TRendererComponents<T extends TItemTypeMap> = {
 
 export type TFactoryDataK8s<T extends TItemTypeMap> = {
   key: string
+  urlsToFetch: string[]
   data: TRenderableItem<T>[]
 }
 
