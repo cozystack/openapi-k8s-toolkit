@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { FC } from 'react'
+import React, { FC, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Table, TableProps, PaginationProps } from 'antd'
+import { Table, TableProps, PaginationProps, TablePaginationConfig } from 'antd'
 import { get } from 'lodash'
 import {
   TAdditionalPrinterColumnsColWidths,
@@ -28,6 +28,13 @@ export type TEnrichedTableProps = {
     selectedRowKeys: React.Key[]
   }
   withoutControls?: boolean
+  tableProps?: {
+    borderless?: boolean
+    paginationPosition?: TablePaginationConfig['position']
+    isTotalLeft?: boolean
+    editIcon?: ReactNode
+    deleteIcon?: ReactNode
+  }
 }
 
 export const EnrichedTable: FC<TEnrichedTableProps> = ({
@@ -42,6 +49,7 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
   additionalPrinterColumnsColWidths,
   selectData,
   withoutControls = false,
+  tableProps,
 }) => {
   const navigate = useNavigate()
 
@@ -66,6 +74,8 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
         enrichedColumns,
         navigate,
         baseprefix,
+        editIcon: tableProps?.editIcon,
+        deleteIcon: tableProps?.deleteIcon,
       })
 
   if (!columnsWithControls) {
@@ -75,13 +85,18 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
   const showTotal: PaginationProps['showTotal'] = total => `Total: ${total}`
 
   return (
-    <TableComponents.TableContainer $isDark={theme === 'dark'} $isCursorPointer={!!pathToNavigate}>
+    <TableComponents.TableContainer
+      $isDark={theme === 'dark'}
+      $isCursorPointer={!!pathToNavigate}
+      $borderless={tableProps?.borderless}
+      $isTotalLeft={tableProps?.isTotalLeft}
+    >
       <TableComponents.HideableControls>
         <Table
           dataSource={dataSource}
           columns={columnsWithControls}
           pagination={{
-            position: ['bottomLeft'],
+            position: tableProps?.paginationPosition || ['bottomLeft'],
             showSizeChanger: true,
             defaultPageSize: 10,
             hideOnSinglePage: false,

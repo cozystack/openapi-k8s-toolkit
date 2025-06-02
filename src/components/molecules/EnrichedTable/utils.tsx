@@ -1,3 +1,4 @@
+import { ReactNode } from 'react'
 import { NavigateFunction } from 'react-router-dom'
 import { TableProps } from 'antd'
 import { CheckOutlined, CloseOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -146,10 +147,14 @@ export const getEnrichedColumnsWithControls = ({
   enrichedColumns,
   navigate,
   baseprefix,
+  editIcon,
+  deleteIcon,
 }: {
   enrichedColumns: TableProps['columns']
   navigate: NavigateFunction
   baseprefix?: string
+  editIcon?: ReactNode
+  deleteIcon?: ReactNode
 }): TableProps['columns'] | undefined => {
   if (!enrichedColumns) {
     return undefined
@@ -179,7 +184,7 @@ export const getEnrichedColumnsWithControls = ({
                   }`,
                 )
               }}
-              icon={<EditOutlined size={14} />}
+              icon={editIcon || <EditOutlined size={14} />}
               disabled={!value.permissions.canUpdate}
             />
             <TinyButton
@@ -194,7 +199,7 @@ export const getEnrichedColumnsWithControls = ({
                   }/${value.typeName}/${value.entryName}`,
                 )
               }}
-              icon={<DeleteOutlined size={14} />}
+              icon={deleteIcon || <DeleteOutlined size={14} />}
               disabled={!value.permissions.canDelete}
             />
           </TextAlignContainer>

@@ -3,6 +3,8 @@ import styled from 'styled-components'
 type TTableContainerProps = {
   $isDark?: boolean
   $isCursorPointer?: boolean
+  $borderless?: boolean
+  $isTotalLeft?: boolean
 }
 
 const TableContainer = styled.div<TTableContainerProps>`
@@ -11,7 +13,12 @@ const TableContainer = styled.div<TTableContainerProps>`
   }
 
   && .ant-table-container {
-    border: 1px solid ${({ $isDark }) => ($isDark ? 'rgba(255, 255, 255, 0.10)' : '#EAEAEC')};
+    border: ${({ $borderless, $isDark }) => {
+      if ($borderless) {
+        return '0'
+      }
+      return $isDark ? ' 1px solid rgba(255, 255, 255, 0.10)' : ' 1px solid #EAEAEC'
+    }};
     border-bottom: 0;
   }
 
@@ -30,7 +37,12 @@ const TableContainer = styled.div<TTableContainerProps>`
   }
 
   && .ant-table-pagination {
-    border: 1px solid ${({ $isDark }) => ($isDark ? 'rgba(255, 255, 255, 0.10)' : '#EAEAEC')};
+    border: ${({ $borderless, $isDark }) => {
+      if ($borderless) {
+        return '0'
+      }
+      return $isDark ? '1px solid rgba(255, 255, 255, 0.10)' : '1px solid #EAEAEC'
+    }};
     border-radius: 0 0 8px 8px;
     border-top: 0;
     margin: 0;
@@ -38,7 +50,7 @@ const TableContainer = styled.div<TTableContainerProps>`
   }
 
   && .ant-pagination-total-text {
-    position: absolute;
+    position: ${({ $isTotalLeft }) => ($isTotalLeft ? 'initial' : 'absolute')};
     right: 16px;
   }
 

@@ -1,4 +1,5 @@
-import React, { FC } from 'react'
+import React, { FC, ReactNode } from 'react'
+import { TablePaginationConfig } from 'antd'
 import {
   TAdditionalPrinterColumns,
   TAdditionalPrinterColumnsUndefinedValues,
@@ -41,6 +42,13 @@ export type TEnrichedTableProviderProps = {
     onChange: (selectedRowKeys: React.Key[], selectedRowsData: { name: string; endpoint: string }[]) => void
     selectedRowKeys: React.Key[]
   }
+  tableProps?: {
+    borderless?: boolean
+    paginationPosition?: TablePaginationConfig['position']
+    isTotalLeft?: boolean
+    editIcon?: ReactNode
+    deleteIcon?: ReactNode
+  }
 }
 
 export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
@@ -56,6 +64,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   additionalPrinterColumnsTrimLengths,
   additionalPrinterColumnsColWidths,
   selectData,
+  tableProps,
 }) => {
   if (!resourceSchema && !additionalPrinterColumns) {
     return null
@@ -80,6 +89,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       additionalPrinterColumnsTrimLengths={additionalPrinterColumnsTrimLengths}
       additionalPrinterColumnsColWidths={additionalPrinterColumnsColWidths}
       selectData={selectData}
+      tableProps={tableProps}
     />
   )
 }
