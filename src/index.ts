@@ -54,3 +54,4 @@ export type {
   TFactoryResource,
   TFactoryDataK8s,
 } from './localTypes/dynamicRender'
+export type { TMarketPlacePanel, TMarketPlacePanelResource, TMarketPlacePanelResponse } from './localTypes/marketplace'
