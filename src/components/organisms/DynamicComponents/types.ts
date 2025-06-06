@@ -1,14 +1,16 @@
-import { CardProps, FlexProps, RowProps, ColProps } from 'antd'
+import { CardProps, FlexProps, RowProps, ColProps, ButtonProps } from 'antd'
 import type { TextProps } from 'antd/es/typography/Text'
-import { TContentCardProps } from 'components/atoms'
+import { TContentCardProps, TSpacerProps } from 'components/atoms'
 
 export type TDynamicComponentsAppTypeMap = {
+  DefaultDiv: { id: number } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
   antdText: { id: number; text: string } & Omit<TextProps, 'id'>
   // antdCard: { id: number; price: number }
   antdCard: { id: number } & Omit<CardProps, 'id'>
   antdFlex: { id: number } & Omit<FlexProps, 'id' | 'children'>
   antdRow: { id: number } & Omit<RowProps, 'id' | 'children'>
   antdCol: { id: number } & Omit<ColProps, 'id' | 'children'>
+  antdButton: { id: number; text: string } & Omit<ButtonProps, 'id' | 'children'>
   partsOfUrl: { id: number; text: string }
   multiQuery: { id: number; text: string }
   parsedText: { id: number; text: string }
@@ -34,4 +36,5 @@ export type TDynamicComponentsAppTypeMap = {
     baseprefix?: string
   }
   ContentCard: { id: number } & TContentCardProps
+  Spacer: { id: number } & TSpacerProps
 }

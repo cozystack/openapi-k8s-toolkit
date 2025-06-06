@@ -1,29 +1,35 @@
 import { TRendererComponents } from 'localTypes/dynamicRender'
 import {
+  DefaultDiv,
   AntdText,
   AntdCard,
-  PartsOfUrl,
   AntdFlex,
   AntdRow,
   AntdCol,
+  AntdButton,
+  PartsOfUrl,
   MultiQuery,
   ParsedText,
   ProjectInfoCard,
   MarketplaceCard,
   ContentCard,
+  Spacer,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
 export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap> = {
+  DefaultDiv,
   antdText: AntdText,
   antdCard: AntdCard,
-  partsOfUrl: PartsOfUrl,
   antdFlex: AntdFlex,
   antdRow: AntdRow,
   antdCol: AntdCol,
+  antdButton: AntdButton,
+  partsOfUrl: PartsOfUrl,
   multiQuery: MultiQuery,
   parsedText: ParsedText,
   ProjectInfoCard,
   MarketplaceCard,
   ContentCard,
+  Spacer,
 }

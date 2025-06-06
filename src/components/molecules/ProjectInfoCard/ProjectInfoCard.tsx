@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { usePermissions } from 'hooks/usePermissions'
 import { DeleteModal, Spacer } from 'components/atoms'
-import { Typography, Flex, Spin, Button } from 'antd'
+import { Typography, Flex, Spin } from 'antd'
 import { TMarketPlacePanelResponse } from 'localTypes/marketplace'
 import { MarketplaceCard } from 'components/molecules'
 import { DropdownActions, DropdownAccessGroups } from './molecules'
@@ -140,56 +140,8 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
                 )}
               </Flex>
             </div>
-            <div>
-              <Typography.Text>{project.spec.description}</Typography.Text>
-            </div>
           </Flex>
           {children}
-          <Spacer $space={24} $samespace />
-          <Flex gap={14} vertical>
-            <div>
-              <Typography.Text type="secondary">Developer Instruments</Typography.Text>
-            </div>
-            <div>
-              <Flex gap={14} wrap>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-                <Button type="link">Test</Button>
-              </Flex>
-            </div>
-          </Flex>
         </div>
         <div>
           <Flex gap={24} vertical>
