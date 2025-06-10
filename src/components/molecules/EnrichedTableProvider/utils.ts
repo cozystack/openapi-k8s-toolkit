@@ -1,6 +1,6 @@
 import { TableProps } from 'antd'
 import jp from 'jsonpath'
-import { v4 as uuidv4 } from 'uuid'
+// import { v4 as uuidv4 } from 'uuid'
 import { TJSON } from 'localTypes/JSON'
 import { TAdditionalPrinterColumns } from 'localTypes/richTable'
 
@@ -39,7 +39,8 @@ export const prepareDataForEnrichedColumns = ({
       let newDataIndex: string | undefined = ''
 
       if (jsonPath.includes('[')) {
-        newDataIndex = uuidv4()
+        // newDataIndex = uuidv4()
+        newDataIndex = JSON.stringify(jsonPath)
         customFields.push({ dataIndex: newDataIndex, jsonPath })
       }
 
@@ -86,7 +87,7 @@ export const prepareDataForEnrichedColumns = ({
             permissions: dataForControls.permissions,
           }
           return {
-            key: JSON.stringify(el),
+            key: el.metadata.name,
             ...el,
             internalDataForControls,
           }
@@ -136,7 +137,7 @@ export const prepareDataForEnrichedColumns = ({
             permissions: dataForControls.permissions,
           }
           return {
-            key: JSON.stringify(el),
+            key: el.metadata.name,
             ...el.spec,
             internalDataForControls,
           }
