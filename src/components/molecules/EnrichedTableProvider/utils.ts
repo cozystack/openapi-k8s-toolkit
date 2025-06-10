@@ -86,7 +86,7 @@ export const prepareDataForEnrichedColumns = ({
             permissions: dataForControls.permissions,
           }
           return {
-            key: JSON.stringify(el),
+            key: el.metadata.name,
             ...el,
             internalDataForControls,
           }
@@ -136,7 +136,7 @@ export const prepareDataForEnrichedColumns = ({
             permissions: dataForControls.permissions,
           }
           return {
-            key: JSON.stringify(el),
+            key: el.metadata.name,
             ...el.spec,
             internalDataForControls,
           }
