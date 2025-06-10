@@ -21,17 +21,23 @@ export const useApiResources = ({
 }) => {
   return useQuery({
     queryKey: ['useApiResources', clusterName, namespace, apiGroup, apiVersion, typeName, limit],
-    queryFn: async () =>
-      (
-        await getApiResources<TApiResources>({
-          clusterName,
-          namespace,
-          apiGroup,
-          apiVersion,
-          typeName,
-          limit,
-        })
-      ).data,
+    queryFn: async () => {
+      const response = await getApiResources<TApiResources>({
+        clusterName,
+        namespace,
+        apiGroup,
+        apiVersion,
+        typeName,
+        limit,
+      })
+      // Deep clone the data (to avoid mutating the original response)
+      const data = JSON.parse(JSON.stringify(response.data))
+      // Remove deeply nested field
+      if (data.metadata?.resourceVersion) {
+        delete data.metadata.resourceVersion
+      }
+      return data
+    },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
   })
 }

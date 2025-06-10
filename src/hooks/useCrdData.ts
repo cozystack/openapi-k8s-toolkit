@@ -13,14 +13,20 @@ export const useCrdData = ({
 }) => {
   return useQuery({
     queryKey: ['useCrdData', clusterName, apiExtensionVersion, crdName],
-    queryFn: async () =>
-      (
-        await getCrdData<TCRD>({
-          clusterName,
-          apiExtensionVersion,
-          crdName,
-        })
-      ).data,
+    queryFn: async () => {
+      const response = await getCrdData<TCRD>({
+        clusterName,
+        apiExtensionVersion,
+        crdName,
+      })
+      // Deep clone the data (to avoid mutating the original response)
+      const data = JSON.parse(JSON.stringify(response.data))
+      // Remove deeply nested field
+      if (data.metadata?.resourceVersion) {
+        delete data.metadata.resourceVersion
+      }
+      return data
+    },
     refetchInterval: 5000,
   })
 }

@@ -62,7 +62,7 @@ export type TBuiltinResources = {
   apiVersion: string
   metadata: {
     name: string
-    resourceVersion: string
+    // resourceVersion: string
   }
   items: TSingleResource[]
 }
@@ -72,7 +72,7 @@ export type TApiResources = {
   apiVersion: string
   metadata: {
     name: string
-    resourceVersion: string
+    // resourceVersion: string
   }
   items: TSingleResource[]
 }
@@ -96,7 +96,7 @@ export type TCrdResources<T = TJSON[]> = {
 export type TCRD = {
   apiVersion: string
   metadata: {
-    resourceVersion: string
+    // resourceVersion: string
     managedFields?: any
   }
   spec: {

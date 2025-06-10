@@ -5,7 +5,16 @@ import { TApiGroupList, TApiGroupResourceTypeList } from 'localTypes/k8s'
 export const useApisResourceTypes = ({ clusterName }: { clusterName: string }) => {
   return useQuery({
     queryKey: ['useApisResourceTypes', clusterName],
-    queryFn: async () => (await getApiResourceTypes<TApiGroupList>({ clusterName })).data,
+    queryFn: async () => {
+      const response = await getApiResourceTypes<TApiGroupList>({ clusterName })
+      // Deep clone the data (to avoid mutating the original response)
+      const data = JSON.parse(JSON.stringify(response.data))
+      // Remove deeply nested field
+      if (data.metadata?.resourceVersion) {
+        delete data.metadata.resourceVersion
+      }
+      return data
+    },
     refetchInterval: 5000,
   })
 }
@@ -21,14 +30,20 @@ export const useApiResourceTypesByGroup = ({
 }) => {
   return useQuery({
     queryKey: ['useApiResourceTypesByGroup', clusterName, apiGroup, apiVersion],
-    queryFn: async () =>
-      (
-        await getApiResourceTypesByApiGroup<TApiGroupResourceTypeList>({
-          clusterName,
-          apiGroup,
-          apiVersion,
-        })
-      ).data,
+    queryFn: async () => {
+      const response = await getApiResourceTypesByApiGroup<TApiGroupResourceTypeList>({
+        clusterName,
+        apiGroup,
+        apiVersion,
+      })
+      // Deep clone the data (to avoid mutating the original response)
+      const data = JSON.parse(JSON.stringify(response.data))
+      // Remove deeply nested field
+      if (data.metadata?.resourceVersion) {
+        delete data.metadata.resourceVersion
+      }
+      return data
+    },
     refetchInterval: 5000,
   })
 }

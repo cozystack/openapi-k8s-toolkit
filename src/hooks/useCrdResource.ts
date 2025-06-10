@@ -20,16 +20,22 @@ export const useCrdResources = <T = TJSON[]>({
 }) => {
   return useQuery({
     queryKey: ['useCrdResources', clusterName, namespace, apiGroup, apiVersion, crdName],
-    queryFn: async () =>
-      (
-        await getCrdResources<TCrdResources<T>>({
-          clusterName,
-          namespace,
-          apiGroup,
-          apiVersion,
-          crdName,
-        })
-      ).data,
+    queryFn: async () => {
+      const response = await getCrdResources<TCrdResources<T>>({
+        clusterName,
+        namespace,
+        apiGroup,
+        apiVersion,
+        crdName,
+      })
+      // Deep clone the data (to avoid mutating the original response)
+      const data = JSON.parse(JSON.stringify(response.data))
+      // Remove deeply nested field
+      if (data.metadata?.resourceVersion) {
+        delete data.metadata.resourceVersion
+      }
+      return data
+    },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
   })
 }
