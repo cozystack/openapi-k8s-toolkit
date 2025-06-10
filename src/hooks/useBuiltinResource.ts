@@ -17,8 +17,16 @@ export const useBuiltinResources = ({
 }) => {
   return useQuery({
     queryKey: ['useBuiltinResourceType', clusterName, namespace, typeName, limit],
-    queryFn: async () =>
-      (await getBuiltinResources<TBuiltinResources>({ clusterName, namespace, typeName, limit })).data,
+    queryFn: async () => {
+      const response = await getBuiltinResources<TBuiltinResources>({ clusterName, namespace, typeName, limit })
+      // Deep clone the data (to avoid mutating the original response)
+      const data = JSON.parse(JSON.stringify(response.data))
+      // Remove deeply nested field
+      if (data.metadata?.resourceVersion) {
+        delete data.metadata.resourceVersion
+      }
+      return data
+    },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
   })
 }

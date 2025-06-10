@@ -5,7 +5,16 @@ import { TBuiltinResourceTypeList } from 'localTypes/k8s'
 export const useBuiltinResourceTypes = ({ clusterName }: { clusterName: string }) => {
   return useQuery({
     queryKey: ['useBuiltinResourceTypes', clusterName],
-    queryFn: async () => (await getBuiltinResourceTypes<TBuiltinResourceTypeList>({ clusterName })).data,
+    queryFn: async () => {
+      const response = await getBuiltinResourceTypes<TBuiltinResourceTypeList>({ clusterName })
+      // Deep clone the data (to avoid mutating the original response)
+      const data = JSON.parse(JSON.stringify(response.data))
+      // Remove deeply nested field
+      if (data.metadata?.resourceVersion) {
+        delete data.metadata.resourceVersion
+      }
+      return data
+    },
     refetchInterval: 5000,
   })
 }

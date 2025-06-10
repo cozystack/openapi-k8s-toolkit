@@ -14,12 +14,18 @@ export const useDirectUnknownResource = <T>({
 }): UseQueryResult<T, Error> => {
   return useQuery({
     queryKey,
-    queryFn: async () =>
-      (
-        await getDirectUnknownResource<T>({
-          uri,
-        })
-      ).data,
+    queryFn: async () => {
+      const response = await getDirectUnknownResource<T>({
+        uri,
+      })
+      // Deep clone the data (to avoid mutating the original response)
+      const data = JSON.parse(JSON.stringify(response.data))
+      // Remove deeply nested field
+      if (data.metadata?.resourceVersion) {
+        delete data.metadata.resourceVersion
+      }
+      return data
+    },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
     enabled: isEnabled,
   })
