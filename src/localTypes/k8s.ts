@@ -81,7 +81,7 @@ export type TCrdResources<T = TJSON[]> = {
   kind: string
   apiVersion: string
   metadata: {
-    resourceVersion: string
+    // resourceVersion: string
     managedFields?: any
   }
   items: T

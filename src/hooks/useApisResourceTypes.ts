@@ -13,7 +13,7 @@ export const useApisResourceTypes = ({ clusterName }: { clusterName: string }) =
       if (data.metadata?.resourceVersion) {
         delete data.metadata.resourceVersion
       }
-      return data
+      return data as TApiGroupList
     },
     refetchInterval: 5000,
   })
@@ -42,7 +42,7 @@ export const useApiResourceTypesByGroup = ({
       if (data.metadata?.resourceVersion) {
         delete data.metadata.resourceVersion
       }
-      return data
+      return data as TApiGroupResourceTypeList
     },
     refetchInterval: 5000,
   })

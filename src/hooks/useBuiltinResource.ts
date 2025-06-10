@@ -25,7 +25,7 @@ export const useBuiltinResources = ({
       if (data.metadata?.resourceVersion) {
         delete data.metadata.resourceVersion
       }
-      return data
+      return data as TBuiltinResources
     },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
   })

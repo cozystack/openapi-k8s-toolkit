@@ -36,7 +36,7 @@ export const useApiResources = ({
       if (data.metadata?.resourceVersion) {
         delete data.metadata.resourceVersion
       }
-      return data
+      return data as TApiResources
     },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
   })

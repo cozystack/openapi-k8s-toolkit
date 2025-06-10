@@ -34,7 +34,7 @@ export const useCrdResources = <T = TJSON[]>({
       if (data.metadata?.resourceVersion) {
         delete data.metadata.resourceVersion
       }
-      return data
+      return data as TCrdResources<T>
     },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
   })

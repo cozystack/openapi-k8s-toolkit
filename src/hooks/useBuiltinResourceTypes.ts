@@ -13,7 +13,7 @@ export const useBuiltinResourceTypes = ({ clusterName }: { clusterName: string }
       if (data.metadata?.resourceVersion) {
         delete data.metadata.resourceVersion
       }
-      return data
+      return data as TBuiltinResourceTypeList
     },
     refetchInterval: 5000,
   })
