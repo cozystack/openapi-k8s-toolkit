@@ -25,7 +25,7 @@ export const useCrdData = ({
       if (data.metadata?.resourceVersion) {
         delete data.metadata.resourceVersion
       }
-      return data
+      return data as TCRD
     },
     refetchInterval: 5000,
   })

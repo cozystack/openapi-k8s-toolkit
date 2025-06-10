@@ -24,7 +24,7 @@ export const useDirectUnknownResource = <T>({
       if (data.metadata?.resourceVersion) {
         delete data.metadata.resourceVersion
       }
-      return data
+      return data as T
     },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
     enabled: isEnabled,
