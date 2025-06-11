@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-children-prop */
 /* eslint-disable react/no-array-index-key */
 import React, { Fragment, ReactElement } from 'react'
@@ -24,11 +25,33 @@ const DynamicRendererInner = <T extends TItemTypeMap>({
           return <div key={index}>❌ No component registered for type: {String(item.type)}</div>
         }
 
+        // Modify data: if data.items is an array, wrap their children with DynamicRendererInner
+        let modifiedData = item.data
+        if (
+          typeof item.data === 'object' &&
+          item.data !== null &&
+          'items' in item.data &&
+          Array.isArray((item.data as any).items)
+        ) {
+          const { items: childItems, ...rest } = item.data as any
+          modifiedData = {
+            ...rest,
+            items: childItems.map((child: any) => ({
+              ...child,
+              children: Array.isArray(child.children) ? (
+                <DynamicRendererInner items={child.children} components={components} />
+              ) : (
+                child.children
+              ),
+            })),
+          }
+        }
+
         const children = item.children ? <DynamicRendererInner items={item.children} components={components} /> : null
 
         return (
           <Fragment key={index}>
-            <Component data={item.data} children={children} />
+            <Component data={modifiedData} children={children} />
           </Fragment>
         )
       })}
