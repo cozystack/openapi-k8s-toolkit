@@ -1,4 +1,4 @@
-import { CardProps, FlexProps, RowProps, ColProps, ButtonProps } from 'antd'
+import { CardProps, FlexProps, RowProps, ColProps, ButtonProps, TabsProps } from 'antd'
 import type { TextProps } from 'antd/es/typography/Text'
 import { TContentCardProps, TSpacerProps } from 'components/atoms'
 
@@ -10,6 +10,7 @@ export type TDynamicComponentsAppTypeMap = {
   antdFlex: { id: number } & Omit<FlexProps, 'id' | 'children'>
   antdRow: { id: number } & Omit<RowProps, 'id' | 'children'>
   antdCol: { id: number } & Omit<ColProps, 'id' | 'children'>
+  antdTabs: { id: number } & Omit<TabsProps, 'id' | 'children'>
   antdButton: { id: number; text: string } & Omit<ButtonProps, 'id' | 'children'>
   partsOfUrl: { id: number; text: string }
   multiQuery: { id: number; text: string }
