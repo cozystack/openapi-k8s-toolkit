@@ -1,13 +1,28 @@
 import styled from 'styled-components'
 
-const Container = styled.div`
+type TContainerProps = {
+  $designNewLayout?: boolean
+  $borderColor: string
+  $bgColor: string
+}
+
+const Container = styled.div<TContainerProps>`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: ${({ $designNewLayout }) => ($designNewLayout ? '4px' : '8px')};
+  border: 1px solid ${({ $borderColor }) => $borderColor};
+  border-radius: ${({ $designNewLayout }) => ($designNewLayout ? '6px' : '8px')};
+  background-color: ${({ $designNewLayout, $bgColor }) => ($designNewLayout ? $bgColor : 'initial')};
   width: 100%;
-  margin-bottom: 16px;
-  border: 1px solid #434343;
-  border-radius: 8px;
+  padding: ${({ $designNewLayout }) => ($designNewLayout ? '16px' : 'initial')};
+  margin-bottom: ${({ $designNewLayout }) => ($designNewLayout ? '10px' : '16px')};
+  box-shadow: ${({ $designNewLayout }) =>
+    $designNewLayout
+      ? `
+    0 6px 16px 0 #00000014,
+    0 3px 6px -4px #0000001f,
+    0 9px 28px 8px #0000000d`
+      : 'initial'};
 `
 
 const TitleBar = styled.div`

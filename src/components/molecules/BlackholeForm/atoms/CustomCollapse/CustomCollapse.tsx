@@ -1,6 +1,8 @@
 import React, { FC, ReactNode, PropsWithChildren } from 'react'
+import { theme } from 'antd'
 import { CaretDownOutlined, CaretRightOutlined } from '@ant-design/icons'
 import { TFormName, TExpandedControls } from 'localTypes/form'
+import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 import { Styled } from './styled'
 
 type TCustomCollapseProps = PropsWithChildren<{
@@ -10,7 +12,9 @@ type TCustomCollapseProps = PropsWithChildren<{
 }>
 
 export const CustomCollapse: FC<TCustomCollapseProps> = ({ title, formName, expandedControls, children }) => {
+  const { token } = theme.useToken()
   const isOpen = expandedControls.expandedKeys.some(arr => JSON.stringify(arr) === JSON.stringify(formName))
+  const designNewLayout = useDesignNewLayout()
 
   const toggleCollapse = () => {
     if (isOpen) {
@@ -21,7 +25,11 @@ export const CustomCollapse: FC<TCustomCollapseProps> = ({ title, formName, expa
   }
 
   return (
-    <Styled.Container>
+    <Styled.Container
+      $designNewLayout={designNewLayout}
+      $borderColor={token.colorBorder}
+      $bgColor={token.colorBgContainer}
+    >
       <Styled.TitleBar onClick={() => toggleCollapse()}>
         <div>{isOpen ? <CaretDownOutlined size={14} /> : <CaretRightOutlined size={14} />}</div>
         <div>{title}</div>
