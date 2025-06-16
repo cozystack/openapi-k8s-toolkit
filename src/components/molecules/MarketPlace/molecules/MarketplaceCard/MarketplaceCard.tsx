@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Typography, Flex, theme } from 'antd'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { TMarketPlacePanel } from 'localTypes/marketplace'
-import { getPathToNav, getListPath } from './utils'
+import { getPathToNav, getCreatePathToNav, getListPath } from './utils'
 import { Styled } from './styled'
 
 export type TMarketplaceCardProps = {
@@ -48,16 +48,27 @@ export const MarketplaceCard: FC<TMarketplaceCardProps> = ({
     decodedIcon = "Can't decode"
   }
 
-  const navigateUrl = getPathToNav({
-    clusterName,
-    namespace,
-    type,
-    pathToNav,
-    typeName,
-    apiGroup,
-    apiVersion,
-    baseprefix,
-  })
+  const navigateUrl = addedMode
+    ? getPathToNav({
+        clusterName,
+        namespace,
+        type,
+        pathToNav,
+        typeName,
+        apiGroup,
+        apiVersion,
+        baseprefix,
+      })
+    : getCreatePathToNav({
+        clusterName,
+        namespace,
+        type,
+        pathToNav,
+        typeName,
+        apiGroup,
+        apiVersion,
+        baseprefix,
+      })
 
   const listUrl: string | undefined =
     addedMode && type !== 'direct'

@@ -34,6 +34,40 @@ export const getPathToNav = ({
   return `/${baseprefix}/${clusterName}/${namespace}/builtin-table/${typeName}`
 }
 
+export const getCreatePathToNav = ({
+  clusterName,
+  namespace,
+  type,
+  pathToNav,
+  typeName,
+  apiGroup,
+  apiVersion,
+  baseprefix,
+}: {
+  clusterName: string
+  namespace: string
+  type: string
+  pathToNav?: string
+  typeName?: string
+  apiGroup?: string
+  apiVersion?: string
+  baseprefix?: string
+}): string => {
+  if (type === 'direct' && pathToNav) {
+    return pathToNav
+  }
+
+  if (type === 'crd') {
+    return `/${baseprefix}/${clusterName}/${namespace}/forms/crds/${apiGroup}/${apiVersion}/${typeName}`
+  }
+
+  if (type === 'nonCrd') {
+    return `/${baseprefix}/${clusterName}/${namespace}/forms/apis/${apiGroup}/${apiVersion}/${typeName}`
+  }
+
+  return `/${baseprefix}/${clusterName}/${namespace}/forms/builtin/${apiVersion}/${typeName}`
+}
+
 export const getListPath = ({
   clusterName,
   namespace,
