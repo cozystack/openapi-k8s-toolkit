@@ -48,6 +48,7 @@ export type TBlackholeFormDataProviderProps = {
     onChange: (value: string) => void
     onDisabled: () => void
   }
+  designNewLayout?: boolean
 }
 
 export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
@@ -63,6 +64,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
   isCreate,
   backlink,
   modeData,
+  designNewLayout,
 }) => {
   const [properties, setProperties] = useState<
     | {
@@ -199,6 +201,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
       kindName={kindName}
       typeName={data.typeName}
       backlink={backlink}
+      designNewLayout={designNewLayout}
       key={JSON.stringify(properties) + JSON.stringify(required) + JSON.stringify(hiddenPaths) + JSON.stringify(data)}
     />
   )

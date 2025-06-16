@@ -143,7 +143,7 @@ export const AddEditFormModal: FC<TAddEditFormModalProps> = ({
           <Input disabled={type === 'direct' || type === 'built-in'} />
         </Form.Item>
         <Form.Item label="Enter API version" name="apiVersion">
-          <Input disabled={type === 'direct' || type === 'built-in'} />
+          <Input disabled={type === 'direct'} />
         </Form.Item>
         <Form.Item label="Enter resource type" name="typeName">
           <Input disabled={type === 'direct'} />

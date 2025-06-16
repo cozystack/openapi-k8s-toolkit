@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect, useCallback, Suspense } from 'react'
 import { useDebounceCallback } from 'usehooks-ts'
-import { Form, Button, Alert, Flex, Modal, Switch } from 'antd'
+import { theme as antdtheme, Form, Button, Alert, Flex, Modal, Switch, Typography } from 'antd'
 import { BugOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { isAxiosError } from 'axios'
@@ -25,11 +25,11 @@ import { normalizeValuesForQuotas, normalizeValuesForQuotasToNumber } from 'util
 import { getAllPathsFromObj } from 'utils/getAllPathsFromObj'
 import { getPrefixSubarrays } from 'utils/getPrefixSubArrays'
 import { Spacer } from 'components/atoms'
-import { ResetedFormItem } from '../../atoms'
 import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
 import { Styled } from './styled'
 import { isFormPrefill } from './guards'
+import { DesignNewLayoutProvider } from './context'
 
 type TBlackholeFormCreateProps = {
   cluster: string
@@ -54,6 +54,7 @@ type TBlackholeFormCreateProps = {
   kindName: string
   typeName: string
   backlink?: string | null
+  designNewLayout?: boolean
 }
 
 const Editor = React.lazy(() => import('@monaco-editor/react'))
@@ -78,7 +79,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   kindName,
   typeName,
   backlink,
+  designNewLayout,
 }) => {
+  const { token } = antdtheme.useToken()
   const navigate = useNavigate()
   const [form] = Form.useForm()
   const namespaceFromFormData = Form.useWatch<string>(['metadata', 'namespace'], form)
@@ -419,66 +422,83 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   }
 
   return (
-    <Styled.Container>
-      <div>
-        <Form form={form} onValuesChange={onValuesChangeCallback}>
-          {getObjectFormItemsDraft({
-            properties,
-            name: [],
-            required,
-            hiddenPaths,
-            namespaceData,
-            makeValueUndefined,
-            addField,
-            removeField,
-            isEdit: !isCreate,
-            expandedControls: { onExpandOpen, onExpandClose, expandedKeys },
-            persistedControls: { onPersistMark, onPersistUnmark, persistedKeys, isPersistedKeysShown },
-            urlParams,
-          })}
-          <div>
-            Show persisted checkboxes:{' '}
-            <Switch value={isPersistedKeysShown} onChange={checked => setIsPersistedKeysShown(checked)} size="small" />
-          </div>
-          <Spacer $space={12} $samespace />
-          <Alert
-            type="warning"
-            message="Будут отправлены только данные из формы. Пустые поля будут удалены рекурсивно"
-          />
-          {isCreate && createPermission.data?.status.allowed === false && (
-            <>
-              <Spacer $space={12} $samespace />
-              <Alert type="warning" message="Недостаточно прав для создания" />
-            </>
+    <>
+      <Styled.Container $designNewLayout={designNewLayout}>
+        <div>
+          <Form form={form} onValuesChange={onValuesChangeCallback}>
+            <DesignNewLayoutProvider value={designNewLayout}>
+              {getObjectFormItemsDraft({
+                properties,
+                name: [],
+                required,
+                hiddenPaths,
+                namespaceData,
+                makeValueUndefined,
+                addField,
+                removeField,
+                isEdit: !isCreate,
+                expandedControls: { onExpandOpen, onExpandClose, expandedKeys },
+                persistedControls: { onPersistMark, onPersistUnmark, persistedKeys, isPersistedKeysShown },
+                urlParams,
+              })}
+            </DesignNewLayoutProvider>
+            <div>
+              Show persisted checkboxes:{' '}
+              <Switch
+                value={isPersistedKeysShown}
+                onChange={checked => setIsPersistedKeysShown(checked)}
+                size="small"
+              />
+            </div>
+            {!designNewLayout && (
+              <>
+                <Spacer $space={10} $samespace />
+                <Alert
+                  type="warning"
+                  message="Only the data from the form will be sent. Empty fields will be removed recursively."
+                />
+              </>
+            )}
+            {isCreate && createPermission.data?.status.allowed === false && (
+              <>
+                <Spacer $space={10} $samespace />
+                <Alert type="warning" message="Insufficient rights to create" />
+              </>
+            )}
+            {!isCreate && updatePermission.data?.status.allowed === false && (
+              <>
+                <Spacer $space={10} $samespace />
+                <Alert type="warning" message="Insufficient rights to edit" />
+              </>
+            )}
+            {error && (
+              <>
+                <Spacer $space={10} $samespace />
+                <Alert message={`An error has occurred: ${error?.response?.data?.message} `} type="error" />
+              </>
+            )}
+          </Form>
+        </div>
+        <div>
+          <YamlEditor theme={theme} currentValues={yamlValues || {}} onChange={onYamlChangeCallback} />
+        </div>
+      </Styled.Container>
+      <Styled.ControlsRowContainer $bgColor={token.colorPrimaryBg} $designNewLayout={designNewLayout}>
+        <Flex gap={designNewLayout ? 10 : 16} align="center">
+          <Button type="primary" onClick={onSubmit} loading={isLoading}>
+            Submit
+          </Button>
+          {backlink && <Button onClick={() => navigate(backlink)}>Cancel</Button>}
+          <Button onClick={() => setIsDebugModalOpen(true)} icon={<BugOutlined />} />
+          {designNewLayout && (
+            <div>
+              <Typography.Text>
+                Only the data from the form will be sent. Empty fields will be removed recursively.
+              </Typography.Text>
+            </div>
           )}
-          {!isCreate && updatePermission.data?.status.allowed === false && (
-            <>
-              <Spacer $space={12} $samespace />
-              <Alert type="warning" message="Недостаточно прав для редактирования" />
-            </>
-          )}
-          <Spacer $space={12} $samespace />
-          {error && (
-            <>
-              <Spacer $space={16} $samespace />
-              <Alert message={`An error has occurred: ${error?.response?.data?.message} `} type="error" />
-              <Spacer $space={16} $samespace />
-            </>
-          )}
-          <Flex gap={16}>
-            <ResetedFormItem>
-              <Button type="primary" onClick={onSubmit} loading={isLoading}>
-                Submit
-              </Button>
-            </ResetedFormItem>
-            {backlink && <Button onClick={() => navigate(backlink)}>Cancel</Button>}
-            <Button onClick={() => setIsDebugModalOpen(true)} icon={<BugOutlined />} />
-          </Flex>
-        </Form>
-      </div>
-      <div>
-        <YamlEditor theme={theme} currentValues={yamlValues || {}} onChange={onYamlChangeCallback} />
-      </div>
+        </Flex>
+      </Styled.ControlsRowContainer>
       {isDebugModalOpen && (
         <Modal
           open={isDebugModalOpen}
@@ -505,6 +525,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           </Styled.DebugContainer>
         </Modal>
       )}
-    </Styled.Container>
+    </>
   )
 }

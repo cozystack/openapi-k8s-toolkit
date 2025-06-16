@@ -15,10 +15,12 @@ export type TProjectInfoCardProps = {
   namespace?: string
   baseApiGroup: string
   baseApiVersion: string
+  baseProjectApiGroup: string
   baseProjectVersion: string
   projectResourceName: string
   mpResourceName: string
   baseprefix?: string
+  accessGroups: string[]
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children?: any
 }
@@ -28,10 +30,12 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
   namespace,
   baseApiGroup,
   baseApiVersion,
+  baseProjectApiGroup,
   baseProjectVersion,
   mpResourceName,
   projectResourceName,
   baseprefix,
+  accessGroups,
   children,
 }) => {
   const navigate = useNavigate()
@@ -78,7 +82,7 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
       }[]
     }
   }>({
-    uri: `/api/clusters/${clusterName}/k8s/apis/${baseApiGroup}/${baseProjectVersion}/${projectResourceName}/${namespace}`,
+    uri: `/api/clusters/${clusterName}/k8s/apis/${baseProjectApiGroup}/${baseProjectVersion}/${projectResourceName}/${namespace}`,
     refetchInterval: 5000,
     queryKey: ['projects', clusterName || 'no-cluster'],
     isEnabled: clusterName !== undefined,
@@ -87,7 +91,7 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false)
 
   const updatePermission = usePermissions({
-    apiGroup: baseApiGroup,
+    apiGroup: baseProjectApiGroup,
     typeName: projectResourceName,
     namespace: '',
     clusterName: clusterName || '',
@@ -96,7 +100,7 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
   })
 
   const deletePermission = usePermissions({
-    apiGroup: baseApiGroup,
+    apiGroup: baseProjectApiGroup,
     typeName: projectResourceName,
     namespace: '',
     clusterName: clusterName || '',
@@ -106,9 +110,9 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
 
   const openUpdate = useCallback(() => {
     navigate(
-      `${baseprefix}/${clusterName}/forms/apis/${baseApiGroup}/${baseProjectVersion}/${projectResourceName}/${namespace}?backlink=${baseprefix}/clusters/${clusterName}`,
+      `/${baseprefix}/${clusterName}/forms/apis/${baseProjectApiGroup}/${baseProjectVersion}/${projectResourceName}/${namespace}?backlink=${baseprefix}/clusters/${clusterName}`,
     )
-  }, [baseprefix, clusterName, namespace, baseApiGroup, baseProjectVersion, projectResourceName, navigate])
+  }, [baseprefix, clusterName, namespace, baseProjectApiGroup, baseProjectVersion, projectResourceName, navigate])
 
   if (isLoading) {
     return <Spin />
@@ -162,7 +166,7 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
                 <Styled.ActionMenuPlaceholder />
               )}
             </Flex>
-            <DropdownAccessGroups />
+            <DropdownAccessGroups accessGroups={accessGroups} />
           </Flex>
         </div>
       </Flex>
@@ -204,7 +208,7 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
             setIsDeleteModalOpen(false)
             navigate(`${baseprefix}/clusters/${clusterName}`)
           }}
-          endpoint={`/api/clusters/${clusterName}/k8s/apis/${baseApiGroup}/${baseProjectVersion}/${projectResourceName}/${project.metadata.name}`}
+          endpoint={`/api/clusters/${clusterName}/k8s/apis/${baseProjectApiGroup}/${baseProjectVersion}/${projectResourceName}/${project.metadata.name}`}
         />
       )}
     </>

@@ -1,14 +1,13 @@
 import React, { FC } from 'react'
 import { Button, Dropdown } from 'antd'
 
-export const DropdownAccessGroups: FC = () => {
+type TDropdownAccessGroupsProps = {
+  accessGroups: string[]
+}
+
+export const DropdownAccessGroups: FC<TDropdownAccessGroupsProps> = ({ accessGroups }) => {
   const getDropdownItems = () => {
-    return [
-      'g-advanced-credit-factory',
-      'g-advanced-credit-factory',
-      'g-advanced-credit-factory',
-      'g-advanced-credit-factory',
-    ].map((item, i) => ({
+    return accessGroups.map((item, i) => ({
       key: `${item}-${i}`,
       label: (
         <div

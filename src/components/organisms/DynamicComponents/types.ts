@@ -4,7 +4,7 @@ import { TContentCardProps, TSpacerProps } from 'components/atoms'
 
 export type TDynamicComponentsAppTypeMap = {
   DefaultDiv: { id: number } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
-  antdText: { id: number; text: string } & Omit<TextProps, 'id'>
+  antdText: { id: number; text: string } & Omit<TextProps, 'id' | 'children'>
   // antdCard: { id: number; price: number }
   antdCard: { id: number } & Omit<CardProps, 'id'>
   antdFlex: { id: number } & Omit<FlexProps, 'id' | 'children'>
@@ -21,9 +21,11 @@ export type TDynamicComponentsAppTypeMap = {
     namespacePartOfUrl: string
     baseApiGroup: string
     baseApiVersion: string
+    baseProjectApiGroup: string
     baseProjectVersion: string
     projectResourceName: string
     mpResourceName: string
+    accessGroups: []
     baseprefix?: string
   }
   MarketplaceCard: {
