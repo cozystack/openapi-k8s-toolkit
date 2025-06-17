@@ -29,16 +29,18 @@ const TitleBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  gap: 4px;
   cursor: pointer;
 `
 
 type TContentProps = {
   $isOpen?: boolean
+  $designNewLayout?: boolean
 }
 
 const Content = styled.div<TContentProps>`
   display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
-  padding: 4px;
+  padding: ${({ $designNewLayout }) => ($designNewLayout ? '0' : '4px')};
 `
 
 export const Styled = {
