@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable no-console */
-import React, { FC, useState, useEffect, useCallback, Suspense } from 'react'
+import React, { FC, useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useDebounceCallback } from 'usehooks-ts'
 import { theme as antdtheme, Form, Button, Alert, Flex, Modal, Typography } from 'antd'
 import { BugOutlined } from '@ant-design/icons'
@@ -55,6 +55,7 @@ type TBlackholeFormCreateProps = {
   typeName: string
   backlink?: string | null
   designNewLayout?: boolean
+  designNewLayoutHeight?: number
 }
 
 const Editor = React.lazy(() => import('@monaco-editor/react'))
@@ -80,6 +81,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   typeName,
   backlink,
   designNewLayout,
+  designNewLayoutHeight,
 }) => {
   const { token } = antdtheme.useToken()
   const navigate = useNavigate()
@@ -95,6 +97,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isPersistedKeysShown, setIsPersistedKeysShown] = useState<boolean>(true)
+
+  const overflowRef = useRef<HTMLDivElement | null>(null)
 
   const createPermission = usePermissions({
     apiGroup: type === 'builtin' ? '' : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
@@ -117,6 +121,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   })
 
   const onSubmit = () => {
+    if (overflowRef.current) {
+      const { scrollHeight, clientHeight } = overflowRef.current
+      overflowRef.current.scrollTo({
+        top: scrollHeight - clientHeight,
+        behavior: 'smooth',
+      })
+    }
     form
       .validateFields()
       .then(() => {
@@ -424,8 +435,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   return (
     <>
-      <Styled.Container $designNewLayout={designNewLayout}>
-        <div>
+      <Styled.Container $designNewLayout={designNewLayout} $designNewLayoutHeight={designNewLayoutHeight}>
+        <Styled.OverflowContainer ref={overflowRef}>
           <Form form={form} onValuesChange={onValuesChangeCallback}>
             <DesignNewLayoutProvider value={designNewLayout}>
               {getObjectFormItemsDraft({
@@ -479,7 +490,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
               </>
             )}
           </Form>
-        </div>
+        </Styled.OverflowContainer>
         <div>
           <YamlEditor theme={theme} currentValues={yamlValues || {}} onChange={onYamlChangeCallback} />
         </div>
@@ -509,12 +520,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           title="Debug for properties"
           width="90vw"
         >
-          <Styled.DebugContainer>
+          <Styled.DebugContainer $designNewLayoutHeight={designNewLayoutHeight}>
             <Suspense fallback={<div>Loading...</div>}>
               <Editor
                 defaultLanguage="json"
                 width="100%"
-                height="80vh"
+                height={designNewLayoutHeight || '80vh'}
                 theme="vs-dark"
                 value={JSON.stringify(properties, null, 2)}
                 options={{
