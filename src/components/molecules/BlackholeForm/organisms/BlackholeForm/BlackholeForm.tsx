@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect, useCallback, Suspense } from 'react'
 import { useDebounceCallback } from 'usehooks-ts'
-import { theme as antdtheme, Form, Button, Alert, Flex, Modal, Switch, Typography } from 'antd'
+import { theme as antdtheme, Form, Button, Alert, Flex, Modal, Typography } from 'antd'
 import { BugOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { isAxiosError } from 'axios'
@@ -93,7 +93,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const [isDebugModalOpen, setIsDebugModalOpen] = useState<boolean>(false)
   const [expandedKeys, setExpandedKeys] = useState<TFormName[]>(expandedPaths || [])
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
-  const [isPersistedKeysShown, setIsPersistedKeysShown] = useState<boolean>(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isPersistedKeysShown, setIsPersistedKeysShown] = useState<boolean>(true)
 
   const createPermission = usePermissions({
     apiGroup: type === 'builtin' ? '' : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
@@ -442,14 +443,14 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 urlParams,
               })}
             </DesignNewLayoutProvider>
-            <div>
+            {/* <div>
               Show persisted checkboxes:{' '}
               <Switch
                 value={isPersistedKeysShown}
                 onChange={checked => setIsPersistedKeysShown(checked)}
                 size="small"
               />
-            </div>
+            </div> */}
             {!designNewLayout && (
               <>
                 <Spacer $space={10} $samespace />

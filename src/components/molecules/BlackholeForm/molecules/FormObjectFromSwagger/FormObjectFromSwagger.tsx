@@ -108,7 +108,9 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
         removeField={() => removeField({ path: name })}
         onRemoveByMinus={onRemoveByMinus}
         persistedCheckbox={
-          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="obj" />
+          inputProps ? undefined : (
+            <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="obj" />
+          )
         }
         key={Array.isArray(name) ? name.join('-') : name}
       >

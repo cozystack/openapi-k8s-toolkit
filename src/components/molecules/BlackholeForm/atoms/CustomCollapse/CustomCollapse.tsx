@@ -10,7 +10,7 @@ type TCustomCollapseProps = PropsWithChildren<{
   title: string | ReactNode
   formName: TFormName
   expandedControls: TExpandedControls
-  persistedCheckbox: JSX.Element
+  persistedCheckbox?: JSX.Element
   isAdditionalProperties?: boolean
   removeField: () => void
   onRemoveByMinus?: () => void
