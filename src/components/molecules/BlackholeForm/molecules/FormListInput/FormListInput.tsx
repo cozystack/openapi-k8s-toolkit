@@ -10,7 +10,15 @@ import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { getStringByName } from 'utils/getStringByName'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { prepareTemplate } from 'utils/prepareTemplate'
-import { CursorPointerText, PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem } from '../../atoms'
+import { feedbackIcons } from 'components/atoms'
+import {
+  CursorPointerText,
+  PersistedCheckbox,
+  PossibleHiddenContainer,
+  ResetedFormItem,
+  CustomSizeTitle,
+} from '../../atoms'
+import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormListInputProps = {
   name: TFormName
@@ -43,6 +51,8 @@ export const FormListInput: FC<TFormListInputProps> = ({
   customProps,
   urlParams,
 }) => {
+  const designNewLayout = useDesignNewLayout()
+
   const { clusterName, namespace, syntheticProject, entryName } = urlParams
   const form = Form.useFormInstance()
   const fieldValue = Form.useWatch(name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name, form)
@@ -111,30 +121,36 @@ export const FormListInput: FC<TFormListInputProps> = ({
 
   const fixedName = name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name
 
+  const title = (
+    <>
+      {getStringByName(name)}
+      {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
+      {!designNewLayout && description && (
+        <Tooltip title={description}>
+          {' '}
+          <QuestionCircleOutlined />
+        </Tooltip>
+      )}
+    </>
+  )
+
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      <Typography.Text>
-        {getStringByName(name)}
-        {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-        {description && (
-          <Tooltip title={description}>
-            {' '}
-            <QuestionCircleOutlined />
-          </Tooltip>
-        )}
+      <CustomSizeTitle $designNewLayout={designNewLayout}>
+        {description ? <Tooltip title={description}>{title}</Tooltip> : title}
         {isAdditionalProperties && (
           <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
             Удалить
           </CursorPointerText>
         )}
         <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
-      </Typography.Text>
+      </CustomSizeTitle>
       <ResetedFormItem
         key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
         name={arrName || fixedName}
         rules={[{ required: forceNonRequired === false && required?.includes(getStringByName(name)) }]}
         validateTrigger="onBlur"
-        hasFeedback
+        hasFeedback={designNewLayout ? { icons: feedbackIcons } : true}
       >
         <Select
           mode={customProps.mode}

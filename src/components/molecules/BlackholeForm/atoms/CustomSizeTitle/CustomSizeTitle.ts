@@ -1,14 +1,10 @@
 import styled from 'styled-components'
 
-type TTitleProps = {
+type TCustomSizeTitleProps = {
   $designNewLayout?: boolean
 }
 
-const Title = styled.div<TTitleProps>`
+export const CustomSizeTitle = styled.div<TCustomSizeTitleProps>`
   font-size: ${({ $designNewLayout }) => ($designNewLayout ? '16px' : '14px')};
   line-height: ${({ $designNewLayout }) => ($designNewLayout ? '24px' : '22px')};
 `
-
-export const Styled = {
-  Title,
-}

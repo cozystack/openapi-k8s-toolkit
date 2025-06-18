@@ -5,7 +5,15 @@ import { InputNumber, Typography, Tooltip } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TPersistedControls } from 'localTypes/form'
-import { CursorPointerText, PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem } from '../../atoms'
+import { feedbackIcons } from 'components/atoms'
+import {
+  CursorPointerText,
+  PersistedCheckbox,
+  PossibleHiddenContainer,
+  ResetedFormItem,
+  CustomSizeTitle,
+} from '../../atoms'
+import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormNumberItemProps = {
   isNumber?: boolean
@@ -36,30 +44,38 @@ export const FormNumberInput: FC<TFormNumberItemProps> = ({
   removeField,
   persistedControls,
 }) => {
+  const designNewLayout = useDesignNewLayout()
+
+  const title = (
+    <>
+      {getStringByName(name)}
+      {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
+      {!designNewLayout && description && (
+        <Tooltip title={description}>
+          {' '}
+          <QuestionCircleOutlined />
+        </Tooltip>
+      )}
+    </>
+  )
+
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      <Typography.Text>
-        {getStringByName(name)}
-        {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-        {description && (
-          <Tooltip title={description}>
-            {' '}
-            <QuestionCircleOutlined />
-          </Tooltip>
-        )}
+      <CustomSizeTitle $designNewLayout={designNewLayout}>
+        {description ? <Tooltip title={description}>{title}</Tooltip> : title}
         {isAdditionalProperties && (
           <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
             Удалить
           </CursorPointerText>
         )}
         <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
-      </Typography.Text>
+      </CustomSizeTitle>
       <ResetedFormItem
         key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
         name={arrName || name}
         rules={[{ required: forceNonRequired === false && required?.includes(getStringByName(name)) }]}
         validateTrigger="onBlur"
-        hasFeedback
+        hasFeedback={designNewLayout ? { icons: feedbackIcons } : true}
       >
         <InputNumber placeholder={getStringByName(name)} step={isNumber ? 0.1 : 1} />
       </ResetedFormItem>

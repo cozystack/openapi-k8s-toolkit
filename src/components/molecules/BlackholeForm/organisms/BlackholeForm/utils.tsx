@@ -3,14 +3,14 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable no-use-before-define */
 /* eslint-disable consistent-return */
-import { Form, Button, Typography, Alert, Tooltip } from 'antd'
-import { MinusCircleOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { Form, Button, Alert } from 'antd'
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { OpenAPIV2 } from 'openapi-types'
 import { includesArray } from 'utils/nestedStringsArrayInclude'
 import { getStringByName } from 'utils/getStringByName'
 import { TListInputCustomProps, TRangeInputCustomProps } from 'localTypes/formExtensions'
 import { TFormName, TExpandedControls, TNamespaceData, TPersistedControls, TUrlParams } from 'localTypes/form'
-import { CursorPointerText, PersistedCheckbox, PossibleHiddenContainer } from '../../atoms'
+import { PossibleHiddenContainer } from '../../atoms'
 import {
   FormNamespaceInput,
   FormStringInput,
@@ -20,6 +20,7 @@ import {
   FormListInput,
   FormBooleanInput,
   FormObjectFromSwagger,
+  FormArrayHeader,
 } from '../../molecules'
 import { Styled } from './styled'
 
@@ -352,22 +353,15 @@ export const getArrayFormItemFromSwagger = ({
   if (schema.type === 'array') {
     return (
       <PossibleHiddenContainer $isHidden={isHidden}>
-        <Typography.Text>
-          {getStringByName(name)}
-          {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-          {description && (
-            <Tooltip title={description}>
-              {' '}
-              <QuestionCircleOutlined />
-            </Tooltip>
-          )}
-          {isAdditionalProperties && (
-            <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-              Удалить
-            </CursorPointerText>
-          )}
-          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
-        </Typography.Text>
+        <FormArrayHeader
+          name={name}
+          persistName={persistName}
+          required={required}
+          description={description}
+          isAdditionalProperties={isAdditionalProperties}
+          removeField={removeField}
+          persistedControls={persistedControls}
+        />
         <Styled.ResetedFormList
           key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
           name={arrName || name}

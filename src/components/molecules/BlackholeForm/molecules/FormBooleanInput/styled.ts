@@ -5,9 +5,9 @@ const SwitchAndCrossContainer = styled.div`
 `
 
 const CrossContainer = styled.div`
-  margin-left: 8px;
+  margin-left: 4px;
   cursor: pointer;
-  padding-top: 4px;
+  padding-top: 11px;
 `
 
 export const Styled = {

@@ -4,9 +4,14 @@ import { Typography, Tooltip, Input } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TExpandedControls, TPersistedControls } from 'localTypes/form'
-import { CursorPointerText, CustomCollapse, PersistedCheckbox, PossibleHiddenContainer } from '../../atoms'
+import {
+  CursorPointerText,
+  CustomCollapse,
+  PersistedCheckbox,
+  PossibleHiddenContainer,
+  CustomSizeTitle,
+} from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
-import { Styled } from './styled'
 
 type TFormObjectFromSwaggerProps = {
   name: TFormName
@@ -75,7 +80,7 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
     <PossibleHiddenContainer $isHidden={isHidden}>
       <CustomCollapse
         title={
-          <Styled.Title $designNewLayout={designNewLayout}>
+          <CustomSizeTitle $designNewLayout={designNewLayout}>
             {description ? <Tooltip title={description}>{title}</Tooltip> : title}
             {isAdditionalProperties && (
               <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
@@ -83,7 +88,7 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
               </CursorPointerText>
             )}
             <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="obj" />
-          </Styled.Title>
+          </CustomSizeTitle>
         }
         formName={collapseFormName}
         expandedControls={expandedControls}
@@ -91,9 +96,9 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
       >
         {inputProps && (
           <Input.Search
-            placeholder="Введите имя поля"
+            placeholder="Enter field name"
             allowClear
-            enterButton="Добавить"
+            enterButton="Add"
             onSearch={value => {
               if (value.length > 0) {
                 const addProps = inputProps.additionalProperties as {

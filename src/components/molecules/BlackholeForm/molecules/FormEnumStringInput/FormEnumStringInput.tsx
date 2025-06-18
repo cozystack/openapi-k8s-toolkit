@@ -5,7 +5,15 @@ import { Typography, Tooltip, Select } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TPersistedControls } from 'localTypes/form'
-import { CursorPointerText, PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem } from '../../atoms'
+import { feedbackIcons } from 'components/atoms'
+import {
+  CursorPointerText,
+  PersistedCheckbox,
+  PossibleHiddenContainer,
+  ResetedFormItem,
+  CustomSizeTitle,
+} from '../../atoms'
+import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormEnumStringInputProps = {
   name: TFormName
@@ -36,32 +44,40 @@ export const FormEnumStringInput: FC<TFormEnumStringInputProps> = ({
   options,
   persistedControls,
 }) => {
+  const designNewLayout = useDesignNewLayout()
+
   const fixedName = name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name
+
+  const title = (
+    <>
+      {getStringByName(name)}
+      {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
+      {!designNewLayout && description && (
+        <Tooltip title={description}>
+          {' '}
+          <QuestionCircleOutlined />
+        </Tooltip>
+      )}
+    </>
+  )
 
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      <Typography.Text>
-        {getStringByName(name)}
-        {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-        {description && (
-          <Tooltip title={description}>
-            {' '}
-            <QuestionCircleOutlined />
-          </Tooltip>
-        )}
+      <CustomSizeTitle $designNewLayout={designNewLayout}>
+        {description ? <Tooltip title={description}>{title}</Tooltip> : title}
         {isAdditionalProperties && (
           <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
             Удалить
           </CursorPointerText>
         )}
         <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="str" />
-      </Typography.Text>
+      </CustomSizeTitle>
       <ResetedFormItem
         key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
         name={arrName || fixedName}
         rules={[{ required: forceNonRequired === false && required?.includes(getStringByName(name)) }]}
         validateTrigger="onBlur"
-        hasFeedback
+        hasFeedback={designNewLayout ? { icons: feedbackIcons } : true}
       >
         <Select options={options.map(el => ({ value: el, label: el }))} placeholder={getStringByName(name)} />
       </ResetedFormItem>
