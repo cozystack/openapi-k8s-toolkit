@@ -525,7 +525,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
               <Editor
                 defaultLanguage="json"
                 width="100%"
-                height={designNewLayoutHeight || '80vh'}
+                height={designNewLayoutHeight || '75vh'}
                 theme="vs-dark"
                 value={JSON.stringify(properties, null, 2)}
                 options={{

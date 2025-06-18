@@ -10,7 +10,7 @@ const Container = styled.div<TContainerProps>`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: ${({ $designNewLayout }) => ($designNewLayout ? '36px' : '8px')};
-  height: ${({ $designNewLayoutHeight }) => ($designNewLayoutHeight ? `${$designNewLayoutHeight}px` : '80vh')};
+  height: ${({ $designNewLayoutHeight }) => ($designNewLayoutHeight ? `${$designNewLayoutHeight}px` : '75vh')};
 `
 
 const OverflowContainer = styled.div`
@@ -41,7 +41,7 @@ type TDebugContainerProps = {
 }
 
 const DebugContainer = styled.div<TDebugContainerProps>`
-  height: ${({ $designNewLayoutHeight }) => ($designNewLayoutHeight ? `${$designNewLayoutHeight}px` : '80vh')};
+  height: ${({ $designNewLayoutHeight }) => ($designNewLayoutHeight ? `${$designNewLayoutHeight}px` : '75vh')};
 `
 
 export const Styled = {
