@@ -127,26 +127,7 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
   return (
     <>
       <Flex justify="space-between">
-        <div>
-          <Flex gap={20} vertical>
-            <div>
-              <Typography.Text type="secondary">Project Business Name</Typography.Text>
-            </div>
-            <div>
-              <Flex gap="small">
-                <Styled.BigValue>{project.spec.businessName || '-'}</Styled.BigValue>
-                {readyCondition && (
-                  <Flex align="center" gap="small">
-                    <Typography.Text type={readyCondition.status === 'True' ? 'success' : 'warning'}>
-                      {readyCondition.reason}
-                    </Typography.Text>
-                  </Flex>
-                )}
-              </Flex>
-            </div>
-          </Flex>
-          {children}
-        </div>
+        <div>{children}</div>
         <div>
           <Flex gap={24} vertical>
             <Flex justify="flex-end">

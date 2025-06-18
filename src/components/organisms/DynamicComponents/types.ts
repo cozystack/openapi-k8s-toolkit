@@ -40,4 +40,13 @@ export type TDynamicComponentsAppTypeMap = {
   }
   ContentCard: { id: number } & TContentCardProps
   Spacer: { id: number } & TSpacerProps
+  StatusText: {
+    id: number
+    requestIndex: number
+    jsonPath: string
+    criteria: 'equals' | 'notEquals'
+    valueToCompare: unknown
+    successText: string
+    errorText: string
+  } & Omit<TextProps, 'id' | 'children'>
 }

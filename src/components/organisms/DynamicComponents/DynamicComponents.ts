@@ -15,6 +15,7 @@ import {
   MarketplaceCard,
   ContentCard,
   Spacer,
+  StatusText,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -34,4 +35,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   MarketplaceCard,
   ContentCard,
   Spacer,
+  StatusText,
 }
