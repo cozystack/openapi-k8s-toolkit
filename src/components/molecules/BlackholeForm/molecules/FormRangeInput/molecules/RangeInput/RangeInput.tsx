@@ -1,12 +1,12 @@
 /* eslint-disable no-unneeded-ternary */
 /* eslint-disable no-nested-ternary */
 import React, { FC, useState, useEffect } from 'react'
-import { InputNumber, Typography, Tooltip, Row, Col, Slider, Flex } from 'antd'
+import { Flex, InputNumber, Typography, Tooltip, Row, Col, Slider, Button } from 'antd'
 import { SliderBaseProps } from 'antd/es/slider'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import { getStringByName } from 'utils/getStringByName'
-import { feedbackIcons } from 'components/atoms'
+import { MinusIcon, feedbackIcons } from 'components/atoms'
 import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../../../atoms'
 import { useDesignNewLayout } from '../../../../organisms/BlackholeForm/context'
 
@@ -20,6 +20,7 @@ export type TRangeInputProps = {
   isHidden?: boolean
   persistedControls: TPersistedControls
   description?: string
+  onRemoveByMinus?: () => void
   max: number
   min: number
   step?: number
@@ -36,6 +37,7 @@ export const RangeInput: FC<TRangeInputProps> = ({
   isHidden,
   persistedControls,
   description,
+  onRemoveByMinus,
   initialValue,
   max,
   min,
@@ -72,10 +74,19 @@ export const RangeInput: FC<TRangeInputProps> = ({
 
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      <CustomSizeTitle $designNewLayout={designNewLayout}>
-        {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
-      </CustomSizeTitle>
+      <Flex justify="space-between">
+        <CustomSizeTitle $designNewLayout={designNewLayout}>
+          {description ? <Tooltip title={description}>{title}</Tooltip> : title}
+          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
+        </CustomSizeTitle>
+        <div>
+          {onRemoveByMinus && (
+            <Button size="small" type="text" onClick={onRemoveByMinus}>
+              <MinusIcon />
+            </Button>
+          )}
+        </div>
+      </Flex>
       <Row>
         <Col span={12}>
           <ResetedFormItem

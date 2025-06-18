@@ -1,11 +1,12 @@
 /* eslint-disable no-unneeded-ternary */
 /* eslint-disable no-nested-ternary */
 import React, { FC } from 'react'
-import { Typography, Tooltip } from 'antd'
+import { Flex, Typography, Tooltip, Button } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TPersistedControls } from 'localTypes/form'
-import { CursorPointerText, PersistedCheckbox, CustomSizeTitle } from '../../atoms'
+import { MinusIcon } from 'components/atoms'
+import { PersistedCheckbox, CustomSizeTitle } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormArrayHeaderProps = {
@@ -16,6 +17,7 @@ type TFormArrayHeaderProps = {
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
   persistedControls: TPersistedControls
+  onRemoveByMinus?: () => void
 }
 
 export const FormArrayHeader: FC<TFormArrayHeaderProps> = ({
@@ -26,6 +28,7 @@ export const FormArrayHeader: FC<TFormArrayHeaderProps> = ({
   isAdditionalProperties,
   removeField,
   persistedControls,
+  onRemoveByMinus,
 }) => {
   const designNewLayout = useDesignNewLayout()
 
@@ -43,14 +46,23 @@ export const FormArrayHeader: FC<TFormArrayHeaderProps> = ({
   )
 
   return (
-    <CustomSizeTitle $designNewLayout={designNewLayout}>
-      {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-      {isAdditionalProperties && (
-        <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-          Удалить
-        </CursorPointerText>
-      )}
-      <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
-    </CustomSizeTitle>
+    <Flex justify="space-between">
+      <CustomSizeTitle $designNewLayout={designNewLayout}>
+        {description ? <Tooltip title={description}>{title}</Tooltip> : title}
+        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
+      </CustomSizeTitle>
+      <div>
+        {isAdditionalProperties && (
+          <Button size="small" type="text" onClick={() => removeField({ path: name })}>
+            <MinusIcon />
+          </Button>
+        )}
+        {onRemoveByMinus && (
+          <Button size="small" type="text" onClick={onRemoveByMinus}>
+            <MinusIcon />
+          </Button>
+        )}
+      </div>
+    </Flex>
   )
 }

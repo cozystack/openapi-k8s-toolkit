@@ -17,18 +17,6 @@ export const ResetedFormList = styled(Form.List)`
   margin-bottom: 8px;
 `
 
-const ContainerWithRemoveButton = styled.div`
-  display: grid;
-  grid-template-columns: auto 45px;
-  margin-left: 8px;
-`
-
-const MinusContainer = styled.div`
-  display: flex;
-  align-items: flex-start;
-  margin-top: 5px;
-`
-
 type TControlsRowContainerProps = {
   $designNewLayout?: boolean
   $bgColor: string
@@ -49,8 +37,6 @@ const DebugContainer = styled.div`
 
 export const Styled = {
   ResetedFormList,
-  ContainerWithRemoveButton,
-  MinusContainer,
   Container,
   ControlsRowContainer,
   DebugContainer,

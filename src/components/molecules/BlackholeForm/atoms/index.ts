@@ -1,6 +1,5 @@
 export * from './CustomCollapse'
 export * from './PersistedCheckbox'
-export * from './CursorPointerText'
 export * from './DebugNameViewer'
 export * from './PossibleHiddenContainer'
 export * from './ResetedFormItem'

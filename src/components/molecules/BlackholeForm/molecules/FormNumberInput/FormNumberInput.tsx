@@ -1,18 +1,12 @@
 /* eslint-disable no-unneeded-ternary */
 /* eslint-disable no-nested-ternary */
 import React, { FC } from 'react'
-import { InputNumber, Typography, Tooltip } from 'antd'
+import { Flex, InputNumber, Typography, Tooltip, Button } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TPersistedControls } from 'localTypes/form'
-import { feedbackIcons } from 'components/atoms'
-import {
-  CursorPointerText,
-  PersistedCheckbox,
-  PossibleHiddenContainer,
-  ResetedFormItem,
-  CustomSizeTitle,
-} from '../../atoms'
+import { MinusIcon, feedbackIcons } from 'components/atoms'
+import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormNumberItemProps = {
@@ -28,6 +22,7 @@ type TFormNumberItemProps = {
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
   persistedControls: TPersistedControls
+  onRemoveByMinus?: () => void
 }
 
 export const FormNumberInput: FC<TFormNumberItemProps> = ({
@@ -43,6 +38,7 @@ export const FormNumberInput: FC<TFormNumberItemProps> = ({
   isAdditionalProperties,
   removeField,
   persistedControls,
+  onRemoveByMinus,
 }) => {
   const designNewLayout = useDesignNewLayout()
 
@@ -61,15 +57,24 @@ export const FormNumberInput: FC<TFormNumberItemProps> = ({
 
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      <CustomSizeTitle $designNewLayout={designNewLayout}>
-        {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-        {isAdditionalProperties && (
-          <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-            Удалить
-          </CursorPointerText>
-        )}
-        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
-      </CustomSizeTitle>
+      <Flex justify="space-between">
+        <CustomSizeTitle $designNewLayout={designNewLayout}>
+          {description ? <Tooltip title={description}>{title}</Tooltip> : title}
+          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
+        </CustomSizeTitle>
+        <div>
+          {isAdditionalProperties && (
+            <Button size="small" type="text" onClick={() => removeField({ path: name })}>
+              <MinusIcon />
+            </Button>
+          )}
+          {onRemoveByMinus && (
+            <Button size="small" type="text" onClick={onRemoveByMinus}>
+              <MinusIcon />
+            </Button>
+          )}
+        </div>
+      </Flex>
       <ResetedFormItem
         key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
         name={arrName || name}

@@ -20,6 +20,7 @@ type TFormRangeInputProps = {
   persistedControls: TPersistedControls
   customProps: TRangeInputCustomProps
   urlParams: TUrlParams
+  onRemoveByMinus?: () => void
 }
 
 export const FormRangeInput: FC<TFormRangeInputProps> = ({
@@ -35,6 +36,7 @@ export const FormRangeInput: FC<TFormRangeInputProps> = ({
   persistedControls,
   customProps,
   urlParams,
+  onRemoveByMinus,
 }) => {
   const { clusterName, namespace, syntheticProject, entryName } = urlParams
 
@@ -271,6 +273,7 @@ export const FormRangeInput: FC<TFormRangeInputProps> = ({
       max={maxValue}
       step={step}
       persistedControls={persistedControls}
+      onRemoveByMinus={onRemoveByMinus}
     />
   )
 }

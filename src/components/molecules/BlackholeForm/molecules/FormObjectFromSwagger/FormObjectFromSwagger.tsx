@@ -1,16 +1,11 @@
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { OpenAPIV2, IJsonSchema } from 'openapi-types'
-import { Typography, Tooltip, Input } from 'antd'
+import { Typography, Tooltip, Input, Button } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TExpandedControls, TPersistedControls } from 'localTypes/form'
-import {
-  CursorPointerText,
-  CustomCollapse,
-  PersistedCheckbox,
-  PossibleHiddenContainer,
-  CustomSizeTitle,
-} from '../../atoms'
+import { PlusIcon } from 'components/atoms'
+import { CustomCollapse, PersistedCheckbox, PossibleHiddenContainer, CustomSizeTitle } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormObjectFromSwaggerProps = {
@@ -44,6 +39,7 @@ type TFormObjectFromSwaggerProps = {
     }) => void
     additionalProperties: boolean | IJsonSchema | undefined
   }
+  onRemoveByMinus?: () => void
 }
 
 export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
@@ -60,8 +56,30 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
   collapseFormName,
   data,
   inputProps,
+  onRemoveByMinus,
 }) => {
   const designNewLayout = useDesignNewLayout()
+  const [additionalPropValue, setAddditionalPropValue] = useState<string>()
+
+  const additionalPropCreate = () => {
+    if (additionalPropValue && additionalPropValue.length > 0) {
+      const addProps = inputProps?.additionalProperties as {
+        type: string
+        items?: { type: string }
+        properties?: OpenAPIV2.SchemaObject['properties']
+        required?: string
+      }
+      inputProps?.addField({
+        path: Array.isArray(name) ? [...name, String(collapseTitle)] : [name, String(collapseTitle)],
+        name: additionalPropValue,
+        type: addProps.type,
+        items: addProps.items,
+        nestedProperties: addProps.properties || {},
+        required: addProps.required,
+      })
+      setAddditionalPropValue(undefined)
+    }
+  }
 
   const title = (
     <>
@@ -82,44 +100,30 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
         title={
           <CustomSizeTitle $designNewLayout={designNewLayout}>
             {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-            {isAdditionalProperties && (
-              <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-                Удалить
-              </CursorPointerText>
-            )}
             <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="obj" />
           </CustomSizeTitle>
         }
         formName={collapseFormName}
         expandedControls={expandedControls}
+        isAdditionalProperties={isAdditionalProperties}
+        removeField={() => removeField({ path: name })}
+        onRemoveByMinus={onRemoveByMinus}
         key={Array.isArray(name) ? name.join('-') : name}
       >
+        {data}
         {inputProps && (
-          <Input.Search
+          <Input
             placeholder="Enter field name"
             allowClear
-            enterButton="Add"
-            onSearch={value => {
-              if (value.length > 0) {
-                const addProps = inputProps.additionalProperties as {
-                  type: string
-                  items?: { type: string }
-                  properties?: OpenAPIV2.SchemaObject['properties']
-                  required?: string
-                }
-                inputProps.addField({
-                  path: Array.isArray(name) ? [...name, String(collapseTitle)] : [name, String(collapseTitle)],
-                  name: value,
-                  type: addProps.type,
-                  items: addProps.items,
-                  nestedProperties: addProps.properties || {},
-                  required: addProps.required,
-                })
-              }
-            }}
+            value={additionalPropValue}
+            onChange={e => setAddditionalPropValue(e.target.value)}
+            suffix={
+              <Button size="small" type="text" onClick={additionalPropCreate}>
+                <PlusIcon />
+              </Button>
+            }
           />
         )}
-        {data}
       </CustomCollapse>
     </PossibleHiddenContainer>
   )

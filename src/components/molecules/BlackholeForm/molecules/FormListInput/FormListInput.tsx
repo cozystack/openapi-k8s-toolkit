@@ -1,7 +1,7 @@
 /* eslint-disable no-unneeded-ternary */
 /* eslint-disable no-nested-ternary */
 import React, { FC } from 'react'
-import { Typography, Tooltip, Select, Form } from 'antd'
+import { Flex, Typography, Tooltip, Select, Form, Button } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import _ from 'lodash'
 import { TFormName, TPersistedControls, TUrlParams } from 'localTypes/form'
@@ -10,14 +10,8 @@ import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { getStringByName } from 'utils/getStringByName'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { prepareTemplate } from 'utils/prepareTemplate'
-import { feedbackIcons } from 'components/atoms'
-import {
-  CursorPointerText,
-  PersistedCheckbox,
-  PossibleHiddenContainer,
-  ResetedFormItem,
-  CustomSizeTitle,
-} from '../../atoms'
+import { MinusIcon, feedbackIcons } from 'components/atoms'
+import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormListInputProps = {
@@ -34,6 +28,7 @@ type TFormListInputProps = {
   persistedControls: TPersistedControls
   customProps: TListInputCustomProps
   urlParams: TUrlParams
+  onRemoveByMinus?: () => void
 }
 
 export const FormListInput: FC<TFormListInputProps> = ({
@@ -50,6 +45,7 @@ export const FormListInput: FC<TFormListInputProps> = ({
   persistedControls,
   customProps,
   urlParams,
+  onRemoveByMinus,
 }) => {
   const designNewLayout = useDesignNewLayout()
 
@@ -136,15 +132,25 @@ export const FormListInput: FC<TFormListInputProps> = ({
 
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      <CustomSizeTitle $designNewLayout={designNewLayout}>
-        {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-        {isAdditionalProperties && (
-          <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-            Удалить
-          </CursorPointerText>
-        )}
-        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
-      </CustomSizeTitle>
+      <Flex justify="space-between">
+        <CustomSizeTitle $designNewLayout={designNewLayout}>
+          {description ? <Tooltip title={description}>{title}</Tooltip> : title}
+
+          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
+        </CustomSizeTitle>
+        <div>
+          {isAdditionalProperties && (
+            <Button size="small" type="text" onClick={() => removeField({ path: name })}>
+              <MinusIcon />
+            </Button>
+          )}
+          {onRemoveByMinus && (
+            <Button size="small" type="text" onClick={onRemoveByMinus}>
+              <MinusIcon />
+            </Button>
+          )}
+        </div>
+      </Flex>
       <ResetedFormItem
         key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
         name={arrName || fixedName}
