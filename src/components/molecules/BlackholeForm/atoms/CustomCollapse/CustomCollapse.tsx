@@ -10,6 +10,7 @@ type TCustomCollapseProps = PropsWithChildren<{
   title: string | ReactNode
   formName: TFormName
   expandedControls: TExpandedControls
+  persistedCheckbox: JSX.Element
   isAdditionalProperties?: boolean
   removeField: () => void
   onRemoveByMinus?: () => void
@@ -19,6 +20,7 @@ export const CustomCollapse: FC<TCustomCollapseProps> = ({
   title,
   formName,
   expandedControls,
+  persistedCheckbox,
   isAdditionalProperties,
   removeField,
   onRemoveByMinus,
@@ -48,7 +50,7 @@ export const CustomCollapse: FC<TCustomCollapseProps> = ({
           <div>{title}</div>
           {designNewLayout && <div>{isOpen ? <DownIcon /> : <UpIcon />}</div>}
         </Styled.TitleBar>
-        <div>
+        <Flex gap={4}>
           {isAdditionalProperties && (
             <Button size="small" type="text" onClick={() => removeField()}>
               <MinusIcon />
@@ -59,7 +61,8 @@ export const CustomCollapse: FC<TCustomCollapseProps> = ({
               <MinusIcon />
             </Button>
           )}
-        </div>
+          {persistedCheckbox}
+        </Flex>
       </Flex>
       <Styled.Content $isOpen={isOpen} $designNewLayout={designNewLayout}>
         {children}

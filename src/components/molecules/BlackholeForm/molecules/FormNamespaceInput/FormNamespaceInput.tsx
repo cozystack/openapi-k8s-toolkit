@@ -32,13 +32,13 @@ export const FormNamespaceInput: FC<TFormNamespaceInputProps> = ({
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           namespace<Typography.Text type="danger">*</Typography.Text>
         </CustomSizeTitle>
-        <div>
+        <Flex gap={4}>
           {isAdditionalProperties && (
             <Button size="small" type="text" onClick={() => removeField({ path: name })}>
               <MinusIcon />
             </Button>
           )}
-        </div>
+        </Flex>
       </Flex>
       <ResetedFormItem
         name={name}

@@ -49,9 +49,8 @@ export const FormArrayHeader: FC<TFormArrayHeaderProps> = ({
     <Flex justify="space-between">
       <CustomSizeTitle $designNewLayout={designNewLayout}>
         {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
       </CustomSizeTitle>
-      <div>
+      <Flex gap={4}>
         {isAdditionalProperties && (
           <Button size="small" type="text" onClick={() => removeField({ path: name })}>
             <MinusIcon />
@@ -62,7 +61,8 @@ export const FormArrayHeader: FC<TFormArrayHeaderProps> = ({
             <MinusIcon />
           </Button>
         )}
-      </div>
+        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
+      </Flex>
     </Flex>
   )
 }

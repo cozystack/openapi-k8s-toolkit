@@ -53,7 +53,7 @@ export const FormBooleanInput: FC<TFormBooleanInputProps> = ({
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           {description ? <Tooltip title={description}>{title}</Tooltip> : title}
         </CustomSizeTitle>
-        <div>
+        <Flex gap={4}>
           {isAdditionalProperties && (
             <Button size="small" type="text" onClick={() => removeField({ path: name })}>
               <MinusIcon />
@@ -64,7 +64,7 @@ export const FormBooleanInput: FC<TFormBooleanInputProps> = ({
               <MinusIcon />
             </Button>
           )}
-        </div>
+        </Flex>
       </Flex>
       <Styled.SwitchAndCrossContainer>
         <ResetedFormItem

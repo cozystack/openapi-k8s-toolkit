@@ -77,15 +77,15 @@ export const RangeInput: FC<TRangeInputProps> = ({
       <Flex justify="space-between">
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
         </CustomSizeTitle>
-        <div>
+        <Flex gap={4}>
           {onRemoveByMinus && (
             <Button size="small" type="text" onClick={onRemoveByMinus}>
               <MinusIcon />
             </Button>
           )}
-        </div>
+          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
+        </Flex>
       </Flex>
       <Row>
         <Col span={12}>

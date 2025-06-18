@@ -100,7 +100,6 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
         title={
           <CustomSizeTitle $designNewLayout={designNewLayout}>
             {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-            <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="obj" />
           </CustomSizeTitle>
         }
         formName={collapseFormName}
@@ -108,6 +107,9 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
         isAdditionalProperties={isAdditionalProperties}
         removeField={() => removeField({ path: name })}
         onRemoveByMinus={onRemoveByMinus}
+        persistedCheckbox={
+          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="obj" />
+        }
         key={Array.isArray(name) ? name.join('-') : name}
       >
         {data}

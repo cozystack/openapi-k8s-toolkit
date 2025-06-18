@@ -60,9 +60,8 @@ export const FormNumberInput: FC<TFormNumberItemProps> = ({
       <Flex justify="space-between">
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           {description ? <Tooltip title={description}>{title}</Tooltip> : title}
-          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
         </CustomSizeTitle>
-        <div>
+        <Flex gap={4}>
           {isAdditionalProperties && (
             <Button size="small" type="text" onClick={() => removeField({ path: name })}>
               <MinusIcon />
@@ -73,7 +72,8 @@ export const FormNumberInput: FC<TFormNumberItemProps> = ({
               <MinusIcon />
             </Button>
           )}
-        </div>
+          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="number" />
+        </Flex>
       </Flex>
       <ResetedFormItem
         key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
