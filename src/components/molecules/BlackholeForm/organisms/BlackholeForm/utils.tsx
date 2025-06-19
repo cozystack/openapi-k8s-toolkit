@@ -3,20 +3,14 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable no-use-before-define */
 /* eslint-disable consistent-return */
-import { Form, Input, Button, Typography, Alert, Tooltip } from 'antd'
-import { MinusCircleOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { Form, Button, Alert } from 'antd'
 import { OpenAPIV2 } from 'openapi-types'
 import { includesArray } from 'utils/nestedStringsArrayInclude'
 import { getStringByName } from 'utils/getStringByName'
 import { TListInputCustomProps, TRangeInputCustomProps } from 'localTypes/formExtensions'
 import { TFormName, TExpandedControls, TNamespaceData, TPersistedControls, TUrlParams } from 'localTypes/form'
-import {
-  CursorPointerText,
-  CustomCollapse,
-  // DebugNameViewer,
-  PersistedCheckbox,
-  PossibleHiddenContainer,
-} from '../../atoms'
+import { PlusIcon } from 'components/atoms'
+import { PossibleHiddenContainer } from '../../atoms'
 import {
   FormNamespaceInput,
   FormStringInput,
@@ -25,6 +19,8 @@ import {
   FormRangeInput,
   FormListInput,
   FormBooleanInput,
+  FormObjectFromSwagger,
+  FormArrayHeader,
 } from '../../molecules'
 import { Styled } from './styled'
 
@@ -41,6 +37,7 @@ export const getStringFormItemFromSwagger = ({
   isAdditionalProperties,
   removeField,
   persistedControls,
+  onRemoveByMinus,
 }: {
   name: TFormName
   arrKey?: number
@@ -54,6 +51,7 @@ export const getStringFormItemFromSwagger = ({
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
   persistedControls: TPersistedControls
+  onRemoveByMinus?: () => void
 }) => {
   if (Array.isArray(name) && name.length === 2 && name[0] === 'metadata' && name[1] === 'namespace' && namespaceData) {
     return (
@@ -80,6 +78,7 @@ export const getStringFormItemFromSwagger = ({
       isAdditionalProperties={isAdditionalProperties}
       removeField={removeField}
       persistedControls={persistedControls}
+      onRemoveByMinus={onRemoveByMinus}
     />
   )
 }
@@ -97,6 +96,7 @@ export const getEnumStringFormItemFromSwagger = ({
   removeField,
   options,
   persistedControls,
+  onRemoveByMinus,
 }: {
   name: TFormName
   arrKey?: number
@@ -110,6 +110,7 @@ export const getEnumStringFormItemFromSwagger = ({
   removeField: ({ path }: { path: TFormName }) => void
   options: string[]
   persistedControls: TPersistedControls
+  onRemoveByMinus?: () => void
 }) => {
   return (
     <FormEnumStringInput
@@ -125,6 +126,7 @@ export const getEnumStringFormItemFromSwagger = ({
       removeField={removeField}
       options={options}
       persistedControls={persistedControls}
+      onRemoveByMinus={onRemoveByMinus}
     />
   )
 }
@@ -142,6 +144,7 @@ export const getNumberFormItemFromSwagger = ({
   isAdditionalProperties,
   removeField,
   persistedControls,
+  onRemoveByMinus,
 }: {
   isNumber?: boolean
   name: TFormName
@@ -155,6 +158,7 @@ export const getNumberFormItemFromSwagger = ({
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
   persistedControls: TPersistedControls
+  onRemoveByMinus?: () => void
 }) => {
   return (
     <FormNumberInput
@@ -170,6 +174,7 @@ export const getNumberFormItemFromSwagger = ({
       isAdditionalProperties={isAdditionalProperties}
       removeField={removeField}
       persistedControls={persistedControls}
+      onRemoveByMinus={onRemoveByMinus}
     />
   )
 }
@@ -187,6 +192,7 @@ export const getRangeInputFormItemFromSwagger = ({
   persistedControls,
   customProps,
   urlParams,
+  onRemoveByMinus,
 }: {
   name: TFormName
   arrKey?: number
@@ -200,6 +206,7 @@ export const getRangeInputFormItemFromSwagger = ({
   persistedControls: TPersistedControls
   customProps: TRangeInputCustomProps
   urlParams: TUrlParams
+  onRemoveByMinus?: () => void
 }) => {
   return (
     <FormRangeInput
@@ -215,6 +222,7 @@ export const getRangeInputFormItemFromSwagger = ({
       customProps={customProps}
       persistedControls={persistedControls}
       urlParams={urlParams}
+      onRemoveByMinus={onRemoveByMinus}
     />
   )
 }
@@ -233,6 +241,7 @@ export const getListInputFormItemFromSwagger = ({
   persistedControls,
   customProps,
   urlParams,
+  onRemoveByMinus,
 }: {
   name: TFormName
   arrKey?: number
@@ -247,6 +256,7 @@ export const getListInputFormItemFromSwagger = ({
   persistedControls: TPersistedControls
   customProps: TListInputCustomProps
   urlParams: TUrlParams
+  onRemoveByMinus?: () => void
 }) => {
   return (
     <FormListInput
@@ -263,6 +273,7 @@ export const getListInputFormItemFromSwagger = ({
       persistedControls={persistedControls}
       customProps={customProps}
       urlParams={urlParams}
+      onRemoveByMinus={onRemoveByMinus}
     />
   )
 }
@@ -276,6 +287,7 @@ export const getBooleanFormItemFromSwagger = ({
   makeValueUndefined,
   isAdditionalProperties,
   removeField,
+  onRemoveByMinus,
 }: {
   name: TFormName
   arrKey?: number
@@ -285,6 +297,7 @@ export const getBooleanFormItemFromSwagger = ({
   makeValueUndefined?: (path: TFormName) => void
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
+  onRemoveByMinus?: () => void
 }) => {
   return (
     <FormBooleanInput
@@ -296,6 +309,7 @@ export const getBooleanFormItemFromSwagger = ({
       makeValueUndefined={makeValueUndefined}
       isAdditionalProperties={isAdditionalProperties}
       removeField={removeField}
+      onRemoveByMinus={onRemoveByMinus}
     />
   )
 }
@@ -319,6 +333,7 @@ export const getArrayFormItemFromSwagger = ({
   expandedControls,
   persistedControls,
   urlParams,
+  onRemoveByMinus,
 }: {
   schema: OpenAPIV2.SchemaObject
   name: TFormName
@@ -352,27 +367,22 @@ export const getArrayFormItemFromSwagger = ({
   expandedControls: TExpandedControls
   persistedControls: TPersistedControls
   urlParams: TUrlParams
+  onRemoveByMinus?: () => void
 }) => {
   // typescript as below are needed because of dereference procedure
   if (schema.type === 'array') {
     return (
       <PossibleHiddenContainer $isHidden={isHidden}>
-        <Typography.Text>
-          {getStringByName(name)}
-          {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-          {description && (
-            <Tooltip title={description}>
-              {' '}
-              <QuestionCircleOutlined />
-            </Tooltip>
-          )}
-          {isAdditionalProperties && (
-            <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-              Удалить
-            </CursorPointerText>
-          )}
-          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
-        </Typography.Text>
+        <FormArrayHeader
+          name={name}
+          persistName={persistName}
+          required={required}
+          description={description}
+          isAdditionalProperties={isAdditionalProperties}
+          removeField={removeField}
+          persistedControls={persistedControls}
+          onRemoveByMinus={onRemoveByMinus}
+        />
         <Styled.ResetedFormList
           key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
           name={arrName || name}
@@ -402,169 +412,171 @@ export const getArrayFormItemFromSwagger = ({
                   | (OpenAPIV2.ItemsObject & { properties?: OpenAPIV2.SchemaObject; required?: string[] })
                   | undefined
                 return (
-                  <Styled.ContainerWithRemoveButton key={field.key}>
-                    <div>
-                      {fieldType !== 'object' && (
-                        <>
-                          {fieldType === 'string' &&
-                            getStringFormItemFromSwagger({
-                              name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
-                              arrKey: field.key,
-                              // arrName: [field.name, getStringByName(name)],
-                              arrName: [field.name],
-                              persistName: persistName
-                                ? Array.isArray(persistName)
-                                  ? [...persistName, field.name]
-                                  : [persistName, field.name]
-                                : Array.isArray(name)
-                                ? [...name, field.name]
-                                : [name, field.name],
-                              description,
-                              removeField,
-                              persistedControls,
-                            })}
-                          {(fieldType === 'number' || fieldType === 'integer') &&
-                            getNumberFormItemFromSwagger({
-                              isNumber: fieldType === 'number',
-                              name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
-                              arrKey: field.key,
-                              // arrName: [field.name, getStringByName(name)],
-                              arrName: [field.name],
-                              persistName: persistName
-                                ? Array.isArray(persistName)
-                                  ? [...persistName, field.name]
-                                  : [persistName, field.name]
-                                : Array.isArray(name)
-                                ? [...name, field.name]
-                                : [name, field.name],
-                              description,
-                              removeField,
-                              persistedControls,
-                            })}
-                          {(fieldType === 'rangeInputCpu' || fieldType === 'rangeInputMemory') &&
-                            getRangeInputFormItemFromSwagger({
-                              name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
-                              arrKey: field.key,
-                              // arrName: [field.name, getStringByName(name)],
-                              arrName: [field.name],
-                              persistName: persistName
-                                ? Array.isArray(persistName)
-                                  ? [...persistName, field.name]
-                                  : [persistName, field.name]
-                                : Array.isArray(name)
-                                ? [...name, field.name]
-                                : [name, field.name],
-                              description,
-                              isEdit,
-                              persistedControls,
-                              customProps: (schema as unknown as { items: { customProps: TRangeInputCustomProps } })
-                                .items.customProps,
-                              urlParams,
-                            })}
-                          {fieldType === 'listInput' &&
-                            getListInputFormItemFromSwagger({
-                              name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
-                              arrKey: field.key,
-                              // arrName: [field.name, getStringByName(name)],
-                              arrName: [field.name],
-                              persistName: persistName
-                                ? Array.isArray(persistName)
-                                  ? [...persistName, field.name]
-                                  : [persistName, field.name]
-                                : Array.isArray(name)
-                                ? [...name, field.name]
-                                : [name, field.name],
-                              description,
-                              removeField,
-                              persistedControls,
-                              customProps: (schema as unknown as { items: { customProps: TListInputCustomProps } })
-                                .items.customProps,
-                              urlParams,
-                            })}
-                          {fieldType === 'boolean' &&
-                            getBooleanFormItemFromSwagger({
-                              name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
-                              arrKey: field.key,
-                              // arrName: [field.name, getStringByName(name)],
-                              arrName: [field.name],
-                              description,
-                              makeValueUndefined,
-                              removeField,
-                            })}
-                          {fieldType === 'array' &&
-                            getArrayFormItemFromSwagger({
-                              schema: schema.items as OpenAPIV2.SchemaObject,
-                              name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
-                              arrKey: field.key,
-                              arrName: [field.name],
-                              expandName: expandName
-                                ? Array.isArray(expandName)
-                                  ? [...expandName, field.name]
-                                  : [expandName, field.name]
-                                : Array.isArray(name)
-                                ? [...name, field.name]
-                                : [name, field.name],
-                              persistName: persistName
-                                ? Array.isArray(persistName)
-                                  ? [...persistName, field.name]
-                                  : [persistName, field.name]
-                                : Array.isArray(name)
-                                ? [...name, field.name]
-                                : [name, field.name],
-                              description,
-                              makeValueUndefined,
-                              addField,
-                              removeField,
-                              isEdit,
-                              expandedControls,
-                              persistedControls,
-                              urlParams,
-                            })}
-                        </>
-                      )}
-                      {fieldType === 'object' &&
-                        entry?.properties &&
-                        getObjectFormItemFromSwagger({
-                          properties: entry.properties,
-                          name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
-                          arrKey: field.key,
-                          arrName: [field.name],
-                          expandName: expandName
-                            ? Array.isArray(expandName)
-                              ? [...expandName, field.name]
-                              : [expandName, field.name]
-                            : Array.isArray(name)
-                            ? [...name, field.name]
-                            : [name, field.name],
-                          persistName: persistName
-                            ? Array.isArray(persistName)
-                              ? [...persistName, field.name]
-                              : [persistName, field.name]
-                            : Array.isArray(name)
-                            ? [...name, field.name]
-                            : [name, field.name],
-                          required: entry.required,
-                          forceNonRequired,
-                          description,
-                          makeValueUndefined,
-                          addField,
-                          isAdditionalProperties,
-                          removeField,
-                          isEdit,
-                          expandedControls,
-                          persistedControls,
-                          urlParams,
-                        })}
-                    </div>
-                    <Styled.MinusContainer>
-                      <MinusCircleOutlined size={14} onClick={() => remove(field.name)} />
-                    </Styled.MinusContainer>
-                  </Styled.ContainerWithRemoveButton>
+                  <div key={field.key}>
+                    {fieldType !== 'object' && (
+                      <>
+                        {fieldType === 'string' &&
+                          getStringFormItemFromSwagger({
+                            name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
+                            arrKey: field.key,
+                            // arrName: [field.name, getStringByName(name)],
+                            arrName: [field.name],
+                            persistName: persistName
+                              ? Array.isArray(persistName)
+                                ? [...persistName, field.name]
+                                : [persistName, field.name]
+                              : Array.isArray(name)
+                              ? [...name, field.name]
+                              : [name, field.name],
+                            description,
+                            removeField,
+                            persistedControls,
+                            onRemoveByMinus: () => remove(field.name),
+                          })}
+                        {(fieldType === 'number' || fieldType === 'integer') &&
+                          getNumberFormItemFromSwagger({
+                            isNumber: fieldType === 'number',
+                            name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
+                            arrKey: field.key,
+                            // arrName: [field.name, getStringByName(name)],
+                            arrName: [field.name],
+                            persistName: persistName
+                              ? Array.isArray(persistName)
+                                ? [...persistName, field.name]
+                                : [persistName, field.name]
+                              : Array.isArray(name)
+                              ? [...name, field.name]
+                              : [name, field.name],
+                            description,
+                            removeField,
+                            persistedControls,
+                            onRemoveByMinus: () => remove(field.name),
+                          })}
+                        {(fieldType === 'rangeInputCpu' || fieldType === 'rangeInputMemory') &&
+                          getRangeInputFormItemFromSwagger({
+                            name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
+                            arrKey: field.key,
+                            // arrName: [field.name, getStringByName(name)],
+                            arrName: [field.name],
+                            persistName: persistName
+                              ? Array.isArray(persistName)
+                                ? [...persistName, field.name]
+                                : [persistName, field.name]
+                              : Array.isArray(name)
+                              ? [...name, field.name]
+                              : [name, field.name],
+                            description,
+                            isEdit,
+                            persistedControls,
+                            customProps: (schema as unknown as { items: { customProps: TRangeInputCustomProps } }).items
+                              .customProps,
+                            urlParams,
+                            onRemoveByMinus: () => remove(field.name),
+                          })}
+                        {fieldType === 'listInput' &&
+                          getListInputFormItemFromSwagger({
+                            name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
+                            arrKey: field.key,
+                            // arrName: [field.name, getStringByName(name)],
+                            arrName: [field.name],
+                            persistName: persistName
+                              ? Array.isArray(persistName)
+                                ? [...persistName, field.name]
+                                : [persistName, field.name]
+                              : Array.isArray(name)
+                              ? [...name, field.name]
+                              : [name, field.name],
+                            description,
+                            removeField,
+                            persistedControls,
+                            customProps: (schema as unknown as { items: { customProps: TListInputCustomProps } }).items
+                              .customProps,
+                            urlParams,
+                            onRemoveByMinus: () => remove(field.name),
+                          })}
+                        {fieldType === 'boolean' &&
+                          getBooleanFormItemFromSwagger({
+                            name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
+                            arrKey: field.key,
+                            // arrName: [field.name, getStringByName(name)],
+                            arrName: [field.name],
+                            description,
+                            makeValueUndefined,
+                            removeField,
+                            onRemoveByMinus: () => remove(field.name),
+                          })}
+                        {fieldType === 'array' &&
+                          getArrayFormItemFromSwagger({
+                            schema: schema.items as OpenAPIV2.SchemaObject,
+                            name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
+                            arrKey: field.key,
+                            arrName: [field.name],
+                            expandName: expandName
+                              ? Array.isArray(expandName)
+                                ? [...expandName, field.name]
+                                : [expandName, field.name]
+                              : Array.isArray(name)
+                              ? [...name, field.name]
+                              : [name, field.name],
+                            persistName: persistName
+                              ? Array.isArray(persistName)
+                                ? [...persistName, field.name]
+                                : [persistName, field.name]
+                              : Array.isArray(name)
+                              ? [...name, field.name]
+                              : [name, field.name],
+                            description,
+                            makeValueUndefined,
+                            addField,
+                            removeField,
+                            isEdit,
+                            expandedControls,
+                            persistedControls,
+                            urlParams,
+                            onRemoveByMinus: () => remove(field.name),
+                          })}
+                      </>
+                    )}
+                    {fieldType === 'object' &&
+                      entry?.properties &&
+                      getObjectFormItemFromSwagger({
+                        properties: entry.properties,
+                        name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
+                        arrKey: field.key,
+                        arrName: [field.name],
+                        expandName: expandName
+                          ? Array.isArray(expandName)
+                            ? [...expandName, field.name]
+                            : [expandName, field.name]
+                          : Array.isArray(name)
+                          ? [...name, field.name]
+                          : [name, field.name],
+                        persistName: persistName
+                          ? Array.isArray(persistName)
+                            ? [...persistName, field.name]
+                            : [persistName, field.name]
+                          : Array.isArray(name)
+                          ? [...name, field.name]
+                          : [name, field.name],
+                        required: entry.required,
+                        forceNonRequired,
+                        description,
+                        makeValueUndefined,
+                        addField,
+                        isAdditionalProperties,
+                        removeField,
+                        isEdit,
+                        expandedControls,
+                        persistedControls,
+                        urlParams,
+                        onRemoveByMinus: () => remove(field.name),
+                      })}
+                  </div>
                 )
               })}
               <Form.Item>
-                <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>
-                  Add
+                <Button type="text" size="small" onClick={() => add()}>
+                  <PlusIcon />
                 </Button>
                 <Form.ErrorList errors={errors} />
               </Form.Item>
@@ -636,13 +648,6 @@ export const getObjectFormItemsDraft = ({
 }) => {
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      {/* <DebugNameViewer
-        name={name}
-        arrKey={arrKey}
-        arrName={arrName}
-        expandName={expandName}
-        persistName={persistName}
-      /> */}
       {Object.keys(properties).map((el: keyof typeof properties) => {
         if (properties[el].type === 'string' && properties[el].enum) {
           return getEnumStringFormItemFromSwagger({
@@ -830,51 +835,23 @@ export const getObjectFormItemsDraft = ({
               })
             : undefined
           return (
-            <PossibleHiddenContainer
-              $isHidden={includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)])}
+            <FormObjectFromSwagger
+              name={name}
+              persistName={persistName}
+              isHidden={includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)])}
+              description={description}
+              removeField={removeField}
+              expandedControls={expandedControls}
+              persistedControls={persistedControls}
+              collapseTitle={el}
+              collapseFormName={Array.isArray(name) ? [...name, String(el)] : [name, String(el)]}
+              data={data}
+              inputProps={{
+                addField,
+                additionalProperties: properties[el]?.additionalProperties,
+              }}
               key={Array.isArray(name) ? [...name, String(el)].join('-') : [name, String(el)].join('-')}
-            >
-              <CustomCollapse
-                title={
-                  <Typography.Text>
-                    {el}
-                    {description && (
-                      <Tooltip title={description}>
-                        {' '}
-                        <QuestionCircleOutlined />
-                      </Tooltip>
-                    )}
-                  </Typography.Text>
-                }
-                formName={Array.isArray(name) ? [...name, String(el)] : [name, String(el)]}
-                expandedControls={expandedControls}
-              >
-                <Input.Search
-                  placeholder="Введите имя поля"
-                  allowClear
-                  enterButton="Добавить"
-                  onSearch={value => {
-                    if (value.length > 0) {
-                      const addProps = properties[el]?.additionalProperties as {
-                        type: string
-                        items?: { type: string }
-                        properties?: OpenAPIV2.SchemaObject['properties']
-                        required?: string
-                      }
-                      addField({
-                        path: Array.isArray(name) ? [...name, String(el)] : [name, String(el)],
-                        name: value,
-                        type: addProps.type,
-                        items: addProps.items,
-                        nestedProperties: addProps.properties || {},
-                        required: addProps.required,
-                      })
-                    }
-                  }}
-                />
-                {data}
-              </CustomCollapse>
-            </PossibleHiddenContainer>
+            />
           )
         }
         if (properties[el].type === 'object' && properties[el].properties) {
@@ -943,6 +920,7 @@ export const getObjectFormItemFromSwagger = ({
   expandedControls,
   persistedControls,
   urlParams,
+  onRemoveByMinus,
 }: {
   properties: {
     [name: string]: OpenAPIV2.SchemaObject
@@ -981,6 +959,7 @@ export const getObjectFormItemFromSwagger = ({
   expandedControls: TExpandedControls
   persistedControls: TPersistedControls
   urlParams: TUrlParams
+  onRemoveByMinus?: () => void
 }) => {
   const data = getObjectFormItemsDraft({
     properties,
@@ -1004,39 +983,20 @@ export const getObjectFormItemFromSwagger = ({
     urlParams,
   })
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
-      <CustomCollapse
-        title={
-          <Typography.Text>
-            {getStringByName(name)}
-            {/* <DebugNameViewer
-              name={name}
-              arrKey={arrKey}
-              arrName={arrName}
-              expandName={expandName}
-              persistName={persistName}
-            /> */}
-            {selfRequired && <Typography.Text type="danger">*</Typography.Text>}
-            {description && (
-              <Tooltip title={description}>
-                {' '}
-                <QuestionCircleOutlined />
-              </Tooltip>
-            )}
-            {isAdditionalProperties && (
-              <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-                Удалить
-              </CursorPointerText>
-            )}
-            <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="obj" />
-          </Typography.Text>
-        }
-        formName={expandName || name}
-        expandedControls={expandedControls}
-        key={Array.isArray(name) ? name.join('-') : name}
-      >
-        <div style={{ marginLeft: '20px' }}>{data}</div>
-      </CustomCollapse>
-    </PossibleHiddenContainer>
+    <FormObjectFromSwagger
+      name={name}
+      persistName={persistName}
+      selfRequired={selfRequired}
+      isHidden={isHidden}
+      description={description}
+      isAdditionalProperties={isAdditionalProperties}
+      removeField={removeField}
+      expandedControls={expandedControls}
+      persistedControls={persistedControls}
+      collapseTitle={name}
+      collapseFormName={expandName || name}
+      data={data}
+      onRemoveByMinus={onRemoveByMinus}
+    />
   )
 }

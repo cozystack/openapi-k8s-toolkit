@@ -1,7 +1,8 @@
 import React, { FC } from 'react'
-import { Checkbox } from 'antd'
+import { Button } from 'antd'
 import { TFormName, TPersistedControls } from 'localTypes/form'
-import { Styled } from './styled'
+import { LockedIcon, UnlockedIcon } from 'components/atoms'
+import { PossibleHiddenContainer } from '../PossibleHiddenContainer'
 
 type TPersistedCheckboxProps = {
   formName: TFormName
@@ -9,7 +10,6 @@ type TPersistedCheckboxProps = {
   type?: 'str' | 'number' | 'arr' | 'obj'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const PersistedCheckbox: FC<TPersistedCheckboxProps> = ({ formName, persistedControls, type }) => {
   const isChecked = persistedControls.persistedKeys.some(arr => JSON.stringify(arr) === JSON.stringify(formName))
 
@@ -22,16 +22,10 @@ export const PersistedCheckbox: FC<TPersistedCheckboxProps> = ({ formName, persi
   }
 
   return (
-    <Styled.PossibleHiddenContainerWidthPadding $isHidden={persistedControls.isPersistedKeysShown === false}>
-      <Checkbox
-        // onChange={toggleCheckbox}
-        onClick={e => {
-          e.preventDefault()
-          e.stopPropagation()
-          toggleCheckbox()
-        }}
-        checked={isChecked}
-      />
-    </Styled.PossibleHiddenContainerWidthPadding>
+    <PossibleHiddenContainer $isHidden={persistedControls.isPersistedKeysShown === false}>
+      <Button size="small" type="text" onClick={toggleCheckbox}>
+        {isChecked ? <LockedIcon /> : <UnlockedIcon />}
+      </Button>
+    </PossibleHiddenContainer>
   )
 }

@@ -22,6 +22,7 @@ type TYamlEditorSingletonProps = {
   apiGroupApiVersion: string
   typeName: string
   backlink?: string | null
+  designNewLayoutHeight?: number
 }
 
 export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
@@ -34,6 +35,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
   apiGroupApiVersion,
   typeName,
   backlink,
+  designNewLayoutHeight,
 }) => {
   const navigate = useNavigate()
 
@@ -87,11 +89,11 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
   return (
     <>
       {error && <Alert message={`An error has occurred: ${error?.response?.data?.message} `} type="error" />}
-      <Styled.BorderRadiusContainer>
+      <Styled.BorderRadiusContainer $designNewLayoutHeight={designNewLayoutHeight}>
         <Editor
           defaultLanguage="yaml"
           width="100%"
-          height="75vh"
+          height={designNewLayoutHeight || '75vh'}
           value={yamlData}
           onChange={value => {
             setYamlData(value || '')

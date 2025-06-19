@@ -1,7 +1,8 @@
 import React, { FC, ReactNode, PropsWithChildren } from 'react'
-import { theme } from 'antd'
+import { Flex, Button, theme } from 'antd'
 import { CaretDownOutlined, CaretRightOutlined } from '@ant-design/icons'
 import { TFormName, TExpandedControls } from 'localTypes/form'
+import { DownIcon, UpIcon, MinusIcon } from 'components/atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 import { Styled } from './styled'
 
@@ -9,9 +10,22 @@ type TCustomCollapseProps = PropsWithChildren<{
   title: string | ReactNode
   formName: TFormName
   expandedControls: TExpandedControls
+  persistedCheckbox?: JSX.Element
+  isAdditionalProperties?: boolean
+  removeField: () => void
+  onRemoveByMinus?: () => void
 }>
 
-export const CustomCollapse: FC<TCustomCollapseProps> = ({ title, formName, expandedControls, children }) => {
+export const CustomCollapse: FC<TCustomCollapseProps> = ({
+  title,
+  formName,
+  expandedControls,
+  persistedCheckbox,
+  isAdditionalProperties,
+  removeField,
+  onRemoveByMinus,
+  children,
+}) => {
   const { token } = theme.useToken()
   const isOpen = expandedControls.expandedKeys.some(arr => JSON.stringify(arr) === JSON.stringify(formName))
   const designNewLayout = useDesignNewLayout()
@@ -30,11 +44,29 @@ export const CustomCollapse: FC<TCustomCollapseProps> = ({ title, formName, expa
       $borderColor={token.colorBorder}
       $bgColor={token.colorBgContainer}
     >
-      <Styled.TitleBar onClick={() => toggleCollapse()}>
-        <div>{isOpen ? <CaretDownOutlined size={14} /> : <CaretRightOutlined size={14} />}</div>
-        <div>{title}</div>
-      </Styled.TitleBar>
-      <Styled.Content $isOpen={isOpen}>{children}</Styled.Content>
+      <Flex justify="space-between">
+        <Styled.TitleBar onClick={() => toggleCollapse()}>
+          {!designNewLayout && <div>{isOpen ? <CaretDownOutlined size={14} /> : <CaretRightOutlined size={14} />}</div>}
+          <div>{title}</div>
+          {designNewLayout && <div>{isOpen ? <DownIcon /> : <UpIcon />}</div>}
+        </Styled.TitleBar>
+        <Flex gap={4}>
+          {isAdditionalProperties && (
+            <Button size="small" type="text" onClick={() => removeField()}>
+              <MinusIcon />
+            </Button>
+          )}
+          {onRemoveByMinus && (
+            <Button size="small" type="text" onClick={onRemoveByMinus}>
+              <MinusIcon />
+            </Button>
+          )}
+          {persistedCheckbox}
+        </Flex>
+      </Flex>
+      <Styled.Content $isOpen={isOpen} $designNewLayout={designNewLayout}>
+        {children}
+      </Styled.Content>
     </Styled.Container>
   )
 }

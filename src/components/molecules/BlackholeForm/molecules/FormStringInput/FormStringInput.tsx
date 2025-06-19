@@ -1,10 +1,12 @@
 /* eslint-disable no-nested-ternary */
 import React, { FC } from 'react'
-import { Input, Typography, Tooltip } from 'antd'
+import { Flex, Input, Typography, Tooltip, Button } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TPersistedControls } from 'localTypes/form'
-import { CursorPointerText, PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem } from '../../atoms'
+import { MinusIcon, feedbackIcons } from 'components/atoms'
+import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
+import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormStringInputProps = {
   name: TFormName
@@ -18,6 +20,7 @@ type TFormStringInputProps = {
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
   persistedControls: TPersistedControls
+  onRemoveByMinus?: () => void
 }
 
 export const FormStringInput: FC<TFormStringInputProps> = ({
@@ -32,34 +35,51 @@ export const FormStringInput: FC<TFormStringInputProps> = ({
   isAdditionalProperties,
   removeField,
   persistedControls,
+  onRemoveByMinus,
 }) => {
+  const designNewLayout = useDesignNewLayout()
+
   const fixedName = name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name
+
+  const title = (
+    <>
+      {getStringByName(name)}
+      {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
+      {!designNewLayout && description && (
+        <Tooltip title={description}>
+          {' '}
+          <QuestionCircleOutlined />
+        </Tooltip>
+      )}
+    </>
+  )
 
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      <Typography.Text>
-        {getStringByName(name)}
-        {/* <DebugNameViewer name={name} arrKey={arrKey} arrName={arrName} persistName={persistName} /> */}
-        {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-        {description && (
-          <Tooltip title={description}>
-            {' '}
-            <QuestionCircleOutlined />
-          </Tooltip>
-        )}
-        {isAdditionalProperties && (
-          <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-            Удалить
-          </CursorPointerText>
-        )}
-        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="str" />
-      </Typography.Text>
+      <Flex justify="space-between">
+        <CustomSizeTitle $designNewLayout={designNewLayout}>
+          {description ? <Tooltip title={description}>{title}</Tooltip> : title}
+        </CustomSizeTitle>
+        <Flex gap={4}>
+          {isAdditionalProperties && (
+            <Button size="small" type="text" onClick={() => removeField({ path: name })}>
+              <MinusIcon />
+            </Button>
+          )}
+          {onRemoveByMinus && (
+            <Button size="small" type="text" onClick={onRemoveByMinus}>
+              <MinusIcon />
+            </Button>
+          )}
+          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="str" />
+        </Flex>
+      </Flex>
       <ResetedFormItem
         key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
         name={arrName || fixedName}
         rules={[{ required: forceNonRequired === false && required?.includes(getStringByName(name)) }]}
         validateTrigger="onBlur"
-        hasFeedback
+        hasFeedback={designNewLayout ? { icons: feedbackIcons } : true}
       >
         <Input placeholder={getStringByName(name)} />
       </ResetedFormItem>

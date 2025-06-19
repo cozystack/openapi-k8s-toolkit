@@ -1,7 +1,7 @@
 /* eslint-disable no-unneeded-ternary */
 /* eslint-disable no-nested-ternary */
 import React, { FC } from 'react'
-import { Typography, Tooltip, Select, Form } from 'antd'
+import { Flex, Typography, Tooltip, Select, Form, Button } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 import _ from 'lodash'
 import { TFormName, TPersistedControls, TUrlParams } from 'localTypes/form'
@@ -10,7 +10,9 @@ import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { getStringByName } from 'utils/getStringByName'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { prepareTemplate } from 'utils/prepareTemplate'
-import { CursorPointerText, PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem } from '../../atoms'
+import { MinusIcon, feedbackIcons } from 'components/atoms'
+import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
+import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormListInputProps = {
   name: TFormName
@@ -26,6 +28,7 @@ type TFormListInputProps = {
   persistedControls: TPersistedControls
   customProps: TListInputCustomProps
   urlParams: TUrlParams
+  onRemoveByMinus?: () => void
 }
 
 export const FormListInput: FC<TFormListInputProps> = ({
@@ -42,7 +45,10 @@ export const FormListInput: FC<TFormListInputProps> = ({
   persistedControls,
   customProps,
   urlParams,
+  onRemoveByMinus,
 }) => {
+  const designNewLayout = useDesignNewLayout()
+
   const { clusterName, namespace, syntheticProject, entryName } = urlParams
   const form = Form.useFormInstance()
   const fieldValue = Form.useWatch(name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name, form)
@@ -111,30 +117,45 @@ export const FormListInput: FC<TFormListInputProps> = ({
 
   const fixedName = name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name
 
+  const title = (
+    <>
+      {getStringByName(name)}
+      {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
+      {!designNewLayout && description && (
+        <Tooltip title={description}>
+          {' '}
+          <QuestionCircleOutlined />
+        </Tooltip>
+      )}
+    </>
+  )
+
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>
-      <Typography.Text>
-        {getStringByName(name)}
-        {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-        {description && (
-          <Tooltip title={description}>
-            {' '}
-            <QuestionCircleOutlined />
-          </Tooltip>
-        )}
-        {isAdditionalProperties && (
-          <CursorPointerText type="secondary" onClick={() => removeField({ path: name })}>
-            Удалить
-          </CursorPointerText>
-        )}
-        <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
-      </Typography.Text>
+      <Flex justify="space-between">
+        <CustomSizeTitle $designNewLayout={designNewLayout}>
+          {description ? <Tooltip title={description}>{title}</Tooltip> : title}
+        </CustomSizeTitle>
+        <Flex gap={4}>
+          {isAdditionalProperties && (
+            <Button size="small" type="text" onClick={() => removeField({ path: name })}>
+              <MinusIcon />
+            </Button>
+          )}
+          {onRemoveByMinus && (
+            <Button size="small" type="text" onClick={onRemoveByMinus}>
+              <MinusIcon />
+            </Button>
+          )}
+          <PersistedCheckbox formName={persistName || name} persistedControls={persistedControls} type="arr" />
+        </Flex>
+      </Flex>
       <ResetedFormItem
         key={arrKey !== undefined ? arrKey : Array.isArray(name) ? name.slice(-1)[0] : name}
         name={arrName || fixedName}
         rules={[{ required: forceNonRequired === false && required?.includes(getStringByName(name)) }]}
         validateTrigger="onBlur"
-        hasFeedback
+        hasFeedback={designNewLayout ? { icons: feedbackIcons } : true}
       >
         <Select
           mode={customProps.mode}
