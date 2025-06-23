@@ -9,9 +9,10 @@ export type TManageableSidebarProps = {
   data: TSidebarResponse
   replaceValues: Record<string, string | undefined>
   pathname: string
+  noMarginTop?: boolean
 }
 
-export const ManageableSidebar: FC<TManageableSidebarProps> = ({ data, replaceValues, pathname }) => {
+export const ManageableSidebar: FC<TManageableSidebarProps> = ({ data, replaceValues, pathname, noMarginTop }) => {
   const parsedData = data?.items.map(({ spec }) => spec)
 
   if (!parsedData) {
@@ -32,6 +33,7 @@ export const ManageableSidebar: FC<TManageableSidebarProps> = ({ data, replaceVa
         onDeselect={() => {}}
         mode="inline"
         items={result.menuItems}
+        $noMarginTop={noMarginTop}
       />
     )
   }
@@ -46,6 +48,7 @@ export type TManageableSidebarWithDataProviderProps = {
   replaceValues: Record<string, string | undefined>
   pathname: string
   hidden?: boolean
+  noMarginTop?: boolean
 }
 
 export const ManageableSidebarWithDataProvider: FC<TManageableSidebarWithDataProviderProps> = ({
@@ -55,6 +58,7 @@ export const ManageableSidebarWithDataProvider: FC<TManageableSidebarWithDataPro
   replaceValues,
   pathname,
   hidden,
+  noMarginTop,
 }) => {
   const {
     data: rawData,
@@ -83,5 +87,7 @@ export const ManageableSidebarWithDataProvider: FC<TManageableSidebarWithDataPro
     return null
   }
 
-  return <ManageableSidebar data={rawData} replaceValues={replaceValues} pathname={pathname} />
+  return (
+    <ManageableSidebar data={rawData} replaceValues={replaceValues} pathname={pathname} noMarginTop={noMarginTop} />
+  )
 }

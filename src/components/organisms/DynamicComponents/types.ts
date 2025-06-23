@@ -1,6 +1,7 @@
 import { CardProps, FlexProps, RowProps, ColProps, ButtonProps, TabsProps } from 'antd'
 import type { TextProps } from 'antd/es/typography/Text'
 import { TContentCardProps, TSpacerProps } from 'components/atoms'
+import { TManageableSidebarWithDataProviderProps } from 'components/molecules'
 
 export type TDynamicComponentsAppTypeMap = {
   DefaultDiv: { id: number } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
@@ -49,4 +50,5 @@ export type TDynamicComponentsAppTypeMap = {
     successText: string
     errorText: string
   } & Omit<TextProps, 'id' | 'children'>
+  SidebarProvider: { id: number } & Omit<TManageableSidebarWithDataProviderProps, 'replaceValues'>
 }

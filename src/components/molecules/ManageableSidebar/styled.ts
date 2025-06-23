@@ -1,8 +1,12 @@
 import styled from 'styled-components'
 import { Menu } from 'antd'
 
-const CustomMenu = styled(Menu)`
-  margin-top: 16px;
+type TCustomMenuProps = {
+  $noMarginTop?: boolean
+}
+
+const CustomMenu = styled(Menu)<TCustomMenuProps>`
+  margin-top: ${({ $noMarginTop }) => ($noMarginTop ? '0' : '16px')};
   font-size: 14px;
   line-height: 24px;
   border: 0;

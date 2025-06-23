@@ -16,6 +16,7 @@ import {
   ContentCard,
   Spacer,
   StatusText,
+  SidebarProvider,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -36,4 +37,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   ContentCard,
   Spacer,
   StatusText,
+  SidebarProvider,
 }
