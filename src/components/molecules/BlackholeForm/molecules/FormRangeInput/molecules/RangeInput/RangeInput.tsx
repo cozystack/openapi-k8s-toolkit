@@ -3,7 +3,6 @@
 import React, { FC, useState, useEffect } from 'react'
 import { Flex, InputNumber, Typography, Tooltip, Row, Col, Slider, Button } from 'antd'
 import { SliderBaseProps } from 'antd/es/slider'
-import { QuestionCircleOutlined } from '@ant-design/icons'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import { getStringByName } from 'utils/getStringByName'
 import { MinusIcon, feedbackIcons } from 'components/atoms'
@@ -63,12 +62,6 @@ export const RangeInput: FC<TRangeInputProps> = ({
     <>
       {getStringByName(name)}
       {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-      {!designNewLayout && description && (
-        <Tooltip title={description}>
-          {' '}
-          <QuestionCircleOutlined />
-        </Tooltip>
-      )}
     </>
   )
 

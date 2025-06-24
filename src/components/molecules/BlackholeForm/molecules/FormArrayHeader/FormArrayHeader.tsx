@@ -2,7 +2,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { FC } from 'react'
 import { Flex, Typography, Tooltip, Button } from 'antd'
-import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import { MinusIcon } from 'components/atoms'
@@ -36,12 +35,6 @@ export const FormArrayHeader: FC<TFormArrayHeaderProps> = ({
     <>
       {getStringByName(name)}
       {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-      {!designNewLayout && description && (
-        <Tooltip title={description}>
-          {' '}
-          <QuestionCircleOutlined />
-        </Tooltip>
-      )}
     </>
   )
 
