@@ -2,14 +2,13 @@
 /* eslint-disable no-console */
 /* eslint-disable no-nested-ternary */
 import React, { FC, useEffect, useState } from 'react'
-import { Alert, Button } from 'antd'
+import { theme as antdtheme, Flex, Alert, Button } from 'antd'
 import Editor from '@monaco-editor/react'
 import * as yaml from 'yaml'
 import { useNavigate } from 'react-router-dom'
 import { TRequestError } from 'localTypes/api'
 import { TJSON } from 'localTypes/JSON'
 import { createNewEntry, updateEntry } from 'api/forms'
-import { Spacer } from 'components/atoms'
 import { Styled } from './styled'
 
 type TYamlEditorSingletonProps = {
@@ -22,6 +21,7 @@ type TYamlEditorSingletonProps = {
   apiGroupApiVersion: string
   typeName: string
   backlink?: string | null
+  designNewLayout?: boolean
   designNewLayoutHeight?: number
 }
 
@@ -35,8 +35,10 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
   apiGroupApiVersion,
   typeName,
   backlink,
+  designNewLayout,
   designNewLayoutHeight,
 }) => {
+  const { token } = antdtheme.useToken()
   const navigate = useNavigate()
 
   const [yamlData, setYamlData] = useState<string>('')
@@ -104,10 +106,14 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
           }}
         />
       </Styled.BorderRadiusContainer>
-      <Spacer $space={12} $samespace />
-      <Button type="primary" onClick={onSubmit} loading={isLoading}>
-        Submit
-      </Button>
+      <Styled.ControlsRowContainer $bgColor={token.colorPrimaryBg} $designNewLayout={designNewLayout}>
+        <Flex gap={designNewLayout ? 10 : 16} align="center">
+          <Button type="primary" onClick={onSubmit} loading={isLoading}>
+            Submit
+          </Button>
+          {backlink && <Button onClick={() => navigate(backlink)}>Cancel</Button>}
+        </Flex>
+      </Styled.ControlsRowContainer>
     </>
   )
 }

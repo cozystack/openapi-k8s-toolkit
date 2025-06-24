@@ -170,6 +170,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
         apiGroupApiVersion={data.type === 'builtin' ? 'api/v1' : `${data.apiGroup}/${data.apiVersion}`}
         typeName={data.typeName}
         backlink={backlink}
+        designNewLayout={designNewLayout}
         designNewLayoutHeight={designNewLayoutHeight}
       />
     )
