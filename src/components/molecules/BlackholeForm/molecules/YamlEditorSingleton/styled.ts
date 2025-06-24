@@ -13,6 +13,21 @@ const BorderRadiusContainer = styled.div<TBorderRadiusContainerProps>`
   }
 `
 
+type TControlsRowContainerProps = {
+  $designNewLayout?: boolean
+  $bgColor: string
+}
+
+const ControlsRowContainer = styled.div<TControlsRowContainerProps>`
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  background-color: ${({ $bgColor, $designNewLayout }) => ($designNewLayout ? $bgColor : 'initial')};
+  border-radius: 8px;
+  padding: 4px;
+`
+
 export const Styled = {
   BorderRadiusContainer,
+  ControlsRowContainer,
 }
