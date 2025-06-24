@@ -2,7 +2,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { FC } from 'react'
 import { Flex, Switch, Tooltip, Button } from 'antd'
-import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName } from 'localTypes/form'
 import { MinusIcon, BackToDefaultIcon } from 'components/atoms'
@@ -35,17 +34,7 @@ export const FormBooleanInput: FC<TFormBooleanInputProps> = ({
 }) => {
   const designNewLayout = useDesignNewLayout()
 
-  const title = (
-    <>
-      {getStringByName(name)}
-      {!designNewLayout && description && (
-        <Tooltip title={description}>
-          {' '}
-          <QuestionCircleOutlined />
-        </Tooltip>
-      )}
-    </>
-  )
+  const title = <>{getStringByName(name)}</>
 
   return (
     <PossibleHiddenContainer $isHidden={isHidden}>

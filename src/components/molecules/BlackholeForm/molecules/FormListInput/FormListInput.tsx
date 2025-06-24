@@ -2,7 +2,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { FC } from 'react'
 import { Flex, Typography, Tooltip, Select, Form, Button } from 'antd'
-import { QuestionCircleOutlined } from '@ant-design/icons'
 import _ from 'lodash'
 import { TFormName, TPersistedControls, TUrlParams } from 'localTypes/form'
 import { TListInputCustomProps } from 'localTypes/formExtensions'
@@ -121,12 +120,6 @@ export const FormListInput: FC<TFormListInputProps> = ({
     <>
       {getStringByName(name)}
       {required?.includes(getStringByName(name)) && <Typography.Text type="danger">*</Typography.Text>}
-      {!designNewLayout && description && (
-        <Tooltip title={description}>
-          {' '}
-          <QuestionCircleOutlined />
-        </Tooltip>
-      )}
     </>
   )
 

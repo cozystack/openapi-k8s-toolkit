@@ -1,7 +1,6 @@
 import React, { FC, useState } from 'react'
 import { OpenAPIV2, IJsonSchema } from 'openapi-types'
 import { Typography, Tooltip, Input, Button } from 'antd'
-import { QuestionCircleOutlined } from '@ant-design/icons'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TExpandedControls, TPersistedControls } from 'localTypes/form'
 import { PlusIcon } from 'components/atoms'
@@ -85,12 +84,6 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
     <>
       {getStringByName(collapseTitle)}
       {selfRequired && <Typography.Text type="danger">*</Typography.Text>}
-      {!designNewLayout && description && (
-        <Tooltip title={description}>
-          {' '}
-          <QuestionCircleOutlined />
-        </Tooltip>
-      )}
     </>
   )
 
