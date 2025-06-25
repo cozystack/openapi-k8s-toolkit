@@ -9,10 +9,17 @@ export type TManageableSidebarProps = {
   data: TSidebarResponse
   replaceValues: Record<string, string | undefined>
   pathname: string
+  idToCompare: string
   noMarginTop?: boolean
 }
 
-export const ManageableSidebar: FC<TManageableSidebarProps> = ({ data, replaceValues, pathname, noMarginTop }) => {
+export const ManageableSidebar: FC<TManageableSidebarProps> = ({
+  data,
+  replaceValues,
+  pathname,
+  idToCompare,
+  noMarginTop,
+}) => {
   const parsedData = data?.items.map(({ spec }) => spec)
 
   if (!parsedData) {
@@ -23,6 +30,7 @@ export const ManageableSidebar: FC<TManageableSidebarProps> = ({ data, replaceVa
     data: parsedData,
     replaceValues,
     pathname,
+    idToCompare,
   })
 
   if (result) {
@@ -47,6 +55,7 @@ export type TManageableSidebarWithDataProviderProps = {
   isEnabled?: boolean
   replaceValues: Record<string, string | undefined>
   pathname: string
+  idToCompare: string
   hidden?: boolean
   noMarginTop?: boolean
 }
@@ -57,6 +66,7 @@ export const ManageableSidebarWithDataProvider: FC<TManageableSidebarWithDataPro
   isEnabled,
   replaceValues,
   pathname,
+  idToCompare,
   hidden,
   noMarginTop,
 }) => {
@@ -88,6 +98,12 @@ export const ManageableSidebarWithDataProvider: FC<TManageableSidebarWithDataPro
   }
 
   return (
-    <ManageableSidebar data={rawData} replaceValues={replaceValues} pathname={pathname} noMarginTop={noMarginTop} />
+    <ManageableSidebar
+      data={rawData}
+      replaceValues={replaceValues}
+      pathname={pathname}
+      idToCompare={idToCompare}
+      noMarginTop={noMarginTop}
+    />
   )
 }

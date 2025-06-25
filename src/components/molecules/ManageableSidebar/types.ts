@@ -9,7 +9,7 @@ export type TCrdResource = {
   apiVersion: string
   kind: string
   spec: {
-    pathToMatch: string
+    id: string
     menuItems: TLink[]
   }
 } & unknown

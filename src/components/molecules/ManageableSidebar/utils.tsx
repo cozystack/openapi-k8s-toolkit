@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, matchPath } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ItemType } from 'antd/es/menu/interface'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { TLink } from './types'
@@ -58,26 +58,24 @@ export const prepareDataForManageableSidebar = ({
   data,
   replaceValues,
   pathname,
+  idToCompare,
 }: {
-  data: { pathToMatch: string; menuItems: TLink[] }[]
+  data: { id: string; menuItems: TLink[] }[]
   replaceValues: Record<string, string | undefined>
   pathname: string
-}): { pathToMatch: string; menuItems: ItemType[]; selectedKeys: string[] } | undefined => {
-  const preparedData = data.map(({ pathToMatch, menuItems }) => ({
-    pathToMatch: prepareTemplate({
-      template: pathToMatch,
-      replaceValues,
-    }),
-    menuItems: mapLinksFromRaw({
-      rawLinks: menuItems,
-      replaceValues,
-    }),
-  }))
+  idToCompare: string
+}): { menuItems: ItemType[]; selectedKeys: string[] } | undefined => {
+  const foundData = data.find(el => el.id === idToCompare)
 
-  const result = preparedData.find(({ pathToMatch }) => matchPath(pathToMatch, pathname))
-
-  if (!result) {
+  if (!foundData) {
     return undefined
+  }
+
+  const result = {
+    menuItems: mapLinksFromRaw({
+      rawLinks: foundData.menuItems,
+      replaceValues,
+    }),
   }
 
   const openedKeys: React.Key[] = result?.menuItems ? findMatchingItems(result?.menuItems, pathname) : []
