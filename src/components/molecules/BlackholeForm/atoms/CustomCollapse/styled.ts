@@ -40,7 +40,7 @@ type TContentProps = {
 
 const Content = styled.div<TContentProps>`
   display: ${({ $isOpen }) => ($isOpen ? 'block' : 'none')};
-  padding: ${({ $designNewLayout }) => ($designNewLayout ? '0' : '4px')};
+  padding: ${({ $designNewLayout }) => ($designNewLayout ? '0 0 0 6px' : '4px')};
 `
 
 export const Styled = {
