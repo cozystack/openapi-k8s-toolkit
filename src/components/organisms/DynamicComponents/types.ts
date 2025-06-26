@@ -26,7 +26,7 @@ export type TDynamicComponentsAppTypeMap = {
     baseProjectVersion: string
     projectResourceName: string
     mpResourceName: string
-    accessGroups: []
+    accessGroups: string[]
     baseprefix?: string
   }
   MarketplaceCard: {
