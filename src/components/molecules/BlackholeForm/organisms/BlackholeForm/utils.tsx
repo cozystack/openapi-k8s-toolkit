@@ -10,7 +10,7 @@ import { getStringByName } from 'utils/getStringByName'
 import { TListInputCustomProps, TRangeInputCustomProps } from 'localTypes/formExtensions'
 import { TFormName, TExpandedControls, TNamespaceData, TPersistedControls, TUrlParams } from 'localTypes/form'
 import { PlusIcon } from 'components/atoms'
-import { PossibleHiddenContainer } from '../../atoms'
+import { PossibleHiddenContainer, ResetedFormItem, ArrayInsideContainer } from '../../atoms'
 import {
   FormNamespaceInput,
   FormStringInput,
@@ -412,7 +412,7 @@ export const getArrayFormItemFromSwagger = ({
                   | (OpenAPIV2.ItemsObject & { properties?: OpenAPIV2.SchemaObject; required?: string[] })
                   | undefined
                 return (
-                  <div key={field.key}>
+                  <ArrayInsideContainer key={field.key}>
                     {fieldType !== 'object' && (
                       <>
                         {fieldType === 'string' &&
@@ -571,15 +571,15 @@ export const getArrayFormItemFromSwagger = ({
                         urlParams,
                         onRemoveByMinus: () => remove(field.name),
                       })}
-                  </div>
+                  </ArrayInsideContainer>
                 )
               })}
-              <Form.Item>
+              <ResetedFormItem>
                 <Button type="text" size="small" onClick={() => add()}>
                   <PlusIcon />
                 </Button>
                 <Form.ErrorList errors={errors} />
-              </Form.Item>
+              </ResetedFormItem>
             </>
           )}
         </Styled.ResetedFormList>
