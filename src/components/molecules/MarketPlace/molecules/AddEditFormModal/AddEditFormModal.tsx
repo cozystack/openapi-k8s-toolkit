@@ -116,7 +116,7 @@ export const AddEditFormModal: FC<TAddEditFormModalProps> = ({
       title={typeof isOpen === 'boolean' ? 'Add card' : 'Edit плитку'}
       open={isOpen !== false}
       onCancel={() => setIsOpen(false)}
-      onOk={() => submit}
+      onOk={() => submit()}
     >
       <Form<TMarketPlacePanel> form={form} name="control-hooks" initialValues={{ ...defaultValues }}>
         <Form.Item label="Name" name="name">
