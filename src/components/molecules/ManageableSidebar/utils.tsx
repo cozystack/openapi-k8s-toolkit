@@ -27,7 +27,15 @@ const mapLinksFromRaw = ({
   })
 }
 
-const findMatchingItems = (items: (ItemType & { internalMetaLink?: string })[], pathname: string): React.Key[] => {
+const findMatchingItems = ({
+  items,
+  pathname,
+  tags,
+}: {
+  items: (ItemType & { internalMetaLink?: string })[]
+  pathname: string
+  tags: { keysAndTags?: Record<string, string[]>; currentTags?: string[] }
+}): React.Key[] => {
   const traverse = (nodes: (ItemType & { internalMetaLink?: string })[], parents: React.Key[]): React.Key[] =>
     nodes.flatMap(node => {
       const currentPath = [...parents, node.key ? node.key : String(node.key)]
@@ -42,13 +50,22 @@ const findMatchingItems = (items: (ItemType & { internalMetaLink?: string })[], 
           ? currentPath
           : []
 
+      const tagsToMatch =
+        tags && tags.keysAndTags && node.key
+          ? tags.keysAndTags[typeof node.key === 'string' ? node.key : String(node.key)]
+          : undefined
+      const matchedByTags =
+        tags && tags.currentTags && tagsToMatch && tagsToMatch.some(tag => tags.currentTags?.includes(tag))
+          ? currentPath
+          : []
+
       let childrenResults: React.Key[] = []
 
       if ('children' in node && node.children) {
         childrenResults = traverse(node.children as (ItemType & { internalMetaLink?: string })[], currentPath)
       }
 
-      return [...matched, ...childrenResults]
+      return [...matched, ...matchedByTags, ...childrenResults]
     })
 
   return traverse(items, [])
@@ -59,11 +76,13 @@ export const prepareDataForManageableSidebar = ({
   replaceValues,
   pathname,
   idToCompare,
+  currentTags,
 }: {
-  data: { id: string; menuItems: TLink[] }[]
+  data: { id: string; menuItems: TLink[]; keysAndTags?: Record<string, string[]> }[]
   replaceValues: Record<string, string | undefined>
   pathname: string
   idToCompare: string
+  currentTags?: string[]
 }): { menuItems: ItemType[]; selectedKeys: string[] } | undefined => {
   const foundData = data.find(el => el.id === idToCompare)
 
@@ -78,7 +97,13 @@ export const prepareDataForManageableSidebar = ({
     }),
   }
 
-  const openedKeys: React.Key[] = result?.menuItems ? findMatchingItems(result?.menuItems, pathname) : []
+  const openedKeys: React.Key[] = result?.menuItems
+    ? findMatchingItems({
+        items: result?.menuItems,
+        pathname,
+        tags: { keysAndTags: foundData.keysAndTags, currentTags },
+      })
+    : []
   const stringedOpenedKeys = openedKeys.map(el => (typeof el === 'string' ? el : String(el)))
 
   return { ...result, selectedKeys: stringedOpenedKeys }
