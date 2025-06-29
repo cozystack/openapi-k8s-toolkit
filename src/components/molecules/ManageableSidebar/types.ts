@@ -11,6 +11,7 @@ export type TCrdResource = {
   spec: {
     id: string
     menuItems: TLink[]
+    keysAndTags?: Record<string, string[]>
   }
 } & unknown
 
