@@ -55,3 +55,7 @@ export type {
   TFactoryDataK8s,
 } from './localTypes/dynamicRender'
 export type { TMarketPlacePanel, TMarketPlacePanelResource, TMarketPlacePanelResponse } from './localTypes/marketplace'
+export type {
+  TFilterIfApiInstanceNamespaceScopedRes,
+  TFilterIfBuiltInInstanceNamespaceScopedRes,
+} from './localTypes/scopes'

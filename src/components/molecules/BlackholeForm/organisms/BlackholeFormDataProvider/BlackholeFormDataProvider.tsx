@@ -2,15 +2,13 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect, ReactNode, useCallback } from 'react'
 import { Alert } from 'antd'
-import _ from 'lodash'
+import axios, { AxiosError } from 'axios'
 import { TJSON } from 'localTypes/JSON'
 import { OpenAPIV2 } from 'openapi-types'
-import { TUrlParams } from 'localTypes/form'
+import { TUrlParams, TPrepareFormRes } from 'localTypes/form'
 import { TFormsPrefillsData, TFormsOverridesData } from 'localTypes/formExtensions'
 import { YamlEditorSingleton } from '../../molecules/YamlEditorSingleton'
 import { BlackholeForm } from '../BlackholeForm'
-import { getPathsWithAdditionalProperties, getPropertiesToMerge } from './helpers'
-import { getSwaggerPathAndIsNamespaceScoped, getBodyParametersSchema, processOverride } from './utils'
 
 export type TBlackholeFormDataProviderProps = {
   theme: 'light' | 'dark'
@@ -20,7 +18,6 @@ export type TBlackholeFormDataProviderProps = {
     apiGroup?: string
     typeName?: string
   }
-  swagger: OpenAPIV2.Document | undefined
   namespacesData?: {
     items: ({ metadata: { name: string } & unknown } & unknown)[]
   }
@@ -58,7 +55,6 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
   urlParams,
   urlParamsForPermissions,
   formsPrefillsData,
-  swagger,
   namespacesData,
   formsOverridesData,
   data,
@@ -92,71 +88,45 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
   }, [modeData])
 
   useEffect(() => {
-    if (!swagger) {
-      return
-    }
-
-    const { swaggerPath, isNamespaced } = getSwaggerPathAndIsNamespaceScoped({
-      swagger,
-      data,
-    })
-
-    if (isNamespaced) {
-      setIsNamespaced(true)
-    }
-
-    const { bodyParametersSchema, kindName, error } = getBodyParametersSchema({ swagger, swaggerPath })
-
-    if (error) {
-      setIsError(error)
-      console.log(error)
-      fallbackToManualMode()
-      return
-    }
-
-    if (kindName) {
-      setKindName(kindName)
-    }
-
-    const pathsWithAdditionalProperties: (string | number)[][] = getPathsWithAdditionalProperties({
-      properties: bodyParametersSchema.properties,
-    })
-
-    const propertiesToMerge = getPropertiesToMerge({
-      pathsWithAdditionalProperties,
-      prefillValuesSchema: data.prefillValuesSchema,
-      bodyParametersSchema,
-    })
-
-    const oldProperties = _.cloneDeep(bodyParametersSchema.properties)
-    const newProperties = _.merge(oldProperties, propertiesToMerge)
-
-    const overrideType =
-      data.type === 'apis' ? `${data.apiGroup}/${data.apiVersion}/${data.typeName}` : `v1/${data.typeName}`
-
-    const specificCustomOverrides = formsOverridesData?.items.find(item => item.spec.overrideType === overrideType)
-
-    const { hiddenPaths, expandedPaths, persistedPaths, propertiesToApply, requiredToApply } = processOverride({
-      specificCustomOverrides,
-      newProperties,
-      bodyParametersSchema,
-    })
-    if (hiddenPaths) {
-      setHiddenPaths(hiddenPaths)
-    }
-    if (expandedPaths) {
-      setExpandedPaths(expandedPaths)
-    }
-    if (persistedPaths) {
-      setPersistedPaths(persistedPaths)
-    }
-    if (propertiesToApply) {
-      setProperties(propertiesToApply)
-    }
-    if (requiredToApply) {
-      setRequired(requiredToApply)
-    }
-  }, [swagger, data, fallbackToManualMode, formsOverridesData])
+    axios
+      .post<TPrepareFormRes>('/openapi-bff/forms/formPrepare/prepareFormProps', {
+        data,
+        clusterName: cluster,
+        formsOverridesData,
+      })
+      .then(({ data }) => {
+        if (data.isNamespaced) {
+          setIsNamespaced(true)
+        }
+        if (data.result === 'error') {
+          setIsError(data.error)
+          console.log(data.error)
+          fallbackToManualMode()
+        } else {
+          if (data.kindName) {
+            setKindName(data.kindName)
+          }
+          if (data.hiddenPaths) {
+            setHiddenPaths(data.hiddenPaths)
+          }
+          if (data.expandedPaths) {
+            setExpandedPaths(data.expandedPaths)
+          }
+          if (data.persistedPaths) {
+            setPersistedPaths(data.persistedPaths)
+          }
+          if (data.properties) {
+            setProperties(data.properties)
+          }
+          if (data.required) {
+            setRequired(data.required)
+          }
+        }
+      })
+      .catch((e: AxiosError) => {
+        setIsError(e.message)
+      })
+  }, [cluster, data, fallbackToManualMode, formsOverridesData])
 
   if (modeData?.current === 'Manual') {
     return (

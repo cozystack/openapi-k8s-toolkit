@@ -6,7 +6,7 @@ import { useDebounceCallback } from 'usehooks-ts'
 import { theme as antdtheme, Form, Button, Alert, Flex, Modal, Typography } from 'antd'
 import { BugOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { isAxiosError } from 'axios'
+import axios, { isAxiosError } from 'axios'
 import _ from 'lodash'
 import { OpenAPIV2 } from 'openapi-types'
 import { TJSON } from 'localTypes/JSON'
@@ -19,7 +19,7 @@ import { filterSelectOptions } from 'utils/filterSelectOptions'
 import {
   removeEmptyFormValues,
   renameBrokenFieldBack,
-  renameBrokenFieldBackToFormAgain,
+  // renameBrokenFieldBackToFormAgain,
 } from 'utils/removeEmptyFormValues'
 import { normalizeValuesForQuotas, normalizeValuesForQuotasToNumber } from 'utils/normalizeValuesForQuotas'
 import { getAllPathsFromObj } from 'utils/getAllPathsFromObj'
@@ -226,19 +226,36 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   const onValuesChangeCallback = useCallback(() => {
     const values = form.getFieldsValue()
-    const cleanSchema = removeEmptyFormValues(values, persistedKeys)
-    const fixedCleanSchema = renameBrokenFieldBack(cleanSchema)
-    const quotasFixedSchema = normalizeValuesForQuotas(fixedCleanSchema, properties)
-    const body = quotasFixedSchema
-    debouncedSetYamlValues(body)
+    axios
+      .post('/openapi-bff/forms/formSync/getYamlValuesByFromValues', {
+        values,
+        persistedKeys,
+        properties,
+      })
+      .then(({ data }) => debouncedSetYamlValues(data))
+    // const cleanSchema = removeEmptyFormValues(values, persistedKeys)
+    // const fixedCleanSchema = renameBrokenFieldBack(cleanSchema)
+    // const quotasFixedSchema = normalizeValuesForQuotas(fixedCleanSchema, properties)
+    // const body = quotasFixedSchema
+    // debouncedSetYamlValues(body)
   }, [form, debouncedSetYamlValues, properties, persistedKeys])
 
   const onYamlChangeCallback = (values: Record<string, unknown>) => {
-    const normalizedValues = renameBrokenFieldBackToFormAgain(values)
-    const normalizedValuesWithQuotas = normalizeValuesForQuotasToNumber(normalizedValues, properties)
-    if (normalizedValues) {
-      form.setFieldsValue(normalizedValuesWithQuotas)
-    }
+    axios
+      .post('/openapi-bff/forms/formSync/getFormValuesByYaml', {
+        values,
+        properties,
+      })
+      .then(({ data }) => {
+        if (data) {
+          form.setFieldsValue(data)
+        }
+      })
+    // const normalizedValues = renameBrokenFieldBackToFormAgain(values)
+    // const normalizedValuesWithQuotas = normalizeValuesForQuotasToNumber(normalizedValues, properties)
+    // if (normalizedValues) {
+    //   form.setFieldsValue(normalizedValuesWithQuotas)
+    // }
   }
 
   useEffect(() => {
