@@ -6,5 +6,5 @@ export const getSwagger = async ({
 }: {
   clusterName: string
 }): Promise<AxiosResponse<OpenAPIV2.Document>> => {
-  return axios.get(`/api/clusters/${clusterName}/k8s/openapi/v2`)
+  return axios.get(`/openapi-bff/swagger/swagger/${clusterName}`)
 }
