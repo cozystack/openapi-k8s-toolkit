@@ -1,12 +1,12 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect, ReactNode, useCallback } from 'react'
-import { Alert } from 'antd'
+import { Alert, Spin } from 'antd'
 import axios, { AxiosError } from 'axios'
 import { TJSON } from 'localTypes/JSON'
 import { OpenAPIV2 } from 'openapi-types'
 import { TUrlParams, TPrepareFormRes } from 'localTypes/form'
-import { TFormsPrefillsData, TFormsOverridesData } from 'localTypes/formExtensions'
+import { TFormsPrefillsData } from 'localTypes/formExtensions'
 import { YamlEditorSingleton } from '../../molecules/YamlEditorSingleton'
 import { BlackholeForm } from '../BlackholeForm'
 
@@ -22,7 +22,6 @@ export type TBlackholeFormDataProviderProps = {
     items: ({ metadata: { name: string } & unknown } & unknown)[]
   }
   formsPrefillsData?: TFormsPrefillsData
-  formsOverridesData?: TFormsOverridesData
   data:
     | {
         type: 'builtin'
@@ -56,7 +55,6 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
   urlParamsForPermissions,
   formsPrefillsData,
   namespacesData,
-  formsOverridesData,
   data,
   isCreate,
   backlink,
@@ -64,19 +62,19 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
   designNewLayout,
   designNewLayoutHeight,
 }) => {
-  const [properties, setProperties] = useState<
-    | {
-        [name: string]: OpenAPIV2.SchemaObject
-      }
-    | undefined
-  >(undefined)
-
-  const [required, setRequired] = useState<string[]>([])
-  const [hiddenPaths, setHiddenPaths] = useState<string[][]>([])
-  const [expandedPaths, setExpandedPaths] = useState<string[][]>([])
-  const [persistedPaths, setPersistedPaths] = useState<string[][]>([])
-
-  const [kindName, setKindName] = useState<string>('')
+  const [preparedData, setPreparedData] = useState<{
+    properties?: {
+      [name: string]: OpenAPIV2.SchemaObject
+    }
+    required: string[]
+    hiddenPaths?: string[][]
+    expandedPaths: string[][]
+    persistedPaths: string[][]
+    kindName: string
+    isNamespaced?: boolean
+    isError?: boolean
+  }>()
+  const [isLoading, setIsLoading] = useState(false)
   const [isNamespaced, setIsNamespaced] = useState<boolean>(false)
   const [isError, setIsError] = useState<false | string | ReactNode>(false)
 
@@ -88,11 +86,11 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
   }, [modeData])
 
   useEffect(() => {
+    setIsLoading(true)
     axios
       .post<TPrepareFormRes>('/openapi-bff/forms/formPrepare/prepareFormProps', {
         data,
         clusterName: cluster,
-        formsOverridesData,
       })
       .then(({ data }) => {
         if (data.isNamespaced) {
@@ -103,30 +101,27 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
           console.log(data.error)
           fallbackToManualMode()
         } else {
-          if (data.kindName) {
-            setKindName(data.kindName)
-          }
-          if (data.hiddenPaths) {
-            setHiddenPaths(data.hiddenPaths)
-          }
-          if (data.expandedPaths) {
-            setExpandedPaths(data.expandedPaths)
-          }
-          if (data.persistedPaths) {
-            setPersistedPaths(data.persistedPaths)
-          }
-          if (data.properties) {
-            setProperties(data.properties)
-          }
-          if (data.required) {
-            setRequired(data.required)
-          }
+          setPreparedData({
+            properties: data.properties,
+            required: data.required || [],
+            hiddenPaths: data.hiddenPaths,
+            expandedPaths: data.expandedPaths || [],
+            persistedPaths: data.persistedPaths || [],
+            kindName: data.kindName || '',
+          })
         }
       })
       .catch((e: AxiosError) => {
         setIsError(e.message)
       })
-  }, [cluster, data, fallbackToManualMode, formsOverridesData])
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [cluster, data, fallbackToManualMode])
+
+  if (isLoading) {
+    return <Spin />
+  }
 
   if (modeData?.current === 'Manual') {
     return (
@@ -146,7 +141,10 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
     )
   }
 
-  if (!properties && !isError) {
+  if (!preparedData?.properties && !isError) {
+    return null
+  }
+  if (!preparedData?.properties) {
     return null
   }
 
@@ -161,23 +159,28 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
       urlParams={urlParams}
       urlParamsForPermissions={urlParamsForPermissions}
       formsPrefillsData={formsPrefillsData}
-      staticProperties={properties}
-      required={required}
-      hiddenPaths={hiddenPaths}
-      expandedPaths={expandedPaths}
-      persistedPaths={persistedPaths}
+      staticProperties={preparedData.properties}
+      required={preparedData.required}
+      hiddenPaths={preparedData.hiddenPaths}
+      expandedPaths={preparedData.expandedPaths}
+      persistedPaths={preparedData.persistedPaths}
       prefillValuesSchema={data.prefillValuesSchema}
       prefillValueNamespaceOnly={data.prefillValueNamespaceOnly}
       isCreate={isCreate}
       type={data.type}
       isNameSpaced={isNamespaced ? namespacesData?.items.map(el => el.metadata.name) : false}
       apiGroupApiVersion={data.type === 'builtin' ? 'api/v1' : `${data.apiGroup}/${data.apiVersion}`}
-      kindName={kindName}
+      kindName={preparedData.kindName}
       typeName={data.typeName}
       backlink={backlink}
       designNewLayout={designNewLayout}
       designNewLayoutHeight={designNewLayoutHeight}
-      key={JSON.stringify(properties) + JSON.stringify(required) + JSON.stringify(hiddenPaths) + JSON.stringify(data)}
+      key={
+        JSON.stringify(preparedData.properties) +
+        JSON.stringify(preparedData.required) +
+        JSON.stringify(preparedData.hiddenPaths) +
+        JSON.stringify(data)
+      }
     />
   )
 }

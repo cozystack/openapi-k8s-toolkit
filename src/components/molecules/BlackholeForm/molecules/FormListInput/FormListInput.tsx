@@ -10,7 +10,7 @@ import { getStringByName } from 'utils/getStringByName'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { MinusIcon, feedbackIcons } from 'components/atoms'
-import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
+import { PersistedCheckbox, HiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormListInputProps = {
@@ -20,7 +20,6 @@ type TFormListInputProps = {
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
@@ -37,7 +36,6 @@ export const FormListInput: FC<TFormListInputProps> = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   isAdditionalProperties,
   removeField,
@@ -124,7 +122,7 @@ export const FormListInput: FC<TFormListInputProps> = ({
   )
 
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
+    <HiddenContainer name={name}>
       <Flex justify="space-between">
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           {description ? <Tooltip title={description}>{title}</Tooltip> : title}
@@ -159,6 +157,6 @@ export const FormListInput: FC<TFormListInputProps> = ({
           showSearch
         />
       </ResetedFormItem>
-    </PossibleHiddenContainer>
+    </HiddenContainer>
   )
 }

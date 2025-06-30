@@ -2,12 +2,11 @@ import React, { FC } from 'react'
 import { Flex, Typography, Select, Button } from 'antd'
 import { TFormName, TNamespaceData } from 'localTypes/form'
 import { MinusIcon, feedbackIcons } from 'components/atoms'
-import { CustomSizeTitle, PossibleHiddenContainer, ResetedFormItem } from '../../atoms'
+import { CustomSizeTitle, HiddenContainer, ResetedFormItem } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormNamespaceInputProps = {
   name: TFormName
-  isHidden?: boolean
   namespaceData: TNamespaceData
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
@@ -15,7 +14,6 @@ type TFormNamespaceInputProps = {
 
 export const FormNamespaceInput: FC<TFormNamespaceInputProps> = ({
   name,
-  isHidden,
   namespaceData,
   isAdditionalProperties,
   removeField,
@@ -27,7 +25,7 @@ export const FormNamespaceInput: FC<TFormNamespaceInputProps> = ({
   }
 
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
+    <HiddenContainer name={name}>
       <Flex justify="space-between">
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           namespace<Typography.Text type="danger">*</Typography.Text>
@@ -55,6 +53,6 @@ export const FormNamespaceInput: FC<TFormNamespaceInputProps> = ({
           showSearch
         />
       </ResetedFormItem>
-    </PossibleHiddenContainer>
+    </HiddenContainer>
   )
 }

@@ -5,7 +5,7 @@ import { Flex, Typography, Tooltip, Select, Button } from 'antd'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import { MinusIcon, feedbackIcons } from 'components/atoms'
-import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
+import { PersistedCheckbox, HiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormEnumStringInputProps = {
@@ -15,7 +15,6 @@ type TFormEnumStringInputProps = {
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
@@ -31,7 +30,6 @@ export const FormEnumStringInput: FC<TFormEnumStringInputProps> = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   isAdditionalProperties,
   removeField,
@@ -51,7 +49,7 @@ export const FormEnumStringInput: FC<TFormEnumStringInputProps> = ({
   )
 
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
+    <HiddenContainer name={name}>
       <Flex justify="space-between">
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           {description ? <Tooltip title={description}>{title}</Tooltip> : title}
@@ -79,6 +77,6 @@ export const FormEnumStringInput: FC<TFormEnumStringInputProps> = ({
       >
         <Select options={options.map(el => ({ value: el, label: el }))} placeholder={getStringByName(name)} />
       </ResetedFormItem>
-    </PossibleHiddenContainer>
+    </HiddenContainer>
   )
 }

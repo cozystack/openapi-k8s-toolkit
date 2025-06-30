@@ -14,7 +14,6 @@ type TFormRangeInputProps = {
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   isEdit?: boolean
   persistedControls: TPersistedControls
@@ -30,7 +29,6 @@ export const FormRangeInput: FC<TFormRangeInputProps> = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   isEdit,
   persistedControls,
@@ -267,7 +265,6 @@ export const FormRangeInput: FC<TFormRangeInputProps> = ({
       persistName={persistName}
       required={required}
       forceNonRequired={forceNonRequired}
-      isHidden={isHidden}
       description={description}
       min={minValue}
       max={maxValue}
