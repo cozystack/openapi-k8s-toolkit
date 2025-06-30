@@ -1,55 +1,56 @@
-import React, { FC } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { Spin } from 'antd'
+import { ItemType } from 'antd/es/menu/interface'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { TSidebarResponse } from './types'
 import { prepareDataForManageableSidebar } from './utils'
 import { Styled } from './styled'
 
 export type TManageableSidebarProps = {
-  data: TSidebarResponse
-  replaceValues: Record<string, string | undefined>
-  pathname: string
-  idToCompare: string
-  currentTags?: string[]
+  data: { menuItems: ItemType[]; selectedKeys: string[] }
   noMarginTop?: boolean
 }
 
-export const ManageableSidebar: FC<TManageableSidebarProps> = ({
-  data,
-  replaceValues,
-  pathname,
-  idToCompare,
-  currentTags,
-  noMarginTop,
-}) => {
-  const parsedData = data?.items.map(({ spec }) => spec)
-
-  if (!parsedData) {
-    return null
-  }
-
-  const result = prepareDataForManageableSidebar({
-    data: parsedData,
-    replaceValues,
-    pathname,
-    idToCompare,
-    currentTags,
+export const ManageableSidebar: FC<TManageableSidebarProps> = ({ data, noMarginTop }) => {
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([])
+  const [openKeys, setOpenKeys] = useState(() => {
+    try {
+      const saved = localStorage.getItem('menuOpenKeys')
+      return saved ? JSON.parse(saved) : []
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to parse stored menu keys', error)
+      return []
+    }
   })
 
-  if (result) {
-    return (
-      <Styled.CustomMenu
-        selectedKeys={result.selectedKeys}
-        onSelect={() => {}}
-        onDeselect={() => {}}
-        mode="inline"
-        items={result.menuItems}
-        $noMarginTop={noMarginTop}
-      />
-    )
+  const handleOpenChange = (keys: string[]) => {
+    setOpenKeys(keys)
+    try {
+      localStorage.setItem('menuOpenKeys', JSON.stringify(keys))
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to save menu keys to localStorage', error)
+    }
   }
 
-  return null
+  useEffect(() => {
+    setSelectedKeys(data.selectedKeys)
+  }, [data.selectedKeys])
+
+  return (
+    <Styled.CustomMenu
+      selectedKeys={selectedKeys}
+      onSelect={() => {}}
+      onDeselect={() => {}}
+      defaultOpenKeys={data.selectedKeys}
+      openKeys={openKeys}
+      onOpenChange={handleOpenChange}
+      mode="inline"
+      items={data.menuItems}
+      $noMarginTop={noMarginTop}
+    />
+  )
 }
 
 export type TManageableSidebarWithDataProviderProps = {
@@ -102,14 +103,23 @@ export const ManageableSidebarWithDataProvider: FC<TManageableSidebarWithDataPro
     return null
   }
 
-  return (
-    <ManageableSidebar
-      data={rawData}
-      replaceValues={replaceValues}
-      pathname={pathname}
-      idToCompare={idToCompare}
-      currentTags={currentTags}
-      noMarginTop={noMarginTop}
-    />
-  )
+  const parsedData = rawData?.items.map(({ spec }) => spec)
+
+  if (!parsedData) {
+    return null
+  }
+
+  const result = prepareDataForManageableSidebar({
+    data: parsedData,
+    replaceValues,
+    pathname,
+    idToCompare,
+    currentTags,
+  })
+
+  if (!result) {
+    return null
+  }
+
+  return <ManageableSidebar data={result} noMarginTop={noMarginTop} />
 }
