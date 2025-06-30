@@ -4,14 +4,14 @@ import { Typography, Tooltip, Input, Button } from 'antd'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TExpandedControls, TPersistedControls } from 'localTypes/form'
 import { PlusIcon } from 'components/atoms'
-import { CustomCollapse, PersistedCheckbox, PossibleHiddenContainer, CustomSizeTitle } from '../../atoms'
+import { CustomCollapse, PersistedCheckbox, CustomSizeTitle, HiddenContainer } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormObjectFromSwaggerProps = {
   name: TFormName
   persistName?: TFormName
   selfRequired?: boolean
-  isHidden?: boolean
+  hiddenFormName?: TFormName
   description?: string
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
@@ -45,7 +45,7 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
   name,
   persistName,
   selfRequired,
-  isHidden,
+  hiddenFormName,
   description,
   isAdditionalProperties,
   removeField,
@@ -88,7 +88,7 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
   )
 
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
+    <HiddenContainer name={name} secondName={hiddenFormName}>
       <CustomCollapse
         title={
           <CustomSizeTitle $designNewLayout={designNewLayout}>
@@ -122,6 +122,6 @@ export const FormObjectFromSwagger: FC<TFormObjectFromSwaggerProps> = ({
           />
         )}
       </CustomCollapse>
-    </PossibleHiddenContainer>
+    </HiddenContainer>
   )
 }

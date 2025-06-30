@@ -29,7 +29,7 @@ import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
 import { Styled } from './styled'
 import { isFormPrefill } from './guards'
-import { DesignNewLayoutProvider } from './context'
+import { DesignNewLayoutProvider, HiddenPathsProvider } from './context'
 
 type TBlackholeFormCreateProps = {
   cluster: string
@@ -41,10 +41,10 @@ type TBlackholeFormCreateProps = {
   }
   formsPrefillsData?: TFormsPrefillsData
   staticProperties: OpenAPIV2.SchemaObject['properties']
-  required?: string[]
+  required: string[]
   hiddenPaths?: string[][]
-  expandedPaths?: string[][]
-  persistedPaths?: string[][]
+  expandedPaths: string[][]
+  persistedPaths: string[][]
   prefillValuesSchema?: TJSON
   prefillValueNamespaceOnly?: string
   isNameSpaced?: false | string[]
@@ -138,6 +138,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         const fixedCleanSchema = renameBrokenFieldBack(cleanSchema)
         const quotasFixedSchema = normalizeValuesForQuotas(fixedCleanSchema, properties)
         const body = quotasFixedSchema
+        /* TODO */
         const { namespace } = cleanSchema.metadata
         const endpoint = `/api/clusters/${cluster}/k8s/${type === 'builtin' ? '' : 'apis/'}${apiGroupApiVersion}${
           isNameSpaced ? `/namespaces/${namespace}` : ''
@@ -344,18 +345,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     onValuesChangeCallback()
   }, [isCreate, kindName, apiGroupApiVersion, onValuesChangeCallback, form])
 
-  useEffect(() => {
-    const values = form.getFieldsValue()
-    const cleanSchema = removeEmptyFormValues(values, persistedKeys)
-    const fixedCleanSchema = renameBrokenFieldBack(cleanSchema)
-    const quotasFixedCleanSchema = normalizeValuesForQuotas(fixedCleanSchema, properties)
-    const body = quotasFixedCleanSchema
-    debouncedSetYamlValues(body)
-  }, [debouncedSetYamlValues, properties, form, persistedKeys])
+  // useEffect(() => {
+  //   onValuesChangeCallback()
+  // }, [onValuesChangeCallback, form, persistedKeys])
 
-  useEffect(() => {
-    onValuesChangeCallback()
-  }, [properties, onValuesChangeCallback])
+  // useEffect(() => {
+  //   onValuesChangeCallback()
+  // }, [properties, onValuesChangeCallback])
 
   if (!properties) {
     return null
@@ -456,20 +452,21 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         <Styled.OverflowContainer ref={overflowRef}>
           <Form form={form} onValuesChange={onValuesChangeCallback}>
             <DesignNewLayoutProvider value={designNewLayout}>
-              {getObjectFormItemsDraft({
-                properties,
-                name: [],
-                required,
-                hiddenPaths,
-                namespaceData,
-                makeValueUndefined,
-                addField,
-                removeField,
-                isEdit: !isCreate,
-                expandedControls: { onExpandOpen, onExpandClose, expandedKeys },
-                persistedControls: { onPersistMark, onPersistUnmark, persistedKeys, isPersistedKeysShown },
-                urlParams,
-              })}
+              <HiddenPathsProvider value={hiddenPaths}>
+                {getObjectFormItemsDraft({
+                  properties,
+                  name: [],
+                  required,
+                  namespaceData,
+                  makeValueUndefined,
+                  addField,
+                  removeField,
+                  isEdit: !isCreate,
+                  expandedControls: { onExpandOpen, onExpandClose, expandedKeys },
+                  persistedControls: { onPersistMark, onPersistUnmark, persistedKeys, isPersistedKeysShown },
+                  urlParams,
+                })}
+              </HiddenPathsProvider>
             </DesignNewLayoutProvider>
             {/* <div>
               Show persisted checkboxes:{' '}

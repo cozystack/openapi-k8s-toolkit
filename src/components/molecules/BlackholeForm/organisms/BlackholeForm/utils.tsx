@@ -5,12 +5,11 @@
 /* eslint-disable consistent-return */
 import { Form, Button, Alert } from 'antd'
 import { OpenAPIV2 } from 'openapi-types'
-import { includesArray } from 'utils/nestedStringsArrayInclude'
 import { getStringByName } from 'utils/getStringByName'
 import { TListInputCustomProps, TRangeInputCustomProps } from 'localTypes/formExtensions'
 import { TFormName, TExpandedControls, TNamespaceData, TPersistedControls, TUrlParams } from 'localTypes/form'
 import { PlusIcon } from 'components/atoms'
-import { PossibleHiddenContainer, ResetedFormItem, ArrayInsideContainer } from '../../atoms'
+import { ResetedFormItem, ArrayInsideContainer, HiddenContainer } from '../../atoms'
 import {
   FormNamespaceInput,
   FormStringInput,
@@ -31,7 +30,6 @@ export const getStringFormItemFromSwagger = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   namespaceData,
   isAdditionalProperties,
@@ -45,7 +43,6 @@ export const getStringFormItemFromSwagger = ({
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   namespaceData?: TNamespaceData
   isAdditionalProperties?: boolean
@@ -57,7 +54,6 @@ export const getStringFormItemFromSwagger = ({
     return (
       <FormNamespaceInput
         name={name}
-        isHidden={isHidden}
         namespaceData={namespaceData}
         isAdditionalProperties={isAdditionalProperties}
         removeField={removeField}
@@ -73,7 +69,6 @@ export const getStringFormItemFromSwagger = ({
       persistName={persistName}
       required={required}
       forceNonRequired={forceNonRequired}
-      isHidden={isHidden}
       description={description}
       isAdditionalProperties={isAdditionalProperties}
       removeField={removeField}
@@ -90,7 +85,6 @@ export const getEnumStringFormItemFromSwagger = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   isAdditionalProperties,
   removeField,
@@ -104,7 +98,6 @@ export const getEnumStringFormItemFromSwagger = ({
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
@@ -120,7 +113,6 @@ export const getEnumStringFormItemFromSwagger = ({
       persistName={persistName}
       required={required}
       forceNonRequired={forceNonRequired}
-      isHidden={isHidden}
       description={description}
       isAdditionalProperties={isAdditionalProperties}
       removeField={removeField}
@@ -139,7 +131,6 @@ export const getNumberFormItemFromSwagger = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   isAdditionalProperties,
   removeField,
@@ -153,7 +144,6 @@ export const getNumberFormItemFromSwagger = ({
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
@@ -169,7 +159,6 @@ export const getNumberFormItemFromSwagger = ({
       persistName={persistName}
       required={required}
       forceNonRequired={forceNonRequired}
-      isHidden={isHidden}
       description={description}
       isAdditionalProperties={isAdditionalProperties}
       removeField={removeField}
@@ -186,7 +175,6 @@ export const getRangeInputFormItemFromSwagger = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   isEdit,
   persistedControls,
@@ -200,7 +188,6 @@ export const getRangeInputFormItemFromSwagger = ({
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   isEdit: boolean
   persistedControls: TPersistedControls
@@ -216,7 +203,6 @@ export const getRangeInputFormItemFromSwagger = ({
       persistName={persistName}
       required={required}
       forceNonRequired={forceNonRequired}
-      isHidden={isHidden}
       description={description}
       isEdit={isEdit}
       customProps={customProps}
@@ -234,7 +220,6 @@ export const getListInputFormItemFromSwagger = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   isAdditionalProperties,
   removeField,
@@ -249,7 +234,6 @@ export const getListInputFormItemFromSwagger = ({
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
@@ -266,7 +250,6 @@ export const getListInputFormItemFromSwagger = ({
       persistName={persistName}
       required={required}
       forceNonRequired={forceNonRequired}
-      isHidden={isHidden}
       description={description}
       isAdditionalProperties={isAdditionalProperties}
       removeField={removeField}
@@ -282,7 +265,6 @@ export const getBooleanFormItemFromSwagger = ({
   name,
   arrKey,
   arrName,
-  isHidden,
   description,
   makeValueUndefined,
   isAdditionalProperties,
@@ -292,7 +274,6 @@ export const getBooleanFormItemFromSwagger = ({
   name: TFormName
   arrKey?: number
   arrName?: TFormName
-  isHidden?: boolean
   description?: string
   makeValueUndefined?: (path: TFormName) => void
   isAdditionalProperties?: boolean
@@ -304,7 +285,6 @@ export const getBooleanFormItemFromSwagger = ({
       name={name}
       arrKey={arrKey}
       arrName={arrName}
-      isHidden={isHidden}
       description={description}
       makeValueUndefined={makeValueUndefined}
       isAdditionalProperties={isAdditionalProperties}
@@ -323,7 +303,6 @@ export const getArrayFormItemFromSwagger = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   makeValueUndefined,
   addField,
@@ -343,7 +322,6 @@ export const getArrayFormItemFromSwagger = ({
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   makeValueUndefined?: (path: TFormName) => void
   addField: ({
@@ -372,7 +350,7 @@ export const getArrayFormItemFromSwagger = ({
   // typescript as below are needed because of dereference procedure
   if (schema.type === 'array') {
     return (
-      <PossibleHiddenContainer $isHidden={isHidden}>
+      <HiddenContainer name={name}>
         <FormArrayHeader
           name={name}
           persistName={persistName}
@@ -583,7 +561,7 @@ export const getArrayFormItemFromSwagger = ({
             </>
           )}
         </Styled.ResetedFormList>
-      </PossibleHiddenContainer>
+      </HiddenContainer>
     )
   }
   return null
@@ -598,8 +576,6 @@ export const getObjectFormItemsDraft = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
-  hiddenPaths,
   description,
   namespaceData,
   makeValueUndefined,
@@ -620,8 +596,6 @@ export const getObjectFormItemsDraft = ({
   expandName?: TFormName
   required?: (string | number)[]
   forceNonRequired?: boolean
-  isHidden?: boolean
-  hiddenPaths?: string[][]
   description?: string
   namespaceData?: TNamespaceData
   makeValueUndefined?: (path: TFormName) => void
@@ -647,7 +621,7 @@ export const getObjectFormItemsDraft = ({
   urlParams: TUrlParams
 }) => {
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
+    <HiddenContainer name={name}>
       {Object.keys(properties).map((el: keyof typeof properties) => {
         if (properties[el].type === 'string' && properties[el].enum) {
           return getEnumStringFormItemFromSwagger({
@@ -662,7 +636,6 @@ export const getObjectFormItemsDraft = ({
             // required: required?.includes(getStringByName(objName)) ? [String(el)] : undefined,
             required: required?.includes(el) ? [String(el)] : undefined,
             forceNonRequired,
-            isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
             description: properties[el].description,
             isAdditionalProperties: properties[el].isAdditionalProperties,
             removeField,
@@ -686,7 +659,6 @@ export const getObjectFormItemsDraft = ({
             // required: required?.includes(getStringByName(objName)) ? [String(el)] : undefined,
             required: required?.includes(el) ? [String(el)] : undefined,
             forceNonRequired,
-            isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
             description: properties[el].description,
             namespaceData,
             isAdditionalProperties: properties[el].isAdditionalProperties,
@@ -708,7 +680,6 @@ export const getObjectFormItemsDraft = ({
             // required: required?.includes(getStringByName(objName)) ? [String(el)] : undefined,
             required: required?.includes(el) ? [String(el)] : undefined,
             forceNonRequired,
-            isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
             description: properties[el].description,
             isAdditionalProperties: properties[el].isAdditionalProperties,
             removeField,
@@ -728,7 +699,6 @@ export const getObjectFormItemsDraft = ({
             // required: required?.includes(getStringByName(objName)) ? [String(el)] : undefined,
             required: required?.includes(el) ? [String(el)] : undefined,
             forceNonRequired,
-            isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
             description: properties[el].description,
             isEdit,
             customProps: properties[el].customProps,
@@ -749,7 +719,6 @@ export const getObjectFormItemsDraft = ({
             // required: required?.includes(getStringByName(objName)) ? [String(el)] : undefined,
             required: required?.includes(el) ? [String(el)] : undefined,
             forceNonRequired,
-            isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
             description: properties[el].description,
             customProps: properties[el].customProps,
             removeField,
@@ -762,7 +731,6 @@ export const getObjectFormItemsDraft = ({
             name: Array.isArray(name) ? [...name, String(el)] : [name, String(el)],
             arrKey,
             arrName: Array.isArray(arrName) ? [...arrName, String(el)] : undefined,
-            isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
             description: properties[el].description,
             makeValueUndefined,
             isAdditionalProperties: properties[el].isAdditionalProperties,
@@ -788,7 +756,6 @@ export const getObjectFormItemsDraft = ({
             // required: required?.includes(getStringByName(objName)) ? [String(el)] : undefined,
             required: required?.includes(el) ? [String(el)] : undefined,
             forceNonRequired,
-            isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
             description: properties[el].description,
             makeValueUndefined,
             addField,
@@ -821,8 +788,6 @@ export const getObjectFormItemsDraft = ({
                   : undefined,
                 required: properties[el].required,
                 forceNonRequired,
-                isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
-                hiddenPaths,
                 description: properties[el].description,
                 namespaceData,
                 makeValueUndefined,
@@ -838,7 +803,7 @@ export const getObjectFormItemsDraft = ({
             <FormObjectFromSwagger
               name={name}
               persistName={persistName}
-              isHidden={includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)])}
+              hiddenFormName={Array.isArray(name) ? [...name, String(el)] : [name, String(el)]}
               description={description}
               removeField={removeField}
               expandedControls={expandedControls}
@@ -875,8 +840,6 @@ export const getObjectFormItemsDraft = ({
             selfRequired: required?.includes(el),
             required: properties[el].required,
             forceNonRequired: forceNonRequired || !required?.includes(el),
-            isHidden: includesArray(hiddenPaths, Array.isArray(name) ? [...name, String(el)] : [name, String(el)]),
-            hiddenPaths,
             description: properties[el].description,
             namespaceData,
             makeValueUndefined,
@@ -894,7 +857,7 @@ export const getObjectFormItemsDraft = ({
         }
         return null
       })}
-    </PossibleHiddenContainer>
+    </HiddenContainer>
   )
 }
 
@@ -908,8 +871,6 @@ export const getObjectFormItemFromSwagger = ({
   selfRequired,
   required,
   forceNonRequired,
-  isHidden,
-  hiddenPaths,
   description,
   namespaceData,
   makeValueUndefined,
@@ -933,8 +894,6 @@ export const getObjectFormItemFromSwagger = ({
   selfRequired?: boolean
   required?: (string | number)[]
   forceNonRequired?: boolean
-  isHidden?: boolean
-  hiddenPaths?: string[][]
   description?: string
   namespaceData?: TNamespaceData
   makeValueUndefined?: (path: TFormName) => void
@@ -970,8 +929,6 @@ export const getObjectFormItemFromSwagger = ({
     persistName,
     required,
     forceNonRequired,
-    isHidden,
-    hiddenPaths,
     description,
     namespaceData,
     makeValueUndefined,
@@ -987,7 +944,6 @@ export const getObjectFormItemFromSwagger = ({
       name={name}
       persistName={persistName}
       selfRequired={selfRequired}
-      isHidden={isHidden}
       description={description}
       isAdditionalProperties={isAdditionalProperties}
       removeField={removeField}

@@ -5,7 +5,7 @@ import { Flex, Switch, Tooltip, Button } from 'antd'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName } from 'localTypes/form'
 import { MinusIcon, BackToDefaultIcon } from 'components/atoms'
-import { PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
+import { ResetedFormItem, CustomSizeTitle, HiddenContainer } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 import { Styled } from './styled'
 
@@ -13,7 +13,6 @@ type TFormBooleanInputProps = {
   name: TFormName
   arrKey?: number
   arrName?: TFormName
-  isHidden?: boolean
   description?: string
   makeValueUndefined?: (path: TFormName) => void
   isAdditionalProperties?: boolean
@@ -25,7 +24,6 @@ export const FormBooleanInput: FC<TFormBooleanInputProps> = ({
   name,
   arrKey,
   arrName,
-  isHidden,
   description,
   makeValueUndefined,
   isAdditionalProperties,
@@ -37,7 +35,7 @@ export const FormBooleanInput: FC<TFormBooleanInputProps> = ({
   const title = <>{getStringByName(name)}</>
 
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
+    <HiddenContainer name={name}>
       <Flex justify="space-between">
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           {description ? <Tooltip title={description}>{title}</Tooltip> : title}
@@ -72,6 +70,6 @@ export const FormBooleanInput: FC<TFormBooleanInputProps> = ({
           <BackToDefaultIcon />
         </Styled.CrossContainer>
       </Styled.SwitchAndCrossContainer>
-    </PossibleHiddenContainer>
+    </HiddenContainer>
   )
 }

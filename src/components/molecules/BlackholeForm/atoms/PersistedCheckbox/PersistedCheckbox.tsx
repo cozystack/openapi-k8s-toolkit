@@ -2,7 +2,6 @@ import React, { FC } from 'react'
 import { Button } from 'antd'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import { LockedIcon, UnlockedIcon } from 'components/atoms'
-import { PossibleHiddenContainer } from '../PossibleHiddenContainer'
 
 type TPersistedCheckboxProps = {
   formName: TFormName
@@ -22,10 +21,10 @@ export const PersistedCheckbox: FC<TPersistedCheckboxProps> = ({ formName, persi
   }
 
   return (
-    <PossibleHiddenContainer $isHidden={persistedControls.isPersistedKeysShown === false}>
+    <div>
       <Button size="small" type="text" onClick={toggleCheckbox}>
         {isChecked ? <LockedIcon /> : <UnlockedIcon />}
       </Button>
-    </PossibleHiddenContainer>
+    </div>
   )
 }

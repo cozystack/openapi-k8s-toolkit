@@ -5,7 +5,7 @@ import { Flex, InputNumber, Typography, Tooltip, Button } from 'antd'
 import { getStringByName } from 'utils/getStringByName'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import { MinusIcon, feedbackIcons } from 'components/atoms'
-import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
+import { PersistedCheckbox, HiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
 type TFormNumberItemProps = {
@@ -16,7 +16,6 @@ type TFormNumberItemProps = {
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   description?: string
   isAdditionalProperties?: boolean
   removeField: ({ path }: { path: TFormName }) => void
@@ -32,7 +31,6 @@ export const FormNumberInput: FC<TFormNumberItemProps> = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   description,
   isAdditionalProperties,
   removeField,
@@ -49,7 +47,7 @@ export const FormNumberInput: FC<TFormNumberItemProps> = ({
   )
 
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
+    <HiddenContainer name={name}>
       <Flex justify="space-between">
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           {description ? <Tooltip title={description}>{title}</Tooltip> : title}
@@ -77,6 +75,6 @@ export const FormNumberInput: FC<TFormNumberItemProps> = ({
       >
         <InputNumber placeholder={getStringByName(name)} step={isNumber ? 0.1 : 1} />
       </ResetedFormItem>
-    </PossibleHiddenContainer>
+    </HiddenContainer>
   )
 }

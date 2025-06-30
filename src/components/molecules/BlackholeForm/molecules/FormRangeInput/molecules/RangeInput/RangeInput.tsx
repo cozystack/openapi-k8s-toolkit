@@ -6,7 +6,7 @@ import { SliderBaseProps } from 'antd/es/slider'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import { getStringByName } from 'utils/getStringByName'
 import { MinusIcon, feedbackIcons } from 'components/atoms'
-import { PersistedCheckbox, PossibleHiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../../../atoms'
+import { PersistedCheckbox, HiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../../../atoms'
 import { useDesignNewLayout } from '../../../../organisms/BlackholeForm/context'
 
 export type TRangeInputProps = {
@@ -16,7 +16,6 @@ export type TRangeInputProps = {
   persistName?: TFormName
   required?: string[]
   forceNonRequired?: boolean
-  isHidden?: boolean
   persistedControls: TPersistedControls
   description?: string
   onRemoveByMinus?: () => void
@@ -33,7 +32,6 @@ export const RangeInput: FC<TRangeInputProps> = ({
   persistName,
   required,
   forceNonRequired,
-  isHidden,
   persistedControls,
   description,
   onRemoveByMinus,
@@ -66,7 +64,7 @@ export const RangeInput: FC<TRangeInputProps> = ({
   )
 
   return (
-    <PossibleHiddenContainer $isHidden={isHidden}>
+    <HiddenContainer name={name}>
       <Flex justify="space-between">
         <CustomSizeTitle $designNewLayout={designNewLayout}>
           {description ? <Tooltip title={description}>{title}</Tooltip> : title}
@@ -110,6 +108,6 @@ export const RangeInput: FC<TRangeInputProps> = ({
           </ResetedFormItem>
         </Col>
       </Row>
-    </PossibleHiddenContainer>
+    </HiddenContainer>
   )
 }
