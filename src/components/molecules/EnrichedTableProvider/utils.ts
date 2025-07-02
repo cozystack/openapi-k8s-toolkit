@@ -64,7 +64,7 @@ export const prepareDataForEnrichedColumns = ({
   let dataSource: TableProps['dataSource']
   if (additionalPrinterColumns) {
     dataSource = dataItems.map((el: TJSON) => {
-      if (typeof el === 'object') {
+      if (typeof el === 'object' && el !== null) {
         if (
           !Array.isArray(el) &&
           el.metadata &&
@@ -114,7 +114,7 @@ export const prepareDataForEnrichedColumns = ({
     }
   } else {
     dataSource = dataItems.map((el: TJSON) => {
-      if (typeof el === 'object' && !Array.isArray(el) && el.spec && typeof el.spec === 'object') {
+      if (typeof el === 'object' && el !== null && !Array.isArray(el) && el.spec && typeof el.spec === 'object') {
         if (
           !Array.isArray(el) &&
           el.metadata &&
