@@ -26,9 +26,10 @@ export const getGroupsByCategory = async ({
     .filter(({ name }) => !noncrds.includes(name) && !name.includes('.k8s.io'))
     .sort((a, b) => a.name.localeCompare(b.name))
 
-  const nonCrdGroups = apiGroupListData?.groups
-    .filter(({ name }) => noncrds.includes(name) || name.includes('.k8s.io'))
-    .sort((a, b) => a.name.localeCompare(b.name))
+  // const nonCrdGroups = apiGroupListData?.groups
+  //   .filter(({ name }) => noncrds.includes(name) || name.includes('.k8s.io'))
+  //   .sort((a, b) => a.name.localeCompare(b.name))
+  const nonCrdGroups = apiGroupListData?.groups.sort((a, b) => a.name.localeCompare(b.name))
 
   const filteredBuiltinData = await filterIfBuiltInInstanceNamespaceScoped({
     namespace,
