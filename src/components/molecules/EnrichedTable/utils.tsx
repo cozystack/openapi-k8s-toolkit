@@ -36,6 +36,9 @@ export const getEnrichedColumns = ({
     return {
       ...el,
       render: (value: TJSON) => {
+        if (value === null) {
+          return <div>null</div>
+        }
         if (typeof value === 'object' && !Array.isArray(value)) {
           if (isFlatObject(value)) {
             return (
@@ -49,7 +52,12 @@ export const getEnrichedColumns = ({
         }
         if (Array.isArray(value)) {
           if (value.every(el => el && !Array.isArray(el))) {
-            return <TrimmedTags tags={value.map(el => el.toLocaleString())} trimLength={possibleTrimLength} />
+            return (
+              <TrimmedTags
+                tags={value.map(el => (el ? el.toLocaleString() : 'null'))}
+                trimLength={possibleTrimLength}
+              />
+            )
           }
           return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={value.join(', ')} />
         }
