@@ -17,17 +17,13 @@ import { TYamlByValuesReq, TYamlByValuesRes, TValuesByYamlReq, TValuesByYamlRes 
 import { usePermissions } from 'hooks/usePermissions'
 import { createNewEntry, updateEntry } from 'api/forms'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
-import {
-  removeEmptyFormValues,
-  renameBrokenFieldBack,
-  // renameBrokenFieldBackToFormAgain,
-} from 'utils/removeEmptyFormValues'
-import { normalizeValuesForQuotas, normalizeValuesForQuotasToNumber } from 'utils/normalizeValuesForQuotas'
+import { normalizeValuesForQuotasToNumber } from 'utils/normalizeValuesForQuotas'
 import { getAllPathsFromObj } from 'utils/getAllPathsFromObj'
 import { getPrefixSubarrays } from 'utils/getPrefixSubArrays'
 import { Spacer } from 'components/atoms'
 import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
+import { handleSubmitError, handleValidationError } from './utilsErrorHandler'
 import { Styled } from './styled'
 import { DesignNewLayoutProvider, HiddenPathsProvider } from './context'
 
@@ -85,18 +81,21 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 }) => {
   const { token } = antdtheme.useToken()
   const navigate = useNavigate()
+
   const [form] = Form.useForm()
   const namespaceFromFormData = Form.useWatch<string>(['metadata', 'namespace'], form)
+
   const [properties, setProperties] = useState<OpenAPIV2.SchemaObject['properties']>(staticProperties)
   const [yamlValues, setYamlValues] = useState<Record<string, unknown>>()
   const debouncedSetYamlValues = useDebounceCallback(setYamlValues, 500)
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<TRequestError>()
+
   const [isDebugModalOpen, setIsDebugModalOpen] = useState<boolean>(false)
+
   const [expandedKeys, setExpandedKeys] = useState<TFormName[]>(expandedPaths || [])
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isPersistedKeysShown, setIsPersistedKeysShown] = useState<boolean>(true)
 
   const overflowRef = useRef<HTMLDivElement | null>(null)
 
@@ -133,95 +132,91 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       .then(() => {
         setIsLoading(true)
         setError(undefined)
+        const name = form.getFieldValue(['metadata', 'name'])
+        const namespace = form.getFieldValue(['metadata', 'namespace'])
+
         const values = form.getFieldsValue()
-        const cleanSchema = removeEmptyFormValues(values, persistedKeys)
-        const fixedCleanSchema = renameBrokenFieldBack(cleanSchema)
-        const quotasFixedSchema = normalizeValuesForQuotas(fixedCleanSchema, properties)
-        const body = quotasFixedSchema
-        /* TODO */
-        const { namespace } = cleanSchema.metadata
-        const endpoint = `/api/clusters/${cluster}/k8s/${type === 'builtin' ? '' : 'apis/'}${apiGroupApiVersion}${
-          isNameSpaced ? `/namespaces/${namespace}` : ''
-        }/${typeName}/${isCreate ? '' : cleanSchema.metadata.name}`
-        if (isCreate) {
-          createNewEntry({ endpoint, body })
-            .then(res => {
-              console.log(res)
-              if (backlink) {
-                navigate(backlink)
-              }
-            })
-            .catch(error => {
-              console.log('Form submit error', error)
-              setIsLoading(false)
-              if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
-                const invalidPart = error.response?.data.message.split('is invalid: ')[1]
-                const errorPath = invalidPart.split(':')[0].trim().split('.')
-                const keys = Array.from({ length: errorPath.length }, (_, i) => errorPath.slice(0, i + 1))
-                const possibleNewKeys = [...expandedKeys, ...keys]
-                const seen = new Set<TFormName>()
-                const uniqueKeys = possibleNewKeys.filter(item => {
-                  const key = Array.isArray(item) ? JSON.stringify(item) : item
-                  if (seen.has(key as TFormName)) {
-                    return false
-                  }
-                  seen.add(key as TFormName)
-                  return true
-                })
-                setExpandedKeys([...uniqueKeys])
-              }
-              setError(error)
-            })
-        } else {
-          updateEntry({ endpoint, body })
-            .then(res => {
-              console.log(res)
-              if (backlink) {
-                navigate(backlink)
-              }
-            })
-            .catch(error => {
-              console.log('Form submit error', error)
-              setIsLoading(false)
-              if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
-                const invalidPart = error.response?.data.message.split('is invalid: ')[1]
-                const errorPath = invalidPart.split(':')[0].trim().split('.')
-                const keys = Array.from({ length: errorPath.length }, (_, i) => errorPath.slice(0, i + 1))
-                const possibleNewKeys = [...expandedKeys, ...keys]
-                const seen = new Set<TFormName>()
-                const uniqueKeys = possibleNewKeys.filter(item => {
-                  const key = Array.isArray(item) ? JSON.stringify(item) : item
-                  if (seen.has(key as TFormName)) {
-                    return false
-                  }
-                  seen.add(key as TFormName)
-                  return true
-                })
-                setExpandedKeys([...uniqueKeys])
-              }
-              setError(error)
-            })
+        const payload: TYamlByValuesReq = {
+          values,
+          persistedKeys,
+          properties,
         }
+
+        axios
+          .post<TYamlByValuesRes>('/openapi-bff/forms/formSync/getYamlValuesByFromValues', payload)
+          .then(({ data }) => {
+            const body = data
+            const endpoint = `/api/clusters/${cluster}/k8s/${type === 'builtin' ? '' : 'apis/'}${apiGroupApiVersion}${
+              isNameSpaced ? `/namespaces/${namespace}` : ''
+            }/${typeName}/${isCreate ? '' : name}`
+
+            if (isCreate) {
+              createNewEntry({ endpoint, body })
+                .then(res => {
+                  console.log(res)
+                  if (backlink) {
+                    navigate(backlink)
+                  }
+                })
+                .catch(error => {
+                  console.log('Form submit error', error)
+                  setIsLoading(false)
+                  if (overflowRef.current) {
+                    const { scrollHeight, clientHeight } = overflowRef.current
+                    overflowRef.current.scrollTo({
+                      top: scrollHeight - clientHeight,
+                      behavior: 'smooth',
+                    })
+                  }
+                  if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
+                    const keys = handleSubmitError({ error, expandedKeys })
+                    setExpandedKeys([...keys])
+                  }
+                  setError(error)
+                })
+            } else {
+              updateEntry({ endpoint, body })
+                .then(res => {
+                  console.log(res)
+                  if (backlink) {
+                    navigate(backlink)
+                  }
+                })
+                .catch(error => {
+                  console.log('Form submit error', error)
+                  setIsLoading(false)
+                  if (overflowRef.current) {
+                    const { scrollHeight, clientHeight } = overflowRef.current
+                    overflowRef.current.scrollTo({
+                      top: scrollHeight - clientHeight,
+                      behavior: 'smooth',
+                    })
+                  }
+                  if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
+                    const keys = handleSubmitError({ error, expandedKeys })
+                    setExpandedKeys([...keys])
+                  }
+                  setError(error)
+                })
+            }
+          })
+          .catch(error => {
+            console.log('BFF Transform Error', error)
+            setIsLoading(false)
+            if (overflowRef.current) {
+              const { scrollHeight, clientHeight } = overflowRef.current
+              overflowRef.current.scrollTo({
+                top: scrollHeight - clientHeight,
+                behavior: 'smooth',
+              })
+            }
+            setError(error)
+          })
       })
       .catch((error: { errorFields: { name: TFormName; errors: string[]; warnings: string[] }[] } & unknown) => {
         console.log('Validating error', error)
-        const keysToExpandFromError = error.errorFields.reduce((acc: TFormName[], field) => [...acc, field.name], [])
-        const arrayedKeys = keysToExpandFromError.filter(key => Array.isArray(key))
-        const arrayedKeysWithAllPossiblePrefixes = (
-          arrayedKeys as (string[] | number[] | (string | number)[])[]
-        ).flatMap(keys => Array.from({ length: keys.length }, (_, i) => keys.slice(0, i + 1)))
-        const nonArrayedKeys = keysToExpandFromError.filter(key => !Array.isArray(key))
-        const possibleNewKeys = [...expandedKeys, ...nonArrayedKeys, ...arrayedKeysWithAllPossiblePrefixes]
-        const seen = new Set<TFormName>()
-        const uniqueKeys = possibleNewKeys.filter(item => {
-          const key = Array.isArray(item) ? JSON.stringify(item) : item
-          if (seen.has(key as TFormName)) {
-            return false
-          }
-          seen.add(key as TFormName)
-          return true
-        })
-        setExpandedKeys([...uniqueKeys])
+        const keys = handleValidationError({ error, expandedKeys })
+        setExpandedKeys([...keys])
       })
   }
 
@@ -235,11 +230,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     axios
       .post<TYamlByValuesRes>('/openapi-bff/forms/formSync/getYamlValuesByFromValues', payload)
       .then(({ data }) => debouncedSetYamlValues(data))
-    // const cleanSchema = removeEmptyFormValues(values, persistedKeys)
-    // const fixedCleanSchema = renameBrokenFieldBack(cleanSchema)
-    // const quotasFixedSchema = normalizeValuesForQuotas(fixedCleanSchema, properties)
-    // const body = quotasFixedSchema
-    // debouncedSetYamlValues(body)
   }, [form, debouncedSetYamlValues, properties, persistedKeys])
 
   const onYamlChangeCallback = (values: Record<string, unknown>) => {
@@ -252,11 +242,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         form.setFieldsValue(data)
       }
     })
-    // const normalizedValues = renameBrokenFieldBackToFormAgain(values)
-    // const normalizedValuesWithQuotas = normalizeValuesForQuotasToNumber(normalizedValues, properties)
-    // if (normalizedValues) {
-    //   form.setFieldsValue(normalizedValuesWithQuotas)
-    // }
   }
 
   useEffect(() => {
@@ -272,6 +257,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     onValuesChangeCallback()
   }, [prefillValuesSchema, form, formsPrefills, type, apiGroupApiVersion, typeName, onValuesChangeCallback, properties])
 
+  /* expanded initial */
   useEffect(() => {
     let allPaths: (string | number)[][] = []
     if (formsPrefills) {
@@ -296,6 +282,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiGroupApiVersion, formsPrefills, prefillValuesSchema, type, typeName])
 
+  /* namespace initial */
   useEffect(() => {
     if (prefillValueNamespaceOnly) {
       form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
@@ -303,20 +290,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     onValuesChangeCallback()
   }, [prefillValueNamespaceOnly, onValuesChangeCallback, form])
 
+  /* kind initial */
   useEffect(() => {
     if (isCreate) {
       form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
     }
     onValuesChangeCallback()
   }, [isCreate, kindName, apiGroupApiVersion, onValuesChangeCallback, form])
-
-  // useEffect(() => {
-  //   onValuesChangeCallback()
-  // }, [onValuesChangeCallback, form, persistedKeys])
-
-  // useEffect(() => {
-  //   onValuesChangeCallback()
-  // }, [properties, onValuesChangeCallback])
 
   if (!properties) {
     return null
@@ -428,19 +408,11 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                   removeField,
                   isEdit: !isCreate,
                   expandedControls: { onExpandOpen, onExpandClose, expandedKeys },
-                  persistedControls: { onPersistMark, onPersistUnmark, persistedKeys, isPersistedKeysShown },
+                  persistedControls: { onPersistMark, onPersistUnmark, persistedKeys },
                   urlParams,
                 })}
               </HiddenPathsProvider>
             </DesignNewLayoutProvider>
-            {/* <div>
-              Show persisted checkboxes:{' '}
-              <Switch
-                value={isPersistedKeysShown}
-                onChange={checked => setIsPersistedKeysShown(checked)}
-                size="small"
-              />
-            </div> */}
             {!designNewLayout && (
               <>
                 <Spacer $space={10} $samespace />

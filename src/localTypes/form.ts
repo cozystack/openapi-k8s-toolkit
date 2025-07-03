@@ -23,7 +23,6 @@ export type TPersistedControls = {
   onPersistMark: (value: TFormName, type?: 'str' | 'number' | 'arr' | 'obj') => void
   onPersistUnmark: (value: TFormName) => void
   persistedKeys: TFormName[]
-  isPersistedKeysShown?: boolean
 }
 
 export type TUrlParams = {
