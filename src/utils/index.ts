@@ -1,6 +1,5 @@
 export * from './prepareTemplate'
 export * from './isFlatObject'
-export * from './scopes'
 export * from './overwriteMatchingKeys'
 export * from './filterSelectOptions'
 export * from './getStringByName'

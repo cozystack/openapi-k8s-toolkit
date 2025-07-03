@@ -5,7 +5,8 @@ import { Alert, Spin } from 'antd'
 import axios, { AxiosError } from 'axios'
 import { TJSON } from 'localTypes/JSON'
 import { OpenAPIV2 } from 'openapi-types'
-import { TUrlParams, TPrepareFormRes } from 'localTypes/form'
+import { TUrlParams } from 'localTypes/form'
+import { TPrepareFormReq, TPrepareFormRes } from 'localTypes/bff/form'
 import { TFormPrefill } from 'localTypes/formExtensions'
 import { YamlEditorSingleton } from '../../molecules/YamlEditorSingleton'
 import { BlackholeForm } from '../BlackholeForm'
@@ -85,12 +86,13 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
 
   useEffect(() => {
     setIsLoading(true)
+    const payload: TPrepareFormReq = {
+      data,
+      clusterName: cluster,
+      customizationId,
+    }
     axios
-      .post<TPrepareFormRes>('/openapi-bff/forms/formPrepare/prepareFormProps', {
-        data,
-        clusterName: cluster,
-        customizationId,
-      })
+      .post<TPrepareFormRes>('/openapi-bff/forms/formPrepare/prepareFormProps', payload)
       .then(({ data }) => {
         if (data.isNamespaced) {
           setIsNamespaced(true)

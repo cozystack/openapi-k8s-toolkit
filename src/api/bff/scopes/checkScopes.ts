@@ -1,5 +1,10 @@
 import axios from 'axios'
-import { TCheckIfApiInstanceNamespaceScopedRes, TCheckIfBuiltInInstanceNamespaceScopedRes } from 'localTypes/scopes'
+import {
+  TCheckIfApiInstanceNamespaceScopedReq,
+  TCheckIfApiInstanceNamespaceScopedRes,
+  TCheckIfBuiltInInstanceNamespaceScopedReq,
+  TCheckIfBuiltInInstanceNamespaceScopedRes,
+} from 'localTypes/bff/scopes'
 
 export const checkIfApiInstanceNamespaceScoped = async ({
   typeName,
@@ -12,18 +17,18 @@ export const checkIfApiInstanceNamespaceScoped = async ({
   apiVersion: string
   clusterName: string
 }) => {
+  const payload: TCheckIfApiInstanceNamespaceScopedReq = {
+    typeName,
+    apiGroup,
+    apiVersion,
+    clusterName,
+  }
   const { data } = await axios.post<TCheckIfApiInstanceNamespaceScopedRes>(
     '/openapi-bff/scopes/checkScopes/checkIfApiNamespaceScoped',
-    {
-      typeName,
-      apiGroup,
-      apiVersion,
-      clusterName,
-    },
+    payload,
   )
 
-  const { isClusterWide, isNamespaceScoped } = data
-  return { isClusterWide, isNamespaceScoped }
+  return data
 }
 
 export const checkIfBuiltInInstanceNamespaceScoped = async ({
@@ -33,14 +38,14 @@ export const checkIfBuiltInInstanceNamespaceScoped = async ({
   typeName: string
   clusterName: string
 }) => {
+  const payload: TCheckIfBuiltInInstanceNamespaceScopedReq = {
+    typeName,
+    clusterName,
+  }
   const { data } = await axios.post<TCheckIfBuiltInInstanceNamespaceScopedRes>(
     '/openapi-bff/scopes/checkScopes/checkIfBuiltInNamespaceScoped',
-    {
-      typeName,
-      clusterName,
-    },
+    payload,
   )
 
-  const { isClusterWide, isNamespaceScoped } = data
-  return { isClusterWide, isNamespaceScoped }
+  return data
 }

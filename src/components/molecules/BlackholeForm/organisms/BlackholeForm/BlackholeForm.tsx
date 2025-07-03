@@ -13,6 +13,7 @@ import { TJSON } from 'localTypes/JSON'
 import { TFormName, TUrlParams } from 'localTypes/form'
 import { TFormPrefill } from 'localTypes/formExtensions'
 import { TRequestError } from 'localTypes/api'
+import { TYamlByValuesReq, TYamlByValuesRes, TValuesByYamlReq, TValuesByYamlRes } from 'localTypes/bff/form'
 import { usePermissions } from 'hooks/usePermissions'
 import { createNewEntry, updateEntry } from 'api/forms'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
@@ -226,12 +227,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   const onValuesChangeCallback = useCallback(() => {
     const values = form.getFieldsValue()
+    const payload: TYamlByValuesReq = {
+      values,
+      persistedKeys,
+      properties,
+    }
     axios
-      .post('/openapi-bff/forms/formSync/getYamlValuesByFromValues', {
-        values,
-        persistedKeys,
-        properties,
-      })
+      .post<TYamlByValuesRes>('/openapi-bff/forms/formSync/getYamlValuesByFromValues', payload)
       .then(({ data }) => debouncedSetYamlValues(data))
     // const cleanSchema = removeEmptyFormValues(values, persistedKeys)
     // const fixedCleanSchema = renameBrokenFieldBack(cleanSchema)
@@ -241,16 +243,15 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   }, [form, debouncedSetYamlValues, properties, persistedKeys])
 
   const onYamlChangeCallback = (values: Record<string, unknown>) => {
-    axios
-      .post('/openapi-bff/forms/formSync/getFormValuesByYaml', {
-        values,
-        properties,
-      })
-      .then(({ data }) => {
-        if (data) {
-          form.setFieldsValue(data)
-        }
-      })
+    const payload: TValuesByYamlReq = {
+      values,
+      properties,
+    }
+    axios.post<TValuesByYamlRes>('/openapi-bff/forms/formSync/getFormValuesByYaml', payload).then(({ data }) => {
+      if (data) {
+        form.setFieldsValue(data)
+      }
+    })
     // const normalizedValues = renameBrokenFieldBackToFormAgain(values)
     // const normalizedValuesWithQuotas = normalizeValuesForQuotasToNumber(normalizedValues, properties)
     // if (normalizedValues) {

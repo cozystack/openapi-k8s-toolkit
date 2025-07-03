@@ -8,7 +8,7 @@ export type TFormPrefill = {
   }
 }
 
-type TRangeInputCustomValue =
+export type TRangeInputCustomValue =
   | {
       type: 'number'
       value: number
