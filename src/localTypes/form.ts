@@ -1,5 +1,6 @@
 import { DefaultOptionType } from 'antd/es/select'
 import { OpenAPIV2 } from 'openapi-types'
+import { TFormPrefill } from './formExtensions'
 
 export type TPrepareFormRes =
   | {
@@ -20,6 +21,8 @@ export type TPrepareFormRes =
       persistedPaths: string[][] | undefined
       kindName: string | undefined
       isNamespaced: boolean
+      formPrefills?: TFormPrefill
+      namespacesData?: string[]
     }
 
 export type TNamespaceData =

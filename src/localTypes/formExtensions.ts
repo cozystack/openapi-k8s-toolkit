@@ -1,15 +1,11 @@
 export type TFormPrefill = {
   spec: {
-    overrideType: string
+    customizationId: string
     values: {
       path: (string | number)[]
       value: unknown
     }[]
   }
-}
-
-export type TFormsPrefillsData = {
-  items: TFormPrefill[]
 }
 
 type TRangeInputCustomValue =

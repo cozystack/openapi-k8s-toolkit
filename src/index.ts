@@ -24,7 +24,6 @@ export { useCrdData } from './hooks/useCrdData'
 export { useDirectUnknownResource } from './hooks/useDirectUnknownResource'
 /* types */
 export type { TUrlParams } from './localTypes/form'
-export type { TFormsPrefillsData } from './localTypes/formExtensions'
 export type { TClusterList } from './localTypes/clusterList'
 export type { TJSON } from './localTypes/JSON'
 export type {

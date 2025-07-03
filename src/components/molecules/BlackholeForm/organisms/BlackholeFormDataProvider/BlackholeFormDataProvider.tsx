@@ -6,7 +6,7 @@ import axios, { AxiosError } from 'axios'
 import { TJSON } from 'localTypes/JSON'
 import { OpenAPIV2 } from 'openapi-types'
 import { TUrlParams, TPrepareFormRes } from 'localTypes/form'
-import { TFormsPrefillsData } from 'localTypes/formExtensions'
+import { TFormPrefill } from 'localTypes/formExtensions'
 import { YamlEditorSingleton } from '../../molecules/YamlEditorSingleton'
 import { BlackholeForm } from '../BlackholeForm'
 
@@ -18,10 +18,6 @@ export type TBlackholeFormDataProviderProps = {
     apiGroup?: string
     typeName?: string
   }
-  namespacesData?: {
-    items: ({ metadata: { name: string } & unknown } & unknown)[]
-  }
-  formsPrefillsData?: TFormsPrefillsData
   data:
     | {
         type: 'builtin'
@@ -37,6 +33,7 @@ export type TBlackholeFormDataProviderProps = {
         prefillValuesSchema?: TJSON
         prefillValueNamespaceOnly?: string
       }
+  customizationId?: string
   isCreate?: boolean
   backlink?: string | null
   modeData?: {
@@ -53,9 +50,8 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
   cluster,
   urlParams,
   urlParamsForPermissions,
-  formsPrefillsData,
-  namespacesData,
   data,
+  customizationId,
   isCreate,
   backlink,
   modeData,
@@ -73,6 +69,8 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
     kindName: string
     isNamespaced?: boolean
     isError?: boolean
+    formPrefills?: TFormPrefill
+    namespacesData?: string[]
   }>()
   const [isLoading, setIsLoading] = useState(false)
   const [isNamespaced, setIsNamespaced] = useState<boolean>(false)
@@ -91,6 +89,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
       .post<TPrepareFormRes>('/openapi-bff/forms/formPrepare/prepareFormProps', {
         data,
         clusterName: cluster,
+        customizationId,
       })
       .then(({ data }) => {
         if (data.isNamespaced) {
@@ -108,6 +107,8 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
             expandedPaths: data.expandedPaths || [],
             persistedPaths: data.persistedPaths || [],
             kindName: data.kindName || '',
+            formPrefills: data.formPrefills,
+            namespacesData: data.namespacesData,
           })
         }
       })
@@ -117,7 +118,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
       .finally(() => {
         setIsLoading(false)
       })
-  }, [cluster, data, fallbackToManualMode])
+  }, [cluster, data, customizationId, fallbackToManualMode])
 
   if (isLoading) {
     return <Spin />
@@ -131,7 +132,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
         prefillValuesSchema={data.prefillValuesSchema}
         isCreate={isCreate}
         type={data.type}
-        isNameSpaced={isNamespaced ? namespacesData?.items.map(el => el.metadata.name) : false}
+        isNameSpaced={isNamespaced}
         apiGroupApiVersion={data.type === 'builtin' ? 'api/v1' : `${data.apiGroup}/${data.apiVersion}`}
         typeName={data.typeName}
         backlink={backlink}
@@ -158,7 +159,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
       theme={theme}
       urlParams={urlParams}
       urlParamsForPermissions={urlParamsForPermissions}
-      formsPrefillsData={formsPrefillsData}
+      formsPrefills={preparedData.formPrefills}
       staticProperties={preparedData.properties}
       required={preparedData.required}
       hiddenPaths={preparedData.hiddenPaths}
@@ -168,7 +169,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
       prefillValueNamespaceOnly={data.prefillValueNamespaceOnly}
       isCreate={isCreate}
       type={data.type}
-      isNameSpaced={isNamespaced ? namespacesData?.items.map(el => el.metadata.name) : false}
+      isNameSpaced={isNamespaced ? preparedData.namespacesData : false}
       apiGroupApiVersion={data.type === 'builtin' ? 'api/v1' : `${data.apiGroup}/${data.apiVersion}`}
       kindName={preparedData.kindName}
       typeName={data.typeName}

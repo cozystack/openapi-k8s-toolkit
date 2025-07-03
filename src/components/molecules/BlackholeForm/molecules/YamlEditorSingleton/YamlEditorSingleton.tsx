@@ -15,7 +15,7 @@ type TYamlEditorSingletonProps = {
   theme: 'light' | 'dark'
   cluster: string
   prefillValuesSchema?: TJSON
-  isNameSpaced?: false | string[]
+  isNameSpaced?: boolean
   isCreate?: boolean
   type: 'builtin' | 'apis'
   apiGroupApiVersion: string

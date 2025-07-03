@@ -8,7 +8,7 @@ export type TBreadcrumbResource = {
   apiVersion: string
   kind: string
   spec: {
-    pathToMatch: string
+    id: string
     breadcrumbItems: TLink[]
   }
 } & unknown

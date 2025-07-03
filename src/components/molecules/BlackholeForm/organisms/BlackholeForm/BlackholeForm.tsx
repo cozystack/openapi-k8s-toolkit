@@ -11,7 +11,7 @@ import _ from 'lodash'
 import { OpenAPIV2 } from 'openapi-types'
 import { TJSON } from 'localTypes/JSON'
 import { TFormName, TUrlParams } from 'localTypes/form'
-import { TFormsPrefillsData } from 'localTypes/formExtensions'
+import { TFormPrefill } from 'localTypes/formExtensions'
 import { TRequestError } from 'localTypes/api'
 import { usePermissions } from 'hooks/usePermissions'
 import { createNewEntry, updateEntry } from 'api/forms'
@@ -28,7 +28,6 @@ import { Spacer } from 'components/atoms'
 import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
 import { Styled } from './styled'
-import { isFormPrefill } from './guards'
 import { DesignNewLayoutProvider, HiddenPathsProvider } from './context'
 
 type TBlackholeFormCreateProps = {
@@ -39,7 +38,7 @@ type TBlackholeFormCreateProps = {
     apiGroup?: string
     typeName?: string
   }
-  formsPrefillsData?: TFormsPrefillsData
+  formsPrefills?: TFormPrefill
   staticProperties: OpenAPIV2.SchemaObject['properties']
   required: string[]
   hiddenPaths?: string[][]
@@ -65,7 +64,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   theme,
   urlParams,
   urlParamsForPermissions,
-  formsPrefillsData,
+  formsPrefills,
   staticProperties,
   required,
   hiddenPaths,
@@ -260,21 +259,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   }
 
   useEffect(() => {
-    const prefillType = type === 'apis' ? `${apiGroupApiVersion}/${typeName}` : `v1/${typeName}`
-    const specificCustomprefills = formsPrefillsData?.items.find(
-      item =>
-        typeof item === 'object' &&
-        !Array.isArray(item) &&
-        item !== null &&
-        item.spec &&
-        typeof item.spec === 'object' &&
-        !Array.isArray(item.spec) &&
-        item.spec !== null &&
-        typeof item.spec.overrideType === 'string' &&
-        item.spec.overrideType === prefillType,
-    )
-    if (isFormPrefill(specificCustomprefills)) {
-      specificCustomprefills.spec.values.forEach(({ path, value }) => {
+    if (formsPrefills) {
+      formsPrefills.spec.values.forEach(({ path, value }) => {
         form.setFieldValue(path, value)
       })
     }
@@ -283,34 +269,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       form.setFieldsValue(quotasPrefillValuesSchema)
     }
     onValuesChangeCallback()
-  }, [
-    prefillValuesSchema,
-    form,
-    formsPrefillsData,
-    type,
-    apiGroupApiVersion,
-    typeName,
-    onValuesChangeCallback,
-    properties,
-  ])
+  }, [prefillValuesSchema, form, formsPrefills, type, apiGroupApiVersion, typeName, onValuesChangeCallback, properties])
 
   useEffect(() => {
     let allPaths: (string | number)[][] = []
-    const prefillType = type === 'apis' ? `${apiGroupApiVersion}/${typeName}` : `v1/${typeName}`
-    const specificCustomprefills = formsPrefillsData?.items.find(
-      item =>
-        typeof item === 'object' &&
-        !Array.isArray(item) &&
-        item !== null &&
-        item.spec &&
-        typeof item.spec === 'object' &&
-        !Array.isArray(item.spec) &&
-        item.spec !== null &&
-        typeof item.spec.overrideType === 'string' &&
-        item.spec.overrideType === prefillType,
-    )
-    if (isFormPrefill(specificCustomprefills)) {
-      allPaths = specificCustomprefills.spec.values.flatMap(({ path }) => getPrefixSubarrays(path))
+    if (formsPrefills) {
+      allPaths = formsPrefills.spec.values.flatMap(({ path }) => getPrefixSubarrays(path))
     }
     if (prefillValuesSchema) {
       if (typeof prefillValuesSchema === 'object' && prefillValuesSchema !== null) {
@@ -329,7 +293,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     })
     setExpandedKeys([...uniqueKeys])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiGroupApiVersion, formsPrefillsData, prefillValuesSchema, type, typeName])
+  }, [apiGroupApiVersion, formsPrefills, prefillValuesSchema, type, typeName])
 
   useEffect(() => {
     if (prefillValueNamespaceOnly) {
