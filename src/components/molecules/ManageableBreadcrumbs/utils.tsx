@@ -1,4 +1,4 @@
-import { Link, matchPath } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { BreadcrumbItemType } from 'antd/es/breadcrumb/Breadcrumb'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { TLink } from './types'
@@ -38,22 +38,25 @@ const mapLinksFromRaw = ({
 export const prepareDataForManageableBreadcrumbs = ({
   data,
   replaceValues,
-  pathname,
+  idToCompare,
 }: {
-  data: { pathToMatch: string; breadcrumbItems: TLink[] }[]
+  data: { id: string; breadcrumbItems: TLink[] }[]
   replaceValues: Record<string, string | undefined>
   pathname: string
-}): { pathToMatch: string; breadcrumbItems: BreadcrumbItemType[] } | undefined => {
-  const preparedData = data.map(({ pathToMatch, breadcrumbItems }) => ({
-    pathToMatch: prepareTemplate({
-      template: pathToMatch,
-      replaceValues,
-    }),
-    breadcrumbItems: mapLinksFromRaw({
-      rawLinks: breadcrumbItems,
-      replaceValues,
-    }),
-  }))
+  idToCompare: string
+}): { breadcrumbItems: BreadcrumbItemType[] } | undefined => {
+  const foundData = data.find(el => el.id === idToCompare)
 
-  return preparedData.find(({ pathToMatch }) => matchPath(pathToMatch, pathname))
+  if (!foundData) {
+    return undefined
+  }
+
+  const result = {
+    breadcrumbItems: mapLinksFromRaw({
+      rawLinks: foundData.breadcrumbItems,
+      replaceValues,
+    }),
+  }
+
+  return result
 }

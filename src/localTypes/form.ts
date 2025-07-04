@@ -1,26 +1,4 @@
 import { DefaultOptionType } from 'antd/es/select'
-import { OpenAPIV2 } from 'openapi-types'
-
-export type TPrepareFormRes =
-  | {
-      result: 'error'
-      error: string | undefined
-      kindName: string | undefined
-      fallbackToManualMode: true
-      isNamespaced: boolean
-    }
-  | {
-      result: 'success'
-      properties: {
-        [name: string]: OpenAPIV2.SchemaObject
-      }
-      required: string[] | undefined
-      hiddenPaths: string[][] | undefined
-      expandedPaths: string[][] | undefined
-      persistedPaths: string[][] | undefined
-      kindName: string | undefined
-      isNamespaced: boolean
-    }
 
 export type TNamespaceData =
   | {
@@ -45,7 +23,6 @@ export type TPersistedControls = {
   onPersistMark: (value: TFormName, type?: 'str' | 'number' | 'arr' | 'obj') => void
   onPersistUnmark: (value: TFormName) => void
   persistedKeys: TFormName[]
-  isPersistedKeysShown?: boolean
 }
 
 export type TUrlParams = {

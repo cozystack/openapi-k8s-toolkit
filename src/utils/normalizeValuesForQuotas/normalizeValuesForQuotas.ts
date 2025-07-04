@@ -36,30 +36,6 @@ const findAllPathsForObject = (obj: any, targetKey: string, targetValue: any, cu
   return paths
 }
 
-export const normalizeValuesForQuotas = (object: any, properties: OpenAPIV2.SchemaObject['properties']) => {
-  const newObject = _.cloneDeep(object)
-  const cpuPaths = findAllPathsForObject(properties, 'type', 'rangeInputCpu')
-  const memoryPaths = findAllPathsForObject(properties, 'type', 'rangeInputMemory')
-
-  memoryPaths.forEach(path => {
-    const cleanPath = path.filter(el => typeof el === 'string').filter(el => el !== 'properties')
-    const value = _.get(newObject, cleanPath)
-    if (value || value === 0) {
-      _.set(newObject, cleanPath, `${value}G`)
-    }
-  })
-
-  cpuPaths.forEach(path => {
-    const cleanPath = path.filter(el => typeof el === 'string').filter(el => el !== 'properties')
-    const value = _.get(newObject, cleanPath)
-    if (value || value === 0) {
-      _.set(newObject, cleanPath, `${parseFloat(value)}`)
-    }
-  })
-
-  return newObject
-}
-
 export const normalizeValuesForQuotasToNumber = (object: any, properties: OpenAPIV2.SchemaObject['properties']) => {
   const newObject = _.cloneDeep(object)
   const cpuPaths = findAllPathsForObject(properties, 'type', 'rangeInputCpu')

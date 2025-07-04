@@ -1,38 +1,21 @@
 import React, { FC } from 'react'
 import { Breadcrumb, Spin } from 'antd'
+import { BreadcrumbItemType } from 'antd/es/breadcrumb/Breadcrumb'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { TBreadcrumbResponse } from './types'
 import { prepareDataForManageableBreadcrumbs } from './utils'
 import { Styled } from './styled'
 
 export type TManageableBreadcrumbsProps = {
-  data: TBreadcrumbResponse
-  replaceValues: Record<string, string | undefined>
-  pathname: string
+  data: { breadcrumbItems: BreadcrumbItemType[] }
 }
 
-export const ManageableBreadcrumbs: FC<TManageableBreadcrumbsProps> = ({ data, replaceValues, pathname }) => {
-  const parsedData = data?.items.map(({ spec }) => spec)
-
-  if (!parsedData) {
-    return null
-  }
-
-  const result = prepareDataForManageableBreadcrumbs({
-    data: parsedData,
-    replaceValues,
-    pathname,
-  })
-
-  if (result) {
-    return (
-      <Styled.HeightDiv>
-        <Breadcrumb separator=">" items={result.breadcrumbItems} />
-      </Styled.HeightDiv>
-    )
-  }
-
-  return <Styled.HeightDiv />
+export const ManageableBreadcrumbs: FC<TManageableBreadcrumbsProps> = ({ data }) => {
+  return (
+    <Styled.HeightDiv>
+      <Breadcrumb separator=">" items={data.breadcrumbItems} />
+    </Styled.HeightDiv>
+  )
 }
 
 export type TManageableBreadcrumbsWithDataProviderProps = {
@@ -41,6 +24,7 @@ export type TManageableBreadcrumbsWithDataProviderProps = {
   isEnabled?: boolean
   replaceValues: Record<string, string | undefined>
   pathname: string
+  idToCompare: string
 }
 
 export const ManageableBreadcrumbsWithDataProvider: FC<TManageableBreadcrumbsWithDataProviderProps> = ({
@@ -49,6 +33,7 @@ export const ManageableBreadcrumbsWithDataProvider: FC<TManageableBreadcrumbsWit
   isEnabled,
   replaceValues,
   pathname,
+  idToCompare,
 }) => {
   const {
     data: rawData,
@@ -77,5 +62,22 @@ export const ManageableBreadcrumbsWithDataProvider: FC<TManageableBreadcrumbsWit
     return null
   }
 
-  return <ManageableBreadcrumbs data={rawData} replaceValues={replaceValues} pathname={pathname} />
+  const parsedData = rawData?.items.map(({ spec }) => spec)
+
+  if (!parsedData) {
+    return null
+  }
+
+  const result = prepareDataForManageableBreadcrumbs({
+    data: parsedData,
+    replaceValues,
+    pathname,
+    idToCompare,
+  })
+
+  if (!result) {
+    return <Styled.HeightDiv />
+  }
+
+  return <ManageableBreadcrumbs data={result} />
 }

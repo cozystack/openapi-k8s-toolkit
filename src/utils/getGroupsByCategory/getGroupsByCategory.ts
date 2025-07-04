@@ -1,5 +1,5 @@
 import { TApiGroupList, TBuiltinResourceTypeList } from 'localTypes/k8s'
-import { filterIfBuiltInInstanceNamespaceScoped } from 'utils/scopes/filterScopes'
+import { filterIfBuiltInInstanceNamespaceScoped } from 'api/bff/scopes/filterScopes'
 
 export const getGroupsByCategory = async ({
   clusterName,
