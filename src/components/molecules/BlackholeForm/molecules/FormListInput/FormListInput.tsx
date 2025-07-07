@@ -1,6 +1,6 @@
 /* eslint-disable no-unneeded-ternary */
 /* eslint-disable no-nested-ternary */
-import React, { FC } from 'react'
+import React, { FC, useEffect, useRef } from 'react'
 import { Flex, Typography, Tooltip, Select, Form, Button } from 'antd'
 import _ from 'lodash'
 import { TFormName, TPersistedControls, TUrlParams } from 'localTypes/form'
@@ -10,8 +10,13 @@ import { getStringByName } from 'utils/getStringByName'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { MinusIcon, feedbackIcons } from 'components/atoms'
-import { PersistedCheckbox, HiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
-import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
+import { PersistedCheckbox, HiddenContainer, ResetedFormItem, CustomSizeTitle, HeightContainer } from '../../atoms'
+import {
+  useDesignNewLayout,
+  useOnValuesChangeCallback,
+  useIsTouchedPersisted,
+  useUpdateIsTouchedPersisted,
+} from '../../organisms/BlackholeForm/context'
 
 type TFormListInputProps = {
   name: TFormName
@@ -45,14 +50,97 @@ export const FormListInput: FC<TFormListInputProps> = ({
   onRemoveByMinus,
 }) => {
   const designNewLayout = useDesignNewLayout()
+  const onValuesChangeCallBack = useOnValuesChangeCallback()
+  const isTouchedPeristed = useIsTouchedPersisted()
+  const updateTouched = useUpdateIsTouchedPersisted()
 
   const { clusterName, namespace, syntheticProject, entryName } = urlParams
   const form = Form.useFormInstance()
   const fieldValue = Form.useWatch(name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name, form)
 
+  const fixedName = name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name
+
+  const rawRelatedFieldValue = Form.useWatch(customProps.relatedValuePath, form)
+  const relatedFieldValue = customProps.relatedValuePath ? rawRelatedFieldValue : undefined
+  const relatedTouched = customProps.relatedValuePath ? form.isFieldTouched(customProps.relatedValuePath) : 'hehe'
+
+  // to prevent circular callback onvaluechange call
+  const hasFiredRef = useRef(false)
+  // remembering previous field value
+  const relatedFieldValuePrev = useRef('unset')
+  // remembering that we setted previous once, when user touched the field
+  const hasSeededRef = useRef(false)
+
+  // managing context of touched/untouched of related field
+  useEffect(() => {
+    if (customProps.relatedValuePath && relatedTouched) {
+      updateTouched(prev => ({
+        ...prev,
+        [customProps.relatedValuePath?.join('.') || 'your doing it wrong']: true,
+      }))
+    }
+  }, [customProps.relatedValuePath, relatedTouched, updateTouched])
+
+  // updating prev value on first user touch of related field
+  useEffect(() => {
+    if (
+      customProps.relatedValuePath &&
+      isTouchedPeristed[customProps.relatedValuePath.join('.')] &&
+      relatedFieldValue &&
+      !hasSeededRef.current
+    ) {
+      relatedFieldValuePrev.current = relatedFieldValue
+      hasSeededRef.current = true
+      form.setFieldValue(arrName || fixedName, undefined)
+      onValuesChangeCallBack?.()
+    }
+  }, [
+    customProps.relatedValuePath,
+    relatedTouched,
+    isTouchedPeristed,
+    relatedFieldValue,
+    form,
+    arrName,
+    fixedName,
+    onValuesChangeCallBack,
+  ])
+
+  useEffect(() => {
+    // only if previous value is touched
+    if (!customProps.relatedValuePath || relatedFieldValuePrev.current === 'unset') {
+      return
+    }
+
+    // if cleared or differs from previous value and not fired once
+    if (
+      (!relatedFieldValue ||
+        (relatedFieldValuePrev.current !== 'unset' && relatedFieldValuePrev.current !== relatedFieldValue)) &&
+      !hasFiredRef.current
+    ) {
+      form.setFieldValue(arrName || fixedName, undefined)
+      onValuesChangeCallBack?.()
+
+      // updating fired info
+      hasFiredRef.current = true
+      // updating previous value
+      relatedFieldValuePrev.current = relatedFieldValue
+    } else if (relatedFieldValue && hasFiredRef.current) {
+      // user has set it back → re‑arm for the next clear
+      hasFiredRef.current = false
+    }
+  }, [
+    customProps.relatedValuePath,
+    form,
+    arrName,
+    fixedName,
+    relatedFieldValue,
+    onValuesChangeCallBack,
+    isTouchedPeristed,
+  ])
+
   const uri = prepareTemplate({
     template: customProps.valueUri,
-    replaceValues: { clusterName, namespace, syntheticProject, entryName },
+    replaceValues: { clusterName, namespace, syntheticProject, relatedFieldValue, entryName },
   })
 
   const {
@@ -63,18 +151,18 @@ export const FormListInput: FC<TFormListInputProps> = ({
     uri,
     refetchInterval: false,
     queryKey: [uri || '', JSON.stringify(name)],
-    isEnabled: !!uri,
+    isEnabled: !!uri && (!customProps.relatedValuePath || (customProps.relatedValuePath && !!relatedFieldValue)),
   })
 
-  if (isLoadingOptionsObj) {
-    return <div>Loading</div>
+  if (isLoadingOptionsObj && (!customProps.relatedValuePath || (customProps.relatedValuePath && !!relatedFieldValue))) {
+    return <HeightContainer $height={64}>Loading</HeightContainer>
   }
 
-  if (isErrorOptionsObj) {
-    return <div>Error</div>
+  if (isErrorOptionsObj && (!customProps.relatedValuePath || (customProps.relatedValuePath && !!relatedFieldValue))) {
+    return <HeightContainer $height={64}>Error</HeightContainer>
   }
 
-  const items = _.get(optionsObj, ['items'])
+  const items = !isErrorOptionsObj && !isLoadingOptionsObj && optionsObj ? _.get(optionsObj, ['items']) : []
   const filteredItems = customProps.criteria
     ? items.filter((item: object) => {
         const objValue = _.get(item, customProps.criteria?.keysToValue || [])
@@ -111,8 +199,6 @@ export const FormListInput: FC<TFormListInputProps> = ({
     }
     return acc
   }, [])
-
-  const fixedName = name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name
 
   const title = (
     <>
@@ -153,6 +239,7 @@ export const FormListInput: FC<TFormListInputProps> = ({
           placeholder="Select"
           options={uniqueOptions}
           filterOption={filterSelectOptions}
+          disabled={customProps.relatedValuePath && !rawRelatedFieldValue}
           allowClear
           showSearch
         />

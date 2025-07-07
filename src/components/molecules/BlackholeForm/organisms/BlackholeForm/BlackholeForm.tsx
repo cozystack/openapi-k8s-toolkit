@@ -25,7 +25,12 @@ import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
 import { handleSubmitError, handleValidationError } from './utilsErrorHandler'
 import { Styled } from './styled'
-import { DesignNewLayoutProvider, HiddenPathsProvider } from './context'
+import {
+  DesignNewLayoutProvider,
+  HiddenPathsProvider,
+  OnValuesChangeCallbackProvider,
+  IsTouchedPersistedProvider,
+} from './context'
 
 type TBlackholeFormCreateProps = {
   cluster: string
@@ -244,18 +249,38 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     })
   }
 
+  /* prefill values */
   useEffect(() => {
     if (formsPrefills) {
       formsPrefills.spec.values.forEach(({ path, value }) => {
         form.setFieldValue(path, value)
       })
     }
+    if (prefillValueNamespaceOnly) {
+      form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
+    }
+    if (isCreate) {
+      form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
+    }
     if (prefillValuesSchema) {
       const quotasPrefillValuesSchema = normalizeValuesForQuotasToNumber(prefillValuesSchema, properties)
       form.setFieldsValue(quotasPrefillValuesSchema)
     }
+
     onValuesChangeCallback()
-  }, [prefillValuesSchema, form, formsPrefills, type, apiGroupApiVersion, typeName, onValuesChangeCallback, properties])
+  }, [
+    prefillValuesSchema,
+    form,
+    formsPrefills,
+    type,
+    apiGroupApiVersion,
+    typeName,
+    onValuesChangeCallback,
+    properties,
+    prefillValueNamespaceOnly,
+    isCreate,
+    kindName,
+  ])
 
   /* expanded initial */
   useEffect(() => {
@@ -283,20 +308,20 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   }, [apiGroupApiVersion, formsPrefills, prefillValuesSchema, type, typeName])
 
   /* namespace initial */
-  useEffect(() => {
-    if (prefillValueNamespaceOnly) {
-      form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
-    }
-    onValuesChangeCallback()
-  }, [prefillValueNamespaceOnly, onValuesChangeCallback, form])
+  // useEffect(() => {
+  //   if (prefillValueNamespaceOnly) {
+  //     form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
+  //   }
+  //   onValuesChangeCallback()
+  // }, [prefillValueNamespaceOnly, onValuesChangeCallback, form])
 
   /* kind initial */
-  useEffect(() => {
-    if (isCreate) {
-      form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
-    }
-    onValuesChangeCallback()
-  }, [isCreate, kindName, apiGroupApiVersion, onValuesChangeCallback, form])
+  // useEffect(() => {
+  //   if (isCreate) {
+  //     form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
+  //   }
+  //   onValuesChangeCallback()
+  // }, [isCreate, kindName, apiGroupApiVersion, onValuesChangeCallback, form])
 
   if (!properties) {
     return null
@@ -397,21 +422,25 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         <Styled.OverflowContainer ref={overflowRef}>
           <Form form={form} onValuesChange={onValuesChangeCallback}>
             <DesignNewLayoutProvider value={designNewLayout}>
-              <HiddenPathsProvider value={hiddenPaths}>
-                {getObjectFormItemsDraft({
-                  properties,
-                  name: [],
-                  required,
-                  namespaceData,
-                  makeValueUndefined,
-                  addField,
-                  removeField,
-                  isEdit: !isCreate,
-                  expandedControls: { onExpandOpen, onExpandClose, expandedKeys },
-                  persistedControls: { onPersistMark, onPersistUnmark, persistedKeys },
-                  urlParams,
-                })}
-              </HiddenPathsProvider>
+              <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
+                <IsTouchedPersistedProvider value={{}}>
+                  <HiddenPathsProvider value={hiddenPaths}>
+                    {getObjectFormItemsDraft({
+                      properties,
+                      name: [],
+                      required,
+                      namespaceData,
+                      makeValueUndefined,
+                      addField,
+                      removeField,
+                      isEdit: !isCreate,
+                      expandedControls: { onExpandOpen, onExpandClose, expandedKeys },
+                      persistedControls: { onPersistMark, onPersistUnmark, persistedKeys },
+                      urlParams,
+                    })}
+                  </HiddenPathsProvider>
+                </IsTouchedPersistedProvider>
+              </OnValuesChangeCallbackProvider>
             </DesignNewLayoutProvider>
             {!designNewLayout && (
               <>
