@@ -148,7 +148,10 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         }
 
         axios
-          .post<TYamlByValuesRes>('/openapi-bff/forms/formSync/getYamlValuesByFromValues', payload)
+          .post<TYamlByValuesRes>(
+            `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
+            payload,
+          )
           .then(({ data }) => {
             const body = data
             const endpoint = `/api/clusters/${cluster}/k8s/${type === 'builtin' ? '' : 'apis/'}${apiGroupApiVersion}${
@@ -236,10 +239,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         properties,
       }
       axios
-        .post<TYamlByValuesRes>('/openapi-bff/forms/formSync/getYamlValuesByFromValues', payload)
+        .post<TYamlByValuesRes>(
+          `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
+          payload,
+        )
         .then(({ data }) => debouncedSetYamlValues(data))
     },
-    [form, debouncedSetYamlValues, properties, persistedKeys],
+    [form, debouncedSetYamlValues, properties, persistedKeys, cluster],
   )
 
   const onYamlChangeCallback = useCallback(
@@ -248,13 +254,15 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         values,
         properties,
       }
-      axios.post<TValuesByYamlRes>('/openapi-bff/forms/formSync/getFormValuesByYaml', payload).then(({ data }) => {
-        if (data) {
-          form.setFieldsValue(data)
-        }
-      })
+      axios
+        .post<TValuesByYamlRes>(`/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`, payload)
+        .then(({ data }) => {
+          if (data) {
+            form.setFieldsValue(data)
+          }
+        })
     },
-    [form, properties],
+    [form, properties, cluster],
   )
 
   const initialValues = useMemo(() => {
