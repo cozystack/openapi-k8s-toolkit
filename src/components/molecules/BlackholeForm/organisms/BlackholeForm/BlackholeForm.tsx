@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable no-console */
-import React, { FC, useState, useEffect, useCallback, useRef, Suspense } from 'react'
+import React, { FC, useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react'
 import { useDebounceCallback } from 'usehooks-ts'
 import { theme as antdtheme, Form, Button, Alert, Flex, Modal, Typography } from 'antd'
 import { BugOutlined } from '@ant-design/icons'
@@ -225,62 +225,83 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       })
   }
 
-  const onValuesChangeCallback = useCallback(() => {
-    const values = form.getFieldsValue()
-    const payload: TYamlByValuesReq = {
-      values,
-      persistedKeys,
-      properties,
-    }
-    axios
-      .post<TYamlByValuesRes>('/openapi-bff/forms/formSync/getYamlValuesByFromValues', payload)
-      .then(({ data }) => debouncedSetYamlValues(data))
-  }, [form, debouncedSetYamlValues, properties, persistedKeys])
+  const onValuesChangeCallback = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (values?: any) => {
+      const v = values || form.getFieldsValue()
 
-  const onYamlChangeCallback = (values: Record<string, unknown>) => {
-    const payload: TValuesByYamlReq = {
-      values,
-      properties,
-    }
-    axios.post<TValuesByYamlRes>('/openapi-bff/forms/formSync/getFormValuesByYaml', payload).then(({ data }) => {
-      if (data) {
-        form.setFieldsValue(data)
+      const payload: TYamlByValuesReq = {
+        values: v,
+        persistedKeys,
+        properties,
       }
-    })
-  }
+      axios
+        .post<TYamlByValuesRes>('/openapi-bff/forms/formSync/getYamlValuesByFromValues', payload)
+        .then(({ data }) => debouncedSetYamlValues(data))
+    },
+    [form, debouncedSetYamlValues, properties, persistedKeys],
+  )
 
-  /* prefill values */
-  useEffect(() => {
+  const onYamlChangeCallback = useCallback(
+    (values: Record<string, unknown>) => {
+      const payload: TValuesByYamlReq = {
+        values,
+        properties,
+      }
+      axios.post<TValuesByYamlRes>('/openapi-bff/forms/formSync/getFormValuesByYaml', payload).then(({ data }) => {
+        if (data) {
+          form.setFieldsValue(data)
+        }
+      })
+    },
+    [form, properties],
+  )
+
+  const initialValues = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allValues: Record<string, any> = {}
+
+    if (isCreate) {
+      // form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
+      _.set(allValues, ['apiVersion'], apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion)
+      _.set(allValues, ['kind'], kindName)
+    }
     if (formsPrefills) {
       formsPrefills.spec.values.forEach(({ path, value }) => {
-        form.setFieldValue(path, value)
+        // form.setFieldValue(path, value)
+        _.set(allValues, path, value)
       })
     }
     if (prefillValueNamespaceOnly) {
-      form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
-    }
-    if (isCreate) {
-      form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
+      // form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
+      _.set(allValues, ['metadata', 'namespace'], prefillValueNamespaceOnly)
     }
     if (prefillValuesSchema) {
       const quotasPrefillValuesSchema = normalizeValuesForQuotasToNumber(prefillValuesSchema, properties)
-      form.setFieldsValue(quotasPrefillValuesSchema)
+      // form.setFieldsValue(quotasPrefillValuesSchema)
+      Object.entries(quotasPrefillValuesSchema).forEach(([flatKey, v]) => {
+        _.set(allValues, flatKey.split('.'), v)
+      })
     }
 
-    onValuesChangeCallback()
+    const sorted = Object.fromEntries(Object.entries(allValues).sort(([a], [b]) => a.localeCompare(b)))
+
+    return sorted
   }, [
-    prefillValuesSchema,
-    form,
     formsPrefills,
-    type,
-    apiGroupApiVersion,
-    typeName,
-    onValuesChangeCallback,
-    properties,
     prefillValueNamespaceOnly,
     isCreate,
+    apiGroupApiVersion,
     kindName,
+    prefillValuesSchema,
+    properties,
   ])
+
+  useEffect(() => {
+    if (initialValues) {
+      onValuesChangeCallback(initialValues)
+    }
+  }, [onValuesChangeCallback, initialValues])
 
   /* expanded initial */
   useEffect(() => {
@@ -306,22 +327,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     setExpandedKeys([...uniqueKeys])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiGroupApiVersion, formsPrefills, prefillValuesSchema, type, typeName])
-
-  /* namespace initial */
-  // useEffect(() => {
-  //   if (prefillValueNamespaceOnly) {
-  //     form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
-  //   }
-  //   onValuesChangeCallback()
-  // }, [prefillValueNamespaceOnly, onValuesChangeCallback, form])
-
-  /* kind initial */
-  // useEffect(() => {
-  //   if (isCreate) {
-  //     form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
-  //   }
-  //   onValuesChangeCallback()
-  // }, [isCreate, kindName, apiGroupApiVersion, onValuesChangeCallback, form])
 
   if (!properties) {
     return null
@@ -420,7 +425,11 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     <>
       <Styled.Container $designNewLayout={designNewLayout} $designNewLayoutHeight={designNewLayoutHeight}>
         <Styled.OverflowContainer ref={overflowRef}>
-          <Form form={form} onValuesChange={onValuesChangeCallback}>
+          <Form
+            form={form}
+            initialValues={initialValues}
+            onValuesChange={(_, allValues) => onValuesChangeCallback(allValues)}
+          >
             <DesignNewLayoutProvider value={designNewLayout}>
               <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
                 <IsTouchedPersistedProvider value={{}}>

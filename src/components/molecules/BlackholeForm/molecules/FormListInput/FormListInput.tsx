@@ -62,7 +62,7 @@ export const FormListInput: FC<TFormListInputProps> = ({
 
   const rawRelatedFieldValue = Form.useWatch(customProps.relatedValuePath, form)
   const relatedFieldValue = customProps.relatedValuePath ? rawRelatedFieldValue : undefined
-  const relatedTouched = customProps.relatedValuePath ? form.isFieldTouched(customProps.relatedValuePath) : 'hehe'
+  const relatedTouched = customProps.relatedValuePath ? form.isFieldTouched(customProps.relatedValuePath) : '~'
 
   // to prevent circular callback onvaluechange call
   const hasFiredRef = useRef(false)
