@@ -6,5 +6,5 @@ export const getSwagger = async ({
 }: {
   clusterName: string
 }): Promise<AxiosResponse<TGetDerefedSwaggerRes>> => {
-  return axios.get<TGetDerefedSwaggerRes>(`/openapi-bff/swagger/swagger/${clusterName}`)
+  return axios.get<TGetDerefedSwaggerRes>(`/api/clusters/${clusterName}/openapi-bff/swagger/swagger/${clusterName}`)
 }

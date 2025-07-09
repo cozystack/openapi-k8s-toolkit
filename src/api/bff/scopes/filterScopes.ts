@@ -28,7 +28,7 @@ export const filterIfApiInstanceNamespaceScoped = async ({
     clusterName,
   }
   const result = await axios.post<TFilterIfApiInstanceNamespaceScopedRes>(
-    '/openapi-bff/scopes/filterScopes/filterIfApiNamespaceScoped',
+    `/api/clusters/${clusterName}/openapi-bff/scopes/filterScopes/filterIfApiNamespaceScoped`,
     payload,
   )
 
@@ -50,7 +50,7 @@ export const filterIfBuiltInInstanceNamespaceScoped = async ({
     clusterName,
   }
   const result = await axios.post<TFilterIfBuiltInInstanceNamespaceScopedRes>(
-    '/openapi-bff/scopes/filterScopes/filterIfBuiltInNamespaceScoped',
+    `/api/clusters/${clusterName}/openapi-bff/scopes/filterScopes/filterIfBuiltInNamespaceScoped`,
     payload,
   )
 

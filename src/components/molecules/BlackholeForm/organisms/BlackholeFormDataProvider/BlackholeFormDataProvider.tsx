@@ -92,7 +92,7 @@ export const BlackholeFormDataProvider: FC<TBlackholeFormDataProviderProps> = ({
       customizationId,
     }
     axios
-      .post<TPrepareFormRes>('/openapi-bff/forms/formPrepare/prepareFormProps', payload)
+      .post<TPrepareFormRes>(`/api/clusters/${cluster}/openapi-bff/forms/formPrepare/prepareFormProps`, payload)
       .then(({ data }) => {
         if (data.isNamespaced) {
           setIsNamespaced(true)

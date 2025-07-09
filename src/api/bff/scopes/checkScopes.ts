@@ -24,7 +24,7 @@ export const checkIfApiInstanceNamespaceScoped = async ({
     clusterName,
   }
   const { data } = await axios.post<TCheckIfApiInstanceNamespaceScopedRes>(
-    '/openapi-bff/scopes/checkScopes/checkIfApiNamespaceScoped',
+    `/api/clusters/${clusterName}/openapi-bff/scopes/checkScopes/checkIfApiNamespaceScoped`,
     payload,
   )
 
@@ -43,7 +43,7 @@ export const checkIfBuiltInInstanceNamespaceScoped = async ({
     clusterName,
   }
   const { data } = await axios.post<TCheckIfBuiltInInstanceNamespaceScopedRes>(
-    '/openapi-bff/scopes/checkScopes/checkIfBuiltInNamespaceScoped',
+    `/api/clusters/${clusterName}/openapi-bff/scopes/checkScopes/checkIfBuiltInNamespaceScoped`,
     payload,
   )
 
