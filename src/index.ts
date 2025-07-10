@@ -64,9 +64,6 @@ export type {
   TAdditionalPrinterColumnsUndefinedValues,
   TAdditionalPrinterColumnsTrimLengths,
   TAdditionalPrinterColumnsColWidths,
-  TTableMappingData,
-  TTableMappingResource,
-  TTableMappingResponse,
 } from './localTypes/richTable'
 export type {
   TFilterIfApiInstanceNamespaceScopedReq,
