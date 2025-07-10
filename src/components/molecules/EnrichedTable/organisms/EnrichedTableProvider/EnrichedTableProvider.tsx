@@ -1,6 +1,6 @@
 import React, { FC, useState, useEffect, ReactNode } from 'react'
 import axios, { AxiosError } from 'axios'
-import { Spin, Alert, TablePaginationConfig } from 'antd'
+import { Flex, Spin, Alert, TablePaginationConfig } from 'antd'
 import { TJSON } from 'localTypes/JSON'
 import { TPrepareTableReq, TPrepareTableRes } from 'localTypes/bff/table'
 import { TAdditionalPrinterColumns } from 'localTypes/richTable'
@@ -65,6 +65,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
 
   useEffect(() => {
     setIsLoading(true)
+    setIsError(undefined)
     const payload: TPrepareTableReq = {
       customizationId,
       tableMappingsReplaceValues,
@@ -77,6 +78,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       .post<TPrepareTableRes>(`/api/clusters/${cluster}/openapi-bff/tables/tablePrepare/prepareTableProps`, payload)
       .then(({ data }) => {
         setPreparedProps(data)
+        setIsError(undefined)
       })
       .catch((e: AxiosError) => {
         setIsError(e.message)
@@ -95,7 +97,11 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   ])
 
   if (isLoading) {
-    return <Spin />
+    return (
+      <Flex justify="center">
+        <Spin />
+      </Flex>
+    )
   }
 
   if (isError) {
@@ -103,7 +109,11 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   }
 
   if (!preparedProps) {
-    return <Alert message="No prepared props" type="error" />
+    return (
+      <Flex justify="center">
+        <Spin />
+      </Flex>
+    )
   }
 
   return (
