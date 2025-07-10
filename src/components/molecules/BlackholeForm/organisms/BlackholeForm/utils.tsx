@@ -54,6 +54,7 @@ export const getStringFormItemFromSwagger = ({
     return (
       <FormNamespaceInput
         name={name}
+        key={`${arrKey}-${JSON.stringify(name)}-namespace`}
         namespaceData={namespaceData}
         isAdditionalProperties={isAdditionalProperties}
         removeField={removeField}
@@ -65,6 +66,7 @@ export const getStringFormItemFromSwagger = ({
     <FormStringInput
       name={name}
       arrKey={arrKey}
+      key={`${arrKey}-${JSON.stringify(name)}`}
       arrName={arrName}
       persistName={persistName}
       required={required}
@@ -109,6 +111,7 @@ export const getEnumStringFormItemFromSwagger = ({
     <FormEnumStringInput
       name={name}
       arrKey={arrKey}
+      key={`${arrKey}-${JSON.stringify(name)}`}
       arrName={arrName}
       persistName={persistName}
       required={required}
@@ -155,6 +158,7 @@ export const getNumberFormItemFromSwagger = ({
       isNumber={isNumber}
       name={name}
       arrKey={arrKey}
+      key={`${arrKey}-${JSON.stringify(name)}`}
       arrName={arrName}
       persistName={persistName}
       required={required}
@@ -199,6 +203,7 @@ export const getRangeInputFormItemFromSwagger = ({
     <FormRangeInput
       name={name}
       arrKey={arrKey}
+      key={`${arrKey}-${JSON.stringify(name)}`}
       arrName={arrName}
       persistName={persistName}
       required={required}
@@ -246,6 +251,7 @@ export const getListInputFormItemFromSwagger = ({
     <FormListInput
       name={name}
       arrKey={arrKey}
+      key={`${arrKey}-${JSON.stringify(name)}`}
       arrName={arrName}
       persistName={persistName}
       required={required}
@@ -284,6 +290,7 @@ export const getBooleanFormItemFromSwagger = ({
     <FormBooleanInput
       name={name}
       arrKey={arrKey}
+      key={`${arrKey}-${JSON.stringify(name)}`}
       arrName={arrName}
       description={description}
       makeValueUndefined={makeValueUndefined}
@@ -350,7 +357,7 @@ export const getArrayFormItemFromSwagger = ({
   // typescript as below are needed because of dereference procedure
   if (schema.type === 'array') {
     return (
-      <HiddenContainer name={name}>
+      <HiddenContainer name={name} key={`${arrKey}-${JSON.stringify(name)}`}>
         <FormArrayHeader
           name={name}
           persistName={persistName}
@@ -621,7 +628,7 @@ export const getObjectFormItemsDraft = ({
   urlParams: TUrlParams
 }) => {
   return (
-    <HiddenContainer name={name}>
+    <HiddenContainer name={name} key={`${arrKey}-${JSON.stringify(name)}`}>
       {Object.keys(properties).map((el: keyof typeof properties) => {
         if (properties[el].type === 'string' && properties[el].enum) {
           return getEnumStringFormItemFromSwagger({
@@ -942,6 +949,7 @@ export const getObjectFormItemFromSwagger = ({
   return (
     <FormObjectFromSwagger
       name={name}
+      key={`${arrKey}-${JSON.stringify(name)}`}
       persistName={persistName}
       selfRequired={selfRequired}
       description={description}
