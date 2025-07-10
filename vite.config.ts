@@ -40,6 +40,7 @@ export default defineConfig({
       },
     },
     sourcemap: true,
+    minify: false,
   },
   publicDir: 'public',
   plugins: [
