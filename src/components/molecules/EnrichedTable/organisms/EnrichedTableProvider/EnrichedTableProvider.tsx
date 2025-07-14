@@ -5,6 +5,7 @@ import { TJSON } from 'localTypes/JSON'
 import { TPrepareTableReq, TPrepareTableRes } from 'localTypes/bff/table'
 import { TAdditionalPrinterColumns } from 'localTypes/richTable'
 import { EnrichedTable } from '../EnrichedTable'
+import { prepare } from './utils'
 
 export type TEnrichedTableProviderProps = {
   cluster: string
@@ -44,6 +45,7 @@ export type TEnrichedTableProviderProps = {
     editIcon?: ReactNode
     deleteIcon?: ReactNode
   }
+  maxHeight?: number
 }
 
 export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
@@ -58,21 +60,18 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   forceDefaultAdditionalPrinterColumns,
   selectData,
   tableProps,
+  maxHeight,
 }) => {
   const [preparedProps, setPreparedProps] = useState<TPrepareTableRes>()
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState<false | string | ReactNode>(false)
 
   useEffect(() => {
-    setIsLoading(true)
     setIsError(undefined)
     const payload: TPrepareTableReq = {
       customizationId,
       tableMappingsReplaceValues,
       forceDefaultAdditionalPrinterColumns,
-      dataItems,
-      resourceSchema,
-      dataForControls,
     }
     axios
       .post<TPrepareTableRes>(`/api/clusters/${cluster}/openapi-bff/tables/tablePrepare/prepareTableProps`, payload)
@@ -86,17 +85,9 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       .finally(() => {
         setIsLoading(false)
       })
-  }, [
-    cluster,
-    dataItems,
-    resourceSchema,
-    dataForControls,
-    customizationId,
-    tableMappingsReplaceValues,
-    forceDefaultAdditionalPrinterColumns,
-  ])
+  }, [cluster, customizationId, tableMappingsReplaceValues, forceDefaultAdditionalPrinterColumns])
 
-  if (isLoading) {
+  if (!preparedProps && isLoading) {
     return (
       <Flex justify="center">
         <Spin />
@@ -116,12 +107,19 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
     )
   }
 
+  const { dataSource, columns } = prepare({
+    dataItems,
+    resourceSchema,
+    dataForControls,
+    additionalPrinterColumns: preparedProps.additionalPrinterColumns,
+  })
+
   return (
     <EnrichedTable
       theme={theme}
       baseprefix={baseprefix}
-      dataSource={preparedProps.dataSource}
-      columns={preparedProps.columns}
+      dataSource={dataSource}
+      columns={columns}
       pathToNavigate={preparedProps.pathToNavigate}
       recordKeysForNavigation={preparedProps.recordKeysForNavigation}
       additionalPrinterColumnsUndefinedValues={preparedProps.additionalPrinterColumnsUndefinedValues}
@@ -129,6 +127,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       additionalPrinterColumnsColWidths={preparedProps.additionalPrinterColumnsColWidths}
       selectData={selectData}
       tableProps={tableProps}
+      maxHeight={maxHeight}
     />
   )
 }

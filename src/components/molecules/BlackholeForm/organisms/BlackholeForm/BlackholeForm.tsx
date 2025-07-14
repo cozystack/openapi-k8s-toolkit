@@ -169,13 +169,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 .catch(error => {
                   console.log('Form submit error', error)
                   setIsLoading(false)
-                  if (overflowRef.current) {
-                    const { scrollHeight, clientHeight } = overflowRef.current
-                    overflowRef.current.scrollTo({
-                      top: scrollHeight - clientHeight,
-                      behavior: 'smooth',
-                    })
-                  }
+                  // if (overflowRef.current) {
+                  //   const { scrollHeight, clientHeight } = overflowRef.current
+                  //   overflowRef.current.scrollTo({
+                  //     top: scrollHeight - clientHeight,
+                  //     behavior: 'smooth',
+                  //   })
+                  // }
                   if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
                     const keys = handleSubmitError({ error, expandedKeys })
                     setExpandedKeys([...keys])
@@ -193,13 +193,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 .catch(error => {
                   console.log('Form submit error', error)
                   setIsLoading(false)
-                  if (overflowRef.current) {
-                    const { scrollHeight, clientHeight } = overflowRef.current
-                    overflowRef.current.scrollTo({
-                      top: scrollHeight - clientHeight,
-                      behavior: 'smooth',
-                    })
-                  }
+                  // if (overflowRef.current) {
+                  //   const { scrollHeight, clientHeight } = overflowRef.current
+                  //   overflowRef.current.scrollTo({
+                  //     top: scrollHeight - clientHeight,
+                  //     behavior: 'smooth',
+                  //   })
+                  // }
                   if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
                     const keys = handleSubmitError({ error, expandedKeys })
                     setExpandedKeys([...keys])
@@ -480,12 +480,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 <Alert type="warning" message="Insufficient rights to edit" />
               </>
             )}
-            {error && (
+            {/* {error && (
               <>
                 <Spacer $space={10} $samespace />
                 <Alert message={`An error has occurred: ${error?.response?.data?.message} `} type="error" />
               </>
-            )}
+            )} */}
           </Form>
         </Styled.OverflowContainer>
         <div>
@@ -508,12 +508,28 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           )}
         </Flex>
       </Styled.ControlsRowContainer>
+      {error && (
+        <Modal
+          open={!!error}
+          onOk={() => setError(undefined)}
+          // onClose={() => setError(undefined)}
+          onCancel={() => setError(undefined)}
+          title={
+            <Typography.Text type="danger">
+              <Styled.BigText>Error!</Styled.BigText>
+            </Typography.Text>
+          }
+          cancelButtonProps={{ style: { display: 'none' } }}
+        >
+          An error has occurred: {error?.response?.data?.message}
+        </Modal>
+      )}
       {isDebugModalOpen && (
         <Modal
           open={isDebugModalOpen}
           onOk={() => setIsDebugModalOpen(false)}
           onCancel={() => setIsDebugModalOpen(false)}
-          onClose={() => setIsDebugModalOpen(false)}
+          // onClose={() => setIsDebugModalOpen(false)}
           title="Debug for properties"
           width="90vw"
         >

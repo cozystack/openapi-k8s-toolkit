@@ -44,10 +44,16 @@ const DebugContainer = styled.div<TDebugContainerProps>`
   height: ${({ $designNewLayoutHeight }) => ($designNewLayoutHeight ? `${$designNewLayoutHeight}px` : '75vh')};
 `
 
+const BigText = styled.div`
+  font-size: 16px;
+  line-height: 24px;
+`
+
 export const Styled = {
   ResetedFormList,
   Container,
   OverflowContainer,
   ControlsRowContainer,
   DebugContainer,
+  BigText,
 }

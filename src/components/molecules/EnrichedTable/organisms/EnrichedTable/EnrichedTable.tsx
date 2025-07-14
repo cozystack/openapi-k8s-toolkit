@@ -2,6 +2,7 @@
 import React, { FC, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Table, TableProps, PaginationProps, TablePaginationConfig } from 'antd'
+import { AnyObject } from 'antd/es/_util/type'
 import { get } from 'lodash'
 import {
   TAdditionalPrinterColumnsColWidths,
@@ -35,6 +36,8 @@ export type TEnrichedTableProps = {
     editIcon?: ReactNode
     deleteIcon?: ReactNode
   }
+
+  maxHeight?: number
 }
 
 export const EnrichedTable: FC<TEnrichedTableProps> = ({
@@ -50,6 +53,7 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
   selectData,
   withoutControls = false,
   tableProps,
+  maxHeight,
 }) => {
   const navigate = useNavigate()
 
@@ -92,30 +96,34 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
       $isTotalLeft={tableProps?.isTotalLeft}
     >
       <TableComponents.HideableControls>
-        <Table
+        <Table<AnyObject>
           dataSource={dataSource}
           columns={columnsWithControls}
-          pagination={{
-            position: tableProps?.paginationPosition || ['bottomLeft'],
-            showSizeChanger: true,
-            defaultPageSize: 10,
-            hideOnSinglePage: false,
-            showTotal,
-          }}
-          scroll={{ x: 'max-content' }}
+          pagination={
+            maxHeight
+              ? false
+              : {
+                  position: tableProps?.paginationPosition || ['bottomLeft'],
+                  showSizeChanger: true,
+                  defaultPageSize: 10,
+                  hideOnSinglePage: false,
+                  showTotal,
+                }
+          }
+          scroll={{ x: maxHeight ? undefined : 'max-content', y: maxHeight }}
+          virtual={!!maxHeight}
           rowSelection={
             selectData
               ? {
                   type: 'checkbox',
+                  columnWidth: 48,
                   selectedRowKeys: selectData.selectedRowKeys,
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onChange: (
-                    selectedRowKeys: React.Key[],
-                    selectedRows: { internalDataForControls: TInternalDataForControls }[],
-                  ) => {
+                  onChange: (selectedRowKeys: React.Key[], selectedRows: AnyObject[]) => {
+                    const rows = selectedRows as { internalDataForControls: TInternalDataForControls }[]
                     selectData.onChange(
                       selectedRowKeys,
-                      selectedRows.map(({ internalDataForControls }) => ({
+                      rows.map(({ internalDataForControls }) => ({
                         name: internalDataForControls.entryName,
                         endpoint: `${internalDataForControls.deletePathPrefix}/${
                           internalDataForControls.apiGroupAndVersion
