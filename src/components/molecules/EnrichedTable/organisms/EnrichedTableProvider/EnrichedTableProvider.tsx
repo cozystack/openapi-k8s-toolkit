@@ -45,6 +45,7 @@ export type TEnrichedTableProviderProps = {
     editIcon?: ReactNode
     deleteIcon?: ReactNode
   }
+  maxHeight?: number
 }
 
 export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
@@ -59,6 +60,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   forceDefaultAdditionalPrinterColumns,
   selectData,
   tableProps,
+  maxHeight,
 }) => {
   const [preparedProps, setPreparedProps] = useState<TPrepareTableRes>()
   const [isLoading, setIsLoading] = useState(false)
@@ -125,6 +127,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       additionalPrinterColumnsColWidths={preparedProps.additionalPrinterColumnsColWidths}
       selectData={selectData}
       tableProps={tableProps}
+      maxHeight={maxHeight}
     />
   )
 }
