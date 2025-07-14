@@ -17,6 +17,8 @@ const NoWrapContainer = styled.div`
   visibility: hidden;
   pointer-events: none;
 
+  /* stylelint-disable declaration-no-important */
+
   * {
     white-space: nowrap !important;
   }

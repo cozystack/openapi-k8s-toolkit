@@ -512,7 +512,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         <Modal
           open={!!error}
           onOk={() => setError(undefined)}
-          onClose={() => setError(undefined)}
+          // onClose={() => setError(undefined)}
           onCancel={() => setError(undefined)}
           title={
             <Typography.Text type="danger">
@@ -529,7 +529,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           open={isDebugModalOpen}
           onOk={() => setIsDebugModalOpen(false)}
           onCancel={() => setIsDebugModalOpen(false)}
-          onClose={() => setIsDebugModalOpen(false)}
+          // onClose={() => setIsDebugModalOpen(false)}
           title="Debug for properties"
           width="90vw"
         >
