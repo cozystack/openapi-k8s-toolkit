@@ -84,6 +84,8 @@ export const parseQuotaValueMemoryAndStorage = (val?: string | number | null): n
       numericValue *= 1.125899907 // pebibytes → GB (1024^5 / 1e9)
     } else if (val.endsWith('Ei')) {
       numericValue *= 1.152921505 // exbibytes → GB (1024^6 / 1e9)
+    } else if (val === '0') {
+      return 0
     } else {
       throw new Error('Invalid value')
     }
