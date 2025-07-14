@@ -1,9 +1,11 @@
 import React, { FC } from 'react'
-import { Breadcrumb, Spin } from 'antd'
+// import { Breadcrumb, Spin } from 'antd'
+import { Spin } from 'antd'
 import { BreadcrumbItemType } from 'antd/es/breadcrumb/Breadcrumb'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { TBreadcrumbResponse } from './types'
 import { prepareDataForManageableBreadcrumbs } from './utils'
+import { CollapsibleBreadcrumb } from './molecules'
 import { Styled } from './styled'
 
 export type TManageableBreadcrumbsProps = {
@@ -13,7 +15,8 @@ export type TManageableBreadcrumbsProps = {
 export const ManageableBreadcrumbs: FC<TManageableBreadcrumbsProps> = ({ data }) => {
   return (
     <Styled.HeightDiv>
-      <Breadcrumb separator=">" items={data.breadcrumbItems} />
+      {/* <Breadcrumb separator=">" items={data.breadcrumbItems} /> */}
+      <CollapsibleBreadcrumb items={data.breadcrumbItems} />
     </Styled.HeightDiv>
   )
 }
