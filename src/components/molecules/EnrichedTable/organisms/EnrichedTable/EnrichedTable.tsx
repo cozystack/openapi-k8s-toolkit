@@ -35,9 +35,10 @@ export type TEnrichedTableProps = {
     isTotalLeft?: boolean
     editIcon?: ReactNode
     deleteIcon?: ReactNode
+    maxHeight?: number
+    virtual?: boolean
+    disablePagination?: boolean
   }
-
-  maxHeight?: number
 }
 
 export const EnrichedTable: FC<TEnrichedTableProps> = ({
@@ -53,7 +54,6 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
   selectData,
   withoutControls = false,
   tableProps,
-  maxHeight,
 }) => {
   const navigate = useNavigate()
 
@@ -100,7 +100,7 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
           dataSource={dataSource}
           columns={columnsWithControls}
           pagination={
-            maxHeight
+            tableProps?.disablePagination
               ? false
               : {
                   position: tableProps?.paginationPosition || ['bottomLeft'],
@@ -110,8 +110,8 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
                   showTotal,
                 }
           }
-          scroll={{ x: maxHeight ? undefined : 'max-content', y: maxHeight }}
-          virtual={!!maxHeight}
+          scroll={{ x: 'max-content', y: tableProps?.maxHeight }}
+          virtual={tableProps?.virtual}
           rowSelection={
             selectData
               ? {
