@@ -17,6 +17,7 @@ import {
   Spacer,
   StatusText,
   SidebarProvider,
+  EnrichedTable,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -38,4 +39,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   Spacer,
   StatusText,
   SidebarProvider,
+  EnrichedTable,
 }

@@ -1,7 +1,7 @@
 import { CardProps, FlexProps, RowProps, ColProps, ButtonProps, TabsProps } from 'antd'
 import type { TextProps } from 'antd/es/typography/Text'
 import { TContentCardProps, TSpacerProps } from 'components/atoms'
-import { TManageableSidebarWithDataProviderProps } from 'components/molecules'
+import { TManageableSidebarWithDataProviderProps, TEnrichedTableProviderProps } from 'components/molecules'
 
 export type TDynamicComponentsAppTypeMap = {
   DefaultDiv: { id: number } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
@@ -51,4 +51,8 @@ export type TDynamicComponentsAppTypeMap = {
     errorText: string
   } & Omit<TextProps, 'id' | 'children'>
   SidebarProvider: { id: number } & Omit<TManageableSidebarWithDataProviderProps, 'replaceValues'>
+  EnrichedTable: { id: number; fetchUrl: string; clusterNamePartOfUrl: string } & Omit<
+    TEnrichedTableProviderProps,
+    'tableMappingsReplaceValues' | 'cluster' | 'theme' | 'tableProps' | 'dataItems'
+  >
 }
