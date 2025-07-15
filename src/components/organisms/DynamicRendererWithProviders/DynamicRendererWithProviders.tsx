@@ -5,12 +5,13 @@ import { prepareUrlsToFetchForDynamicRenderer } from 'utils/prepareUrlsToFetchFo
 import { DynamicRenderer, TDynamicRendererProps } from '../DynamicRenderer'
 import { PartsOfUrlProvider } from './partsOfUrlContext'
 import { MultiQueryProvider } from './multiQueryProvider'
+import { ThemeProvider } from './themeContext'
 
 export const DynamicRendererWithProviders = <T extends TItemTypeMap>(
-  props: TDynamicRendererProps<T> & { urlsToFetch: string[] },
+  props: TDynamicRendererProps<T> & { urlsToFetch: string[]; theme: 'dark' | 'light' },
 ): ReactElement => {
   const location = useLocation()
-  const { urlsToFetch } = props
+  const { urlsToFetch, theme } = props
 
   const preparedUrlsToFetch = prepareUrlsToFetchForDynamicRenderer({
     urls: urlsToFetch,
@@ -18,10 +19,12 @@ export const DynamicRendererWithProviders = <T extends TItemTypeMap>(
   })
 
   return (
-    <PartsOfUrlProvider value={{ partsOfUrl: location.pathname.split('/') }}>
-      <MultiQueryProvider urls={preparedUrlsToFetch}>
-        <DynamicRenderer {...props} />
-      </MultiQueryProvider>
-    </PartsOfUrlProvider>
+    <ThemeProvider theme={theme}>
+      <PartsOfUrlProvider value={{ partsOfUrl: location.pathname.split('/') }}>
+        <MultiQueryProvider urls={preparedUrlsToFetch}>
+          <DynamicRenderer {...props} />
+        </MultiQueryProvider>
+      </PartsOfUrlProvider>
+    </ThemeProvider>
   )
 }

@@ -9,7 +9,7 @@ export type TInternalDataForControls = {
   syntheticProject?: string
   deletePathPrefix: string
   onDeleteHandle: (name: string, endpoint: string) => void
-  permissions: {
+  permissions?: {
     canUpdate?: boolean
     canDelete?: boolean
   }

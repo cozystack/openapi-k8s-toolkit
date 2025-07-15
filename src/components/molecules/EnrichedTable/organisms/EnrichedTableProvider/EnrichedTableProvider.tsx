@@ -48,6 +48,7 @@ export type TEnrichedTableProviderProps = {
     virtual?: boolean
     disablePagination?: boolean
   }
+  withoutControls?: boolean
 }
 
 export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
@@ -62,6 +63,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   forceDefaultAdditionalPrinterColumns,
   selectData,
   tableProps,
+  withoutControls,
 }) => {
   const [preparedProps, setPreparedProps] = useState<TPrepareTableRes>()
   const [isLoading, setIsLoading] = useState(false)
@@ -128,6 +130,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       additionalPrinterColumnsColWidths={preparedProps.additionalPrinterColumnsColWidths}
       selectData={selectData}
       tableProps={tableProps}
+      withoutControls={withoutControls}
     />
   )
 }
