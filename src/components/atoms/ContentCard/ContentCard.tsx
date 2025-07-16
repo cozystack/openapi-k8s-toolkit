@@ -7,9 +7,10 @@ export type TContentCardProps = {
   flexGrow?: number
   displayFlex?: boolean
   flexFlow?: string
+  maxHeight?: number
 }
 
-export const ContentCard: FC<TContentCardProps> = ({ children, flexGrow, displayFlex, flexFlow }) => {
+export const ContentCard: FC<TContentCardProps> = ({ children, flexGrow, displayFlex, flexFlow, maxHeight }) => {
   const { token } = theme.useToken()
   return (
     <Styled.ContentContainer
@@ -18,6 +19,7 @@ export const ContentCard: FC<TContentCardProps> = ({ children, flexGrow, display
       $borderColor={token.colorBorder}
       $displayFlex={displayFlex}
       $flexFlow={flexFlow}
+      $maxHeight={maxHeight}
     >
       {children}
     </Styled.ContentContainer>

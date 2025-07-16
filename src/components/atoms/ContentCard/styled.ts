@@ -6,6 +6,7 @@ type TContentContainerProps = {
   $flexGrow?: number
   $displayFlex?: boolean
   $flexFlow?: string
+  $maxHeight?: number
 }
 
 export const ContentContainer = styled.div<TContentContainerProps>`
@@ -13,7 +14,8 @@ export const ContentContainer = styled.div<TContentContainerProps>`
   border-radius: 6px;
   background-color: ${({ $bgColor }) => $bgColor};
   width: 100%;
-  height: 100%;
+  height: ${({ $maxHeight }) => $maxHeight || '100%'};
+  overflow-y: auto;
   padding: 24px;
   flex-grow: ${({ $flexGrow }) => $flexGrow};
   display: ${({ $displayFlex }) => ($displayFlex ? 'flex' : 'block')};
