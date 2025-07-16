@@ -1,21 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
+import _ from 'lodash'
 import { EditIcon, DeleteIcon } from 'components/atoms'
 import { EnrichedTableProvider } from 'components/molecules'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
-import { TJSON } from 'localTypes/JSON'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
+import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
+import { parseMutliqueryText, serializeLabels } from './utils'
 
 export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTable']; children?: any }> = ({
   data,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   children,
 }) => {
+  const { data: multiQueryData } = useMultiQuery()
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, fetchUrl, clusterNamePartOfUrl, ...props } = data
+  const { id, fetchUrl, pathToItems, clusterNamePartOfUrl, labelsSelector, fieldSelector, ...props } = data
 
   const theme = useTheme()
   const partsOfUrl = usePartsOfUrl()
@@ -35,12 +39,43 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     replaceValues,
   })
 
+  let labelsSuffix: string | undefined
+  if (labelsSelector) {
+    const parsedObject: Record<string, string> = Object.fromEntries(
+      Object.entries(labelsSelector).map(
+        ([key, value]) =>
+          [key, prepareTemplate({ template: parseMutliqueryText({ text: value, multiQueryData }), replaceValues })] as [
+            string,
+            string,
+          ],
+      ),
+    )
+    const serializedLabels = serializeLabels(parsedObject)
+    labelsSuffix = serializeLabels.length > 0 ? `?labelSelector=${serializedLabels}` : undefined
+  }
+
+  let fieldSelectorSuffix: string | undefined
+  if (fieldSelector) {
+    const preparedFieldSelectorValueText = parseMutliqueryText({ text: fieldSelector?.parsedText, multiQueryData })
+
+    const preparedFieldSelectorValueTextWithPartsOfUrl = prepareTemplate({
+      template: preparedFieldSelectorValueText,
+      replaceValues,
+    })
+
+    const preparedSelector = encodeURIComponent(
+      `${fieldSelector.fieldName}=${preparedFieldSelectorValueTextWithPartsOfUrl}`,
+    )
+    const prefix = labelsSelector ? '&fieldSelector=' : '?fieldSelector='
+    fieldSelectorSuffix = `${prefix}${preparedSelector}`
+  }
+
   const {
     data: fetchedData,
     isLoading: isFetchedDataLoading,
     error: fetchedDataError,
-  } = useDirectUnknownResource<unknown & { items: TJSON[] }>({
-    uri: fetchUrlPrepared,
+  } = useDirectUnknownResource<unknown>({
+    uri: `${fetchUrlPrepared}${labelsSuffix || ''}${fieldSelectorSuffix || ''}`,
     queryKey: [fetchUrlPrepared],
   })
 
@@ -56,13 +91,19 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     return <div>Error: {JSON.stringify(fetchedDataError)}</div>
   }
 
+  const items = _.get(fetchedData, pathToItems)
+
+  if (!items) {
+    return <div>No data on this path {JSON.stringify(pathToItems)}</div>
+  }
+
   return (
     <>
       <EnrichedTableProvider
         tableMappingsReplaceValues={replaceValues}
         cluster={clusterName}
         theme={theme}
-        dataItems={fetchedData.items}
+        dataItems={items}
         tableProps={{
           borderless: true,
           paginationPosition: ['bottomRight'],
@@ -72,6 +113,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
           disablePagination: true,
         }}
         {...props}
+        withoutControls
       />
       {children}
     </>

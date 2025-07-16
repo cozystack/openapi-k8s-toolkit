@@ -193,7 +193,7 @@ export const getEnrichedColumnsWithControls = ({
                 )
               }}
               icon={editIcon || <EditOutlined size={14} />}
-              disabled={value.permissions && value.permissions.canUpdate ? value.permissions?.canUpdate : false}
+              disabled={value.permissions && value.permissions.canUpdate ? !value.permissions?.canUpdate : false}
             />
             <TinyButton
               type="text"
@@ -208,7 +208,7 @@ export const getEnrichedColumnsWithControls = ({
                 )
               }}
               icon={deleteIcon || <DeleteOutlined size={14} />}
-              disabled={value.permissions && value.permissions.canDelete ? value.permissions?.canDelete : false}
+              disabled={value.permissions && value.permissions.canDelete ? !value.permissions?.canDelete : false}
             />
           </TextAlignContainer>
         )

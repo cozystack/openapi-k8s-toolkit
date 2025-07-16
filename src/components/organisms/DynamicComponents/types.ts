@@ -51,8 +51,18 @@ export type TDynamicComponentsAppTypeMap = {
     errorText: string
   } & Omit<TextProps, 'id' | 'children'>
   SidebarProvider: { id: number } & Omit<TManageableSidebarWithDataProviderProps, 'replaceValues'>
-  EnrichedTable: { id: number; fetchUrl: string; clusterNamePartOfUrl: string } & Omit<
+  EnrichedTable: {
+    id: number
+    fetchUrl: string
+    pathToItems: string[]
+    clusterNamePartOfUrl: string
+    labelsSelector?: Record<string, string>
+    fieldSelector?: {
+      fieldName: string
+      parsedText: string
+    }
+  } & Omit<
     TEnrichedTableProviderProps,
-    'tableMappingsReplaceValues' | 'cluster' | 'theme' | 'tableProps' | 'dataItems'
+    'tableMappingsReplaceValues' | 'cluster' | 'theme' | 'tableProps' | 'dataItems' | 'withoutControls'
   >
 }

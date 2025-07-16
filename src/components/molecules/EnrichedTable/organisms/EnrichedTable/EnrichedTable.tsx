@@ -20,6 +20,7 @@ export type TEnrichedTableProps = {
   columns: TableProps['columns']
   pathToNavigate?: string
   recordKeysForNavigation?: string[]
+  recordKeysForNavigationSecond?: string[]
   additionalPrinterColumnsUndefinedValues?: TAdditionalPrinterColumnsUndefinedValues
   additionalPrinterColumnsTrimLengths?: TAdditionalPrinterColumnsTrimLengths
   additionalPrinterColumnsColWidths?: TAdditionalPrinterColumnsColWidths
@@ -48,6 +49,7 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
   columns,
   pathToNavigate,
   recordKeysForNavigation,
+  recordKeysForNavigationSecond,
   additionalPrinterColumnsUndefinedValues,
   additionalPrinterColumnsTrimLengths,
   additionalPrinterColumnsColWidths,
@@ -141,9 +143,18 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
               onClick: () => {
                 if (pathToNavigate && recordKeysForNavigation) {
                   const recordValueRaw = get(record, recordKeysForNavigation)
+                  const recordValueRawSecond = recordKeysForNavigationSecond
+                    ? get(record, recordKeysForNavigationSecond)
+                    : 'no-second-record-keys'
                   const recordValue =
                     typeof recordValueRaw === 'string' ? recordValueRaw : JSON.stringify(recordValueRaw)
-                  const newPath = pathToNavigate.replaceAll('~recordValue~', recordValue)
+                  const recordValueSecond =
+                    typeof recordValueRawSecond === 'string'
+                      ? recordValueRawSecond
+                      : JSON.stringify(recordValueRawSecond)
+                  const newPath = pathToNavigate
+                    .replaceAll('~recordValue~', recordValue)
+                    .replaceAll('~recordValueSecond~', recordValueSecond)
                   navigate(newPath)
                 }
               },
