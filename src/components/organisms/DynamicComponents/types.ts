@@ -57,6 +57,10 @@ export type TDynamicComponentsAppTypeMap = {
     pathToItems: string[]
     clusterNamePartOfUrl: string
     labelsSelector?: Record<string, string>
+    labelsSelectorFull?: {
+      reqIndex: number
+      pathToLabels: string[]
+    }
     fieldSelector?: {
       fieldName: string
       parsedText: string
