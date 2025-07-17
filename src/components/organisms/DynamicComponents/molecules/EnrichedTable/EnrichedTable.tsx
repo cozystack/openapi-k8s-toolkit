@@ -16,7 +16,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   children,
 }) => {
-  const { data: multiQueryData } = useMultiQuery()
+  const { data: multiQueryData, isLoading: isMultiqueryLoading } = useMultiQuery()
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, fetchUrl, pathToItems, clusterNamePartOfUrl, labelsSelector, fieldSelector, ...props } = data
@@ -77,7 +77,12 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
   } = useDirectUnknownResource<unknown>({
     uri: `${fetchUrlPrepared}${labelsSuffix || ''}${fieldSelectorSuffix || ''}`,
     queryKey: [fetchUrlPrepared],
+    isEnabled: !isMultiqueryLoading,
   })
+
+  if (isMultiqueryLoading) {
+    return <div>Loading multiquery</div>
+  }
 
   if (!fetchedData) {
     return <div>No data has been fetched</div>
