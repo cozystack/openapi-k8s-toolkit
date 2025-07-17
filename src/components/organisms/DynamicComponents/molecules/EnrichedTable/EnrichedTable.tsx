@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
 import _ from 'lodash'
+import { Flex, Spin } from 'antd'
 import { EditIcon, DeleteIcon } from 'components/atoms'
 import { EnrichedTableProvider } from 'components/molecules'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
@@ -99,12 +100,16 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     return <div>Loading multiquery</div>
   }
 
-  if (!fetchedData) {
-    return <div>No data has been fetched</div>
-  }
+  // if (!fetchedData) {
+  //   return <div>No data has been fetched</div>
+  // }
 
   if (isFetchedDataLoading) {
-    return <div>Loading...</div>
+    return (
+      <Flex justify="center">
+        <Spin />
+      </Flex>
+    )
   }
 
   if (fetchedDataError) {
