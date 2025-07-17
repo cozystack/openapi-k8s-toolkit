@@ -18,8 +18,17 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
 }) => {
   const { data: multiQueryData, isLoading: isMultiqueryLoading } = useMultiQuery()
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, fetchUrl, pathToItems, clusterNamePartOfUrl, labelsSelector, fieldSelector, ...props } = data
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    id,
+    fetchUrl,
+    pathToItems,
+    clusterNamePartOfUrl,
+    labelsSelector,
+    labelsSelectorFull,
+    fieldSelector,
+    ...props
+  } = data
 
   const theme = useTheme()
   const partsOfUrl = usePartsOfUrl()
@@ -51,6 +60,12 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
       ),
     )
     const serializedLabels = serializeLabels(parsedObject)
+    labelsSuffix = serializeLabels.length > 0 ? `?labelSelector=${serializedLabels}` : undefined
+  }
+
+  if (labelsSelectorFull) {
+    const value = _.get(multiQueryData[`req${labelsSelectorFull.reqIndex}`], labelsSelectorFull.pathToLabels)
+    const serializedLabels = serializeLabels(value)
     labelsSuffix = serializeLabels.length > 0 ? `?labelSelector=${serializedLabels}` : undefined
   }
 

@@ -41,6 +41,7 @@ export type TFactoryDataK8s<T extends TItemTypeMap> = {
   urlsToFetch: string[]
   withScrollableMainContentCard?: boolean
   data: TRenderableItem<T>[]
+  sidebarTags?: string[]
 }
 
 export type TFactoryResource<T extends TItemTypeMap> = {
