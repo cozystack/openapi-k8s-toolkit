@@ -45,7 +45,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
   })
 
   const fetchUrlPrepared = prepareTemplate({
-    template: fetchUrl,
+    template: parseMutliqueryText({ text: fetchUrl, multiQueryData }),
     replaceValues,
   })
 
