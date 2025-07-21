@@ -1,6 +1,6 @@
 {
   "name": "@prorobotech/openapi-k8s-toolkit",
-  "version": "0.0.1-alpha.62",
+  "version": "0.0.1-alpha.63",
   "description": "ProRobotech OpenAPI k8s tools",
   "main": "dist/openapi-k8s-toolkit.cjs.js",
   "module": "dist/openapi-k8s-toolkit.es.js",
@@ -37,6 +37,9 @@
   "dependencies": {
     "@monaco-editor/react": "4.6.0",
     "@reduxjs/toolkit": "2.2.5",
+    "@xterm/addon-attach": "0.11.0",
+    "@xterm/addon-fit": "0.10.0",
+    "@xterm/xterm": "5.5.0",
     "axios": "1.4.0",
     "cross-env": "7.0.3",
     "dotenv": "16.4.7",
@@ -48,6 +51,7 @@
     "typescript": "4.9.5",
     "usehooks-ts": "3.1.1",
     "uuid": "11.0.3",
+    "xterm-theme": "1.1.0",
     "yaml": "2.7.0"
   },
   "devDependencies": {
