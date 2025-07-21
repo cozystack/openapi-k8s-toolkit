@@ -92,7 +92,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     error: fetchedDataError,
   } = useDirectUnknownResource<unknown>({
     uri: `${fetchUrlPrepared}${labelsSuffix || ''}${fieldSelectorSuffix || ''}`,
-    queryKey: [fetchUrlPrepared],
+    queryKey: [`${fetchUrlPrepared}${labelsSuffix || ''}${fieldSelectorSuffix || ''}`],
     isEnabled: !isMultiqueryLoading,
   })
 
