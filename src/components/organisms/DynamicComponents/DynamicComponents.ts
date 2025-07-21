@@ -18,6 +18,7 @@ import {
   StatusText,
   SidebarProvider,
   EnrichedTable,
+  PodTerminal,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -40,4 +41,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   StatusText,
   SidebarProvider,
   EnrichedTable,
+  PodTerminal,
 }

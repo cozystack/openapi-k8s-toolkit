@@ -69,4 +69,10 @@ export type TDynamicComponentsAppTypeMap = {
     TEnrichedTableProviderProps,
     'tableMappingsReplaceValues' | 'cluster' | 'theme' | 'tableProps' | 'dataItems' | 'withoutControls'
   >
+  PodTerminal: {
+    id: number
+    cluster: string
+    namespace: string
+    podName: string
+  }
 }
