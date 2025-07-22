@@ -27,7 +27,6 @@ export const PodTerminal: FC<TPodTerminalProps> = ({ cluster, namespace, podName
         placeholder="Select container"
         options={containers.map(container => ({ value: container, label: container }))}
         filterOption={filterSelectOptions}
-        allowClear
         disabled={containers.length === 0}
         showSearch
         value={currentContainer}
