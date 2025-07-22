@@ -11,9 +11,10 @@ type TXTerminalProps = {
   endpoint: string
   namespace: string
   podName: string
+  container: string
 }
 
-export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName }) => {
+export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, container }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<Event>()
   const [terminal, setTerminal] = useState<XTerm>()
@@ -82,7 +83,7 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName })
       socket.send(
         JSON.stringify({
           type: 'init',
-          payload: { namespace, podName },
+          payload: { namespace, podName, container },
         }),
       )
       console.log(`[${namespace}/${podName}]: WebSocket Client Connected`)
@@ -137,7 +138,7 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName })
         socket.close()
       }
     }
-  }, [terminal, endpoint, namespace, podName])
+  }, [terminal, endpoint, namespace, podName, container])
 
   return (
     <>
