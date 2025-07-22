@@ -27,7 +27,13 @@ const ControlsRowContainer = styled.div<TControlsRowContainerProps>`
   padding: 4px;
 `
 
+const BigText = styled.div`
+  font-size: 16px;
+  line-height: 24px;
+`
+
 export const Styled = {
   BorderRadiusContainer,
   ControlsRowContainer,
+  BigText,
 }

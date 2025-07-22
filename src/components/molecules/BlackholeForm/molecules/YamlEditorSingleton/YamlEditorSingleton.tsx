@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 /* eslint-disable no-nested-ternary */
 import React, { FC, useEffect, useState } from 'react'
-import { theme as antdtheme, Flex, Alert, Button } from 'antd'
+import { theme as antdtheme, Flex, Button, Modal, Typography } from 'antd'
 import Editor from '@monaco-editor/react'
 import * as yaml from 'yaml'
 import { useNavigate } from 'react-router-dom'
@@ -90,7 +90,6 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
 
   return (
     <>
-      {error && <Alert message={`An error has occurred: ${error?.response?.data?.message} `} type="error" />}
       <Styled.BorderRadiusContainer $designNewLayoutHeight={designNewLayoutHeight}>
         <Editor
           defaultLanguage="yaml"
@@ -114,6 +113,22 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
           {backlink && <Button onClick={() => navigate(backlink)}>Cancel</Button>}
         </Flex>
       </Styled.ControlsRowContainer>
+      {error && (
+        <Modal
+          open={!!error}
+          onOk={() => setError(undefined)}
+          // onClose={() => setError(undefined)}
+          onCancel={() => setError(undefined)}
+          title={
+            <Typography.Text type="danger">
+              <Styled.BigText>Error!</Styled.BigText>
+            </Typography.Text>
+          }
+          cancelButtonProps={{ style: { display: 'none' } }}
+        >
+          An error has occurred: {error?.response?.data?.message}
+        </Modal>
+      )}
     </>
   )
 }
