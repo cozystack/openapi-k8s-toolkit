@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
+import { Flex, Spin } from 'antd'
 import { PodTerminal as Terminal } from 'components'
+import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
-import { parseMutliqueryText } from './utils'
+import { getRunningContainerNames, parseMutliqueryText } from './utils'
 
 export const PodTerminal: FC<{ data: TDynamicComponentsAppTypeMap['PodTerminal']; children?: any }> = ({
   data,
@@ -45,13 +47,52 @@ export const PodTerminal: FC<{ data: TDynamicComponentsAppTypeMap['PodTerminal']
     replaceValues,
   })
 
+  const {
+    data: podInfo,
+    isError: isPodInfoError,
+    isLoading: isLoadingPodInfo,
+  } = useDirectUnknownResource<
+    unknown & {
+      status: unknown & { containerStatuses: { name: string; state?: unknown & { running?: unknown } }[] }
+    }
+  >({
+    uri: `/api/clusters/${clusterPrepared}/k8s/api/v1/namespaces/${namespacePrepared}/pods/${podNamePrepared}`,
+    refetchInterval: 5000,
+    queryKey: [clusterPrepared || 'no-cluster', 'pods', podNamePrepared],
+    isEnabled: clusterPrepared !== undefined && namespacePrepared !== undefined && podNamePrepared !== undefined,
+  })
+
   if (isMultiqueryLoading) {
     return <div>Loading multiquery</div>
   }
 
+  if (isLoadingPodInfo) {
+    return (
+      <Flex justify="center">
+        <Spin />
+      </Flex>
+    )
+  }
+
+  if (isPodInfoError) {
+    return <div>Error: {JSON.stringify(isPodInfoError)}</div>
+  }
+
+  if (!podInfo) {
+    return <>No Pod Info</>
+  }
+
+  const containers = getRunningContainerNames(podInfo)
+
   return (
     <>
-      <Terminal cluster={clusterPrepared} namespace={namespacePrepared} podName={podNamePrepared} {...props} />
+      <Terminal
+        cluster={clusterPrepared}
+        namespace={namespacePrepared}
+        podName={podNamePrepared}
+        containers={containers}
+        {...props}
+      />
       {children}
     </>
   )
