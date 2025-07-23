@@ -19,6 +19,7 @@ import {
   SidebarProvider,
   EnrichedTable,
   PodTerminal,
+  NodeTerminal,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -42,4 +43,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   SidebarProvider,
   EnrichedTable,
   PodTerminal,
+  NodeTerminal,
 }
