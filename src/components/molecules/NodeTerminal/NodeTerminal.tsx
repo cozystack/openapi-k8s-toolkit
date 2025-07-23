@@ -19,8 +19,7 @@ export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName }) => {
 
   const endpoint = `/api/clusters/${cluster}/openapi-bff-ws/terminal/terminalNode/terminalNode`
 
-  // const profiles = ['legacy', 'general', 'baseline', 'netadmin', 'restricted', 'sysadmin']
-  const profiles = ['legacy', 'general', 'baseline', 'netadmin', 'sysadmin']
+  const profiles = ['legacy', 'general', 'baseline', 'netadmin', 'restricted', 'sysadmin']
 
   return (
     <>
