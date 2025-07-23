@@ -75,4 +75,9 @@ export type TDynamicComponentsAppTypeMap = {
     namespace: string
     podName: string
   }
+  NodeTerminal: {
+    id: number
+    cluster: string
+    nodeName: string
+  }
 }
