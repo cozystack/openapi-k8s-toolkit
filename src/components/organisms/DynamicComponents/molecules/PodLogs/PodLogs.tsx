@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
 import { Flex, Spin } from 'antd'
-import { PodLogs as Terminal } from 'components'
+import { PodLogsMonaco as Editor } from 'components'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
+import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
 import { getRunningContainerNames, parseMutliqueryText } from './utils'
 
 export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; children?: any }> = ({
@@ -15,6 +16,7 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
   children,
 }) => {
   const { data: multiQueryData, isLoading: isMultiqueryLoading } = useMultiQuery()
+  const theme = useTheme()
 
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -86,11 +88,12 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
 
   return (
     <>
-      <Terminal
+      <Editor
         cluster={clusterPrepared}
         namespace={namespacePrepared}
         podName={podNamePrepared}
         containers={containers}
+        theme={theme}
         {...props}
       />
       {children}
