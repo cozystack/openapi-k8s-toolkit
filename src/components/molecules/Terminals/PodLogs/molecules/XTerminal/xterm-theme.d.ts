@@ -1,3 +1,5 @@
+/* eslint-disable import/no-default-export */
+
 // types/xterm-theme.d.ts
 declare module 'xterm-theme' {
   export interface Theme {

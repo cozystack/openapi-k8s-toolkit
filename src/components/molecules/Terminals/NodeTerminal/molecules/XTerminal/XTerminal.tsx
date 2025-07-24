@@ -26,13 +26,18 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile }) 
   const [progressPercent, setProgressPercent] = useState<number>(0)
   const [isWarmingUp, setIsWarmingUp] = useState<boolean>(true)
 
-  const [terminal, setTerminal] = useState<XTerm>()
   const socketRef = useRef<WebSocket | null>(null)
+
+  const [terminal, setTerminal] = useState<XTerm>()
+  const terminalInstance = useRef<XTerm | null>(null)
   const terminalRef = useRef<HTMLDivElement>(null)
-  const resizeObserverRef = useRef<ResizeObserver | null>(null)
-  const fitAddon = new FitAddon()
+  const fitAddon = useRef<FitAddon>(new FitAddon())
 
   useEffect(() => {
+    if (!terminalRef.current) {
+      return
+    }
+
     const terminal = new XTerm({
       cursorBlink: false,
       cursorStyle: 'block',
@@ -40,45 +45,28 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile }) 
       fontSize: 16,
       theme: themes.MaterialDark,
     })
-    terminal.loadAddon(fitAddon)
-    // terminal.loadAddon(new WebLinksAddon())
+    terminal.loadAddon(fitAddon.current)
+    terminal.open(terminalRef.current)
+    terminalInstance.current = terminal
     setTerminal(terminal)
-    fitAddon.fit()
 
-    return () => {
-      if (terminal) {
-        terminal.dispose()
-      }
+    // Initial fit
+    fitAddon.current.fit()
+
+    // Handle resize events
+    const handleResize = () => {
+      fitAddon.current.fit()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    window.addEventListener('resize', handleResize)
+
+    // Cleanup
+    // eslint-disable-next-line consistent-return
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      terminal.dispose()
+    }
   }, [])
-
-  useEffect(() => {
-    if (terminal) {
-      if (terminalRef.current) {
-        terminal.open(terminalRef.current)
-        setTerminal(terminal)
-      }
-    }
-
-    // Initialize ResizeObserver to handle resizing
-    resizeObserverRef.current = new ResizeObserver(() => {
-      fitAddon.fit()
-    })
-
-    // Observe the terminal container for size changes
-    if (terminalRef.current) {
-      resizeObserverRef.current.observe(terminalRef.current)
-    }
-
-    return () => {
-      // Clean up the ResizeObserver
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect()
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [terminal])
 
   useEffect(() => {
     if (!terminal) {
@@ -197,13 +185,14 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile }) 
         <Button
           type="dashed"
           disabled={!socketRef.current}
-          onClick={() =>
+          onClick={() => {
+            setIsTerminalVisible(false)
             socketRef.current?.send(
               JSON.stringify({
                 type: 'shutdown',
               }),
             )
-          }
+          }}
         >
           Terminate
         </Button>
@@ -211,10 +200,9 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile }) 
       <Spacer $space={8} $samespace />
       <Styled.CustomCard $isVisible={isTerminalVisible}>
         <Styled.FullWidthDiv>
-          <div ref={terminalRef} />
+          <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
         </Styled.FullWidthDiv>
       </Styled.CustomCard>
-
       {!isTerminalVisible && !error && isWarmingUp && (
         <Styled.ProgressContainer>
           {isLoading && <Spin />}

@@ -17,14 +17,17 @@ type TXTerminalProps = {
 export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, container }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<Event>()
-  const [terminal, setTerminal] = useState<XTerm>()
-  const terminalRef = useRef<HTMLDivElement>(null)
-  const resizeObserverRef = useRef<ResizeObserver | null>(null)
-  const fitAddon = new FitAddon()
 
-  // const decoderRef = useRef(new TextDecoder('utf-8'))
+  const [terminal, setTerminal] = useState<XTerm>()
+  const terminalInstance = useRef<XTerm | null>(null)
+  const terminalRef = useRef<HTMLDivElement>(null)
+  const fitAddon = useRef<FitAddon>(new FitAddon())
 
   useEffect(() => {
+    if (!terminalRef.current) {
+      return
+    }
+
     const terminal = new XTerm({
       cursorBlink: false,
       cursorStyle: 'block',
@@ -32,45 +35,28 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, c
       fontSize: 16,
       theme: themes.MaterialDark,
     })
-    terminal.loadAddon(fitAddon)
-    // terminal.loadAddon(new WebLinksAddon())
+    terminal.loadAddon(fitAddon.current)
+    terminal.open(terminalRef.current)
+    terminalInstance.current = terminal
     setTerminal(terminal)
-    fitAddon.fit()
 
-    return () => {
-      if (terminal) {
-        terminal.dispose()
-      }
+    // Initial fit
+    fitAddon.current.fit()
+
+    // Handle resize events
+    const handleResize = () => {
+      fitAddon.current.fit()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    window.addEventListener('resize', handleResize)
+
+    // Cleanup
+    // eslint-disable-next-line consistent-return
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      terminal.dispose()
+    }
   }, [])
-
-  useEffect(() => {
-    if (terminal) {
-      if (terminalRef.current) {
-        terminal.open(terminalRef.current)
-        setTerminal(terminal)
-      }
-    }
-
-    // Initialize ResizeObserver to handle resizing
-    resizeObserverRef.current = new ResizeObserver(() => {
-      fitAddon.fit()
-    })
-
-    // Observe the terminal container for size changes
-    if (terminalRef.current) {
-      resizeObserverRef.current.observe(terminalRef.current)
-    }
-
-    return () => {
-      // Clean up the ResizeObserver
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect()
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [terminal])
 
   useEffect(() => {
     if (!terminal) {
@@ -144,7 +130,7 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, c
     <>
       <Styled.CustomCard $isVisible={!isLoading && !error}>
         <Styled.FullWidthDiv>
-          <div ref={terminalRef} />
+          <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
         </Styled.FullWidthDiv>
       </Styled.CustomCard>
       {isLoading && !error && <Spin />}

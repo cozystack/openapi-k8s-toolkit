@@ -80,4 +80,10 @@ export type TDynamicComponentsAppTypeMap = {
     cluster: string
     nodeName: string
   }
+  PodLogs: {
+    id: number
+    cluster: string
+    namespace: string
+    podName: string
+  }
 }
