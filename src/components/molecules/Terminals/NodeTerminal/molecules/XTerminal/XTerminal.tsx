@@ -12,9 +12,10 @@ type TXTerminalProps = {
   endpoint: string
   nodeName: string
   profile: string
+  substractHeight: number
 }
 
-export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile }) => {
+export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile, substractHeight }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<Event>()
 
@@ -198,8 +199,8 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile }) 
         </Button>
       </Styled.ShutdownContainer>
       <Spacer $space={8} $samespace />
-      <Styled.CustomCard $isVisible={isTerminalVisible}>
-        <Styled.FullWidthDiv>
+      <Styled.CustomCard $isVisible={isTerminalVisible} $substractHeight={substractHeight}>
+        <Styled.FullWidthDiv $substractHeight={substractHeight}>
           <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
         </Styled.FullWidthDiv>
       </Styled.CustomCard>

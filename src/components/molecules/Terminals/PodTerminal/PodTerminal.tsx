@@ -11,9 +11,10 @@ export type TPodTerminalProps = {
   namespace: string
   podName: string
   containers: string[]
+  substractHeight: number
 }
 
-export const PodTerminal: FC<TPodTerminalProps> = ({ cluster, namespace, podName, containers }) => {
+export const PodTerminal: FC<TPodTerminalProps> = ({ cluster, namespace, podName, containers, substractHeight }) => {
   const [selectValue, setSelectValue] = useState<string | undefined>(containers[0] || undefined)
   const [currentContainer, setCurrentContainer] = useState<string | undefined>()
   // if wanna open same
@@ -60,6 +61,7 @@ export const PodTerminal: FC<TPodTerminalProps> = ({ cluster, namespace, podName
           namespace={namespace}
           podName={podName}
           container={currentContainer}
+          substractHeight={substractHeight}
           key={`${cluster}-${namespace}-${podName}-${currentContainer}-${hash}`}
         />
       )}

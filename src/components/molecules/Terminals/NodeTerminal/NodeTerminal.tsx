@@ -9,9 +9,10 @@ import { Styled } from './styled'
 export type TNodeTerminalProps = {
   cluster: string
   nodeName: string
+  substractHeight: number
 }
 
-export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName }) => {
+export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName, substractHeight }) => {
   const [selectValue, setSelectValue] = useState<string>()
   const [currentProfile, setCurrentProfile] = useState<string>()
   // if wanna open same
@@ -51,6 +52,7 @@ export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName }) => {
           endpoint={endpoint}
           nodeName={nodeName}
           profile={currentProfile}
+          substractHeight={substractHeight}
           key={`${cluster}-${nodeName}-${currentProfile}-${hash}`}
         />
       )}
