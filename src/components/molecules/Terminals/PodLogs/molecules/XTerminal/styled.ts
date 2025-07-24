@@ -11,30 +11,26 @@ type TCustomCardProps = {
 }
 
 const CustomCard = styled.div<TCustomCardProps>`
-  display: ${({ $isVisible }) => ($isVisible ? 'block' : 'none')};
+  visibility: ${({ $isVisible }) => ($isVisible ? 'visible' : 'hidden')};
   max-height: calc(100vh - 158px);
-
-  /* overflow-y: auto; */
-
-  /* background: black; */
-
-  /* stylelint-disable declaration-no-important */
 
   * {
     scrollbar-width: thin;
   }
+`
 
-  > div > div {
-    width: 100% !important;
-  }
+type TShutdownContainerProps = {
+  $isVisible?: boolean
+}
 
-  .xterm {
-    width: 100% !important;
-    height: 100% !important; /* optional */
-  }
+const ShutdownContainer = styled.div<TShutdownContainerProps>`
+  margin-top: -40px;
+  display: flex;
+  justify-content: flex-end;
 `
 
 export const Styled = {
   FullWidthDiv,
   CustomCard,
+  ShutdownContainer,
 }

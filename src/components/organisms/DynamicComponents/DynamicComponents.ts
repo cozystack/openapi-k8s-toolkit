@@ -20,6 +20,7 @@ import {
   EnrichedTable,
   PodTerminal,
   NodeTerminal,
+  PodLogs,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -44,4 +45,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   EnrichedTable,
   PodTerminal,
   NodeTerminal,
+  PodLogs,
 }
