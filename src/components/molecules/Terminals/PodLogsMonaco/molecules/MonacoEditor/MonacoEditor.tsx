@@ -13,12 +13,22 @@ type TMonacoEditorProps = {
   podName: string
   container: string
   theme: 'dark' | 'light'
+  substractHeight: number
 }
 
-export const MonacoEditor: FC<TMonacoEditorProps> = ({ endpoint, namespace, podName, container, theme }) => {
+export const MonacoEditor: FC<TMonacoEditorProps> = ({
+  endpoint,
+  namespace,
+  podName,
+  container,
+  theme,
+  substractHeight,
+}) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<Event>()
   const [isTerminalVisible, setIsTerminalVisible] = useState<boolean>(false)
+
+  const [isPaused, setIsPaused] = useState<boolean>(false)
 
   const socketRef = useRef<WebSocket | null>(null)
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
@@ -88,29 +98,36 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({ endpoint, namespace, podN
 
   return (
     <>
-      <Styled.ShutdownContainer $isVisible={isTerminalVisible}>
+      <Styled.RightAboveContainer $isVisible={isTerminalVisible}>
         <Button
-          type="dashed"
-          disabled={!socketRef.current}
           onClick={() => {
-            setIsTerminalVisible(false)
-            socketRef.current?.send(
-              JSON.stringify({
-                type: 'close',
-              }),
-            )
+            if (isPaused) {
+              setIsPaused(false)
+              socketRef.current?.send(
+                JSON.stringify({
+                  type: 'continue',
+                }),
+              )
+            } else {
+              setIsPaused(true)
+              socketRef.current?.send(
+                JSON.stringify({
+                  type: 'stop',
+                }),
+              )
+            }
           }}
         >
-          Terminate
+          {isPaused ? 'Continue' : 'Stop'}
         </Button>
-      </Styled.ShutdownContainer>
+      </Styled.RightAboveContainer>
       <Spacer $space={8} $samespace />
       <Styled.CustomCard $isVisible={isTerminalVisible}>
         <Styled.FullWidthDiv>
           <Editor
             defaultLanguage="yaml"
             width="100%"
-            height={464}
+            height={`calc(100vh - ${substractHeight}px`}
             theme={theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs'}
             options={{
               theme: theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs',
@@ -120,6 +137,7 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({ endpoint, namespace, podN
           />
         </Styled.FullWidthDiv>
       </Styled.CustomCard>
+
       {isLoading && !error && <Spin />}
       {error && <Result status="error" title="Error" subTitle={JSON.stringify(error)} />}
     </>

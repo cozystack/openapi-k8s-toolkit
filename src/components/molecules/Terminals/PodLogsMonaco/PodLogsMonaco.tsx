@@ -12,9 +12,17 @@ export type TPodLogsMonacoProps = {
   podName: string
   containers: string[]
   theme: 'dark' | 'light'
+  substractHeight: number
 }
 
-export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({ cluster, namespace, podName, containers, theme }) => {
+export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({
+  cluster,
+  namespace,
+  podName,
+  containers,
+  theme,
+  substractHeight,
+}) => {
   const [selectValue, setSelectValue] = useState<string | undefined>(containers[0] || undefined)
   const [currentContainer, setCurrentContainer] = useState<string | undefined>()
   // if wanna open same
@@ -62,6 +70,7 @@ export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({ cluster, namespace, pod
           podName={podName}
           container={currentContainer}
           theme={theme}
+          substractHeight={substractHeight}
           key={`${cluster}-${namespace}-${podName}-${currentContainer}-${hash}`}
         />
       )}

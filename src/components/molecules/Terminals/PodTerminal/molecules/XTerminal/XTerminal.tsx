@@ -12,9 +12,10 @@ type TXTerminalProps = {
   namespace: string
   podName: string
   container: string
+  substractHeight: number
 }
 
-export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, container }) => {
+export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, container, substractHeight }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<Event>()
 
@@ -128,8 +129,8 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, c
 
   return (
     <>
-      <Styled.CustomCard $isVisible={!isLoading && !error}>
-        <Styled.FullWidthDiv>
+      <Styled.CustomCard $isVisible={!isLoading && !error} $substractHeight={substractHeight}>
+        <Styled.FullWidthDiv $substractHeight={substractHeight}>
           <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
         </Styled.FullWidthDiv>
       </Styled.CustomCard>

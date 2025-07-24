@@ -1,22 +1,28 @@
 import styled from 'styled-components'
 
-const FullWidthDiv = styled.div`
-  display: flex;
-  justify-content: center;
-  width: 100%;
-`
-
 type TCustomCardProps = {
   $isVisible?: boolean
+  $substractHeight: number
 }
 
 const CustomCard = styled.div<TCustomCardProps>`
   visibility: ${({ $isVisible }) => ($isVisible ? 'visible' : 'hidden')};
-  max-height: calc(100vh - 158px);
+  height: calc(100vh - ${({ $substractHeight }) => $substractHeight}px);
 
   * {
     scrollbar-width: thin;
   }
+`
+
+type TFullWidthDivProps = {
+  $substractHeight: number
+}
+
+const FullWidthDiv = styled.div<TFullWidthDivProps>`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: calc(100vh - ${({ $substractHeight }) => $substractHeight}px);
 `
 
 type TShutdownContainerProps = {

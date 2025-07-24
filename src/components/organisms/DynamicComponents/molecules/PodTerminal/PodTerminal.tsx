@@ -22,6 +22,7 @@ export const PodTerminal: FC<{ data: TDynamicComponentsAppTypeMap['PodTerminal']
     cluster,
     namespace,
     podName,
+    substractHeight,
     ...props
   } = data
 
@@ -91,6 +92,7 @@ export const PodTerminal: FC<{ data: TDynamicComponentsAppTypeMap['PodTerminal']
         namespace={namespacePrepared}
         podName={podNamePrepared}
         containers={containers}
+        substractHeight={substractHeight || 332}
         {...props}
       />
       {children}

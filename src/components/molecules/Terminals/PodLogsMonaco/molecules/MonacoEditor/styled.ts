@@ -19,11 +19,11 @@ const CustomCard = styled.div<TCustomCardProps>`
   }
 `
 
-type TShutdownContainerProps = {
+type TRightAboveContainerProps = {
   $isVisible?: boolean
 }
 
-const ShutdownContainer = styled.div<TShutdownContainerProps>`
+const RightAboveContainer = styled.div<TRightAboveContainerProps>`
   margin-top: -40px;
   display: flex;
   justify-content: flex-end;
@@ -32,5 +32,5 @@ const ShutdownContainer = styled.div<TShutdownContainerProps>`
 export const Styled = {
   FullWidthDiv,
   CustomCard,
-  ShutdownContainer,
+  RightAboveContainer,
 }
