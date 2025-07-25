@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
 import React, { FC, useEffect, useState, useRef } from 'react'
-import { Button, Result, Spin, Progress, Typography } from 'antd'
+import { Result, Spin, Progress, Typography } from 'antd'
 import { Terminal as XTerm } from '@xterm/xterm'
 import themes from 'xterm-theme'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
-import { Spacer } from 'components/atoms'
 import { Styled } from './styled'
 
 type TXTerminalProps = {
@@ -128,9 +127,6 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile, su
           }
         }
       }
-      if (data.type === 'shutdown') {
-        setIsTerminalVisible(false)
-      }
       if (data.type === 'output') {
         if (data.payload.type === 'Buffer' && Array.isArray(data.payload.data)) {
           // Reconstruct bytes and decode to string
@@ -182,30 +178,13 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, nodeName, profile, su
 
   return (
     <>
-      <Styled.ShutdownContainer $isVisible={isTerminalVisible}>
-        <Button
-          type="dashed"
-          disabled={!socketRef.current}
-          onClick={() => {
-            setIsTerminalVisible(false)
-            socketRef.current?.send(
-              JSON.stringify({
-                type: 'shutdown',
-              }),
-            )
-          }}
-        >
-          Terminate
-        </Button>
-      </Styled.ShutdownContainer>
-      <Spacer $space={8} $samespace />
       <Styled.CustomCard $isVisible={isTerminalVisible} $substractHeight={substractHeight}>
         <Styled.FullWidthDiv $substractHeight={substractHeight}>
           <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
         </Styled.FullWidthDiv>
       </Styled.CustomCard>
       {!isTerminalVisible && !error && isWarmingUp && (
-        <Styled.ProgressContainer>
+        <Styled.ProgressContainer $substractHeight={substractHeight}>
           {isLoading && <Spin />}
           {!isLoading && <Progress type="circle" percent={progressPercent} />}
           {warmupMessage && <Typography.Text>Warming Up: {warmupMessage}</Typography.Text>}

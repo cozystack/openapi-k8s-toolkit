@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
 import React, { FC, useEffect, useState, useRef } from 'react'
-import { Button, Result, Spin } from 'antd'
+import { Result, Spin } from 'antd'
 import { Terminal as XTerm } from '@xterm/xterm'
 import themes from 'xterm-theme'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
-import { Spacer } from 'components/atoms'
 import { Styled } from './styled'
 
 type TXTerminalProps = {
@@ -13,9 +12,10 @@ type TXTerminalProps = {
   namespace: string
   podName: string
   container: string
+  substractHeight: number
 }
 
-export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, container }) => {
+export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, container, substractHeight }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<Event>()
   const [isTerminalVisible, setIsTerminalVisible] = useState<boolean>(false)
@@ -38,7 +38,6 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, c
       fontFamily: 'monospace',
       fontSize: 16,
       theme: themes.MaterialDark,
-      convertEol: true,
     })
     terminal.loadAddon(fitAddon.current)
     terminal.open(terminalRef.current)
@@ -114,25 +113,8 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, c
 
   return (
     <>
-      <Styled.ShutdownContainer $isVisible={isTerminalVisible}>
-        <Button
-          type="dashed"
-          disabled={!socketRef.current}
-          onClick={() => {
-            setIsTerminalVisible(false)
-            socketRef.current?.send(
-              JSON.stringify({
-                type: 'close',
-              }),
-            )
-          }}
-        >
-          Terminate
-        </Button>
-      </Styled.ShutdownContainer>
-      <Spacer $space={8} $samespace />
-      <Styled.CustomCard $isVisible={isTerminalVisible}>
-        <Styled.FullWidthDiv>
+      <Styled.CustomCard $isVisible={isTerminalVisible} $substractHeight={substractHeight}>
+        <Styled.FullWidthDiv $substractHeight={substractHeight}>
           <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />
         </Styled.FullWidthDiv>
       </Styled.CustomCard>

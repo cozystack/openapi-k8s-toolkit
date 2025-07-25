@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import React, { FC, useState } from 'react'
-import { Button, Flex, Select } from 'antd'
+import { Select } from 'antd'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { Spacer } from 'components/atoms'
 import { XTerminal } from './molecules'
@@ -13,10 +13,7 @@ export type TNodeTerminalProps = {
 }
 
 export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName, substractHeight }) => {
-  const [selectValue, setSelectValue] = useState<string>()
-  const [currentProfile, setCurrentProfile] = useState<string>()
-  // if wanna open same
-  const [hash, setHash] = useState<number>(0)
+  const [currentProfile, setCurrentProfile] = useState<string>('general')
 
   const endpoint = `/api/clusters/${cluster}/openapi-bff-ws/terminal/terminalNode/terminalNode`
 
@@ -24,28 +21,16 @@ export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName, substr
 
   return (
     <>
-      <Flex gap={16}>
-        <Styled.CustomSelect>
-          <Select
-            placeholder="Select profile"
-            options={profiles.map(profile => ({ value: profile, label: profile }))}
-            filterOption={filterSelectOptions}
-            showSearch
-            value={selectValue}
-            onChange={value => setSelectValue(value)}
-          />
-        </Styled.CustomSelect>
-        <Button
-          type="primary"
-          onClick={() => {
-            setCurrentProfile(selectValue)
-            setHash(hash + 1)
-          }}
-          disabled={!selectValue}
-        >
-          Open
-        </Button>
-      </Flex>
+      <Styled.CustomSelect>
+        <Select
+          placeholder="Select profile"
+          options={profiles.map(profile => ({ value: profile, label: profile }))}
+          filterOption={filterSelectOptions}
+          showSearch
+          value={currentProfile}
+          onChange={value => setCurrentProfile(value)}
+        />
+      </Styled.CustomSelect>
       <Spacer $space={8} $samespace />
       {currentProfile && (
         <XTerminal
@@ -53,7 +38,7 @@ export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName, substr
           nodeName={nodeName}
           profile={currentProfile}
           substractHeight={substractHeight}
-          key={`${cluster}-${nodeName}-${currentProfile}-${hash}`}
+          key={`${cluster}-${nodeName}-${currentProfile}`}
         />
       )}
     </>

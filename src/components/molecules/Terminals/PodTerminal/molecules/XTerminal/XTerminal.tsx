@@ -81,10 +81,6 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, c
       const data = JSON.parse(event.data)
       if (data.type === 'output') {
         if (data.payload.type === 'Buffer' && Array.isArray(data.payload.data)) {
-          // Reconstruct bytes and decode to string
-          // const bytes = new Uint8Array(data.payload)
-          // const text = decoderRef.current.decode(bytes)
-
           const text = Buffer.from(data.payload.data)
           terminal.write(text.toString('utf8'))
         } else {
@@ -104,19 +100,11 @@ export const XTerminal: FC<TXTerminalProps> = ({ endpoint, namespace, podName, c
 
     terminal.onData(data => {
       if (data === '\u001bOP') {
-        // const bufferToSend = Buffer.from('\u001b[11~', 'utf8')
-        // socket.send(JSON.stringify({ type: 'input', payload: bufferToSend }))
         socket.send(JSON.stringify({ type: 'input', payload: '\u001b[11~' }))
         return
       }
-      // const bufferToSend = Buffer.from(data, 'utf8')
-      // socket.send(JSON.stringify({ type: 'input', payload: bufferToSend }))
       socket.send(JSON.stringify({ type: 'input', payload: data }))
     })
-
-    // terminal.onResize(size => {
-    //   socket.send(JSON.stringify({ type: 'resize', payload: { cols: size.cols, rows: size.rows } }))
-    // })
 
     // eslint-disable-next-line consistent-return
     return () => {
