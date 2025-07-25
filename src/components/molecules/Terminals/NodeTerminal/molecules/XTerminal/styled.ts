@@ -25,20 +25,13 @@ const FullWidthDiv = styled.div<TFullWidthDivProps>`
   height: calc(100vh - ${({ $substractHeight }) => $substractHeight}px);
 `
 
-type TShutdownContainerProps = {
-  $isVisible?: boolean
+type TProgressContainerProps = {
+  $substractHeight: number
 }
 
-const ShutdownContainer = styled.div<TShutdownContainerProps>`
-  visibility: ${({ $isVisible }) => ($isVisible ? 'visible' : 'hidden')};
-  margin-top: -40px;
-  display: flex;
-  justify-content: flex-end;
-`
-
-const ProgressContainer = styled.div`
-  margin-top: -464px;
-  height: 464px;
+const ProgressContainer = styled.div<TProgressContainerProps>`
+  margin-top: calc(${({ $substractHeight }) => $substractHeight}px - 100vh);
+  height: calc(100vh - ${({ $substractHeight }) => $substractHeight}px);
   display: flex;
   flex-flow: column;
   justify-content: center;
@@ -49,6 +42,5 @@ const ProgressContainer = styled.div`
 export const Styled = {
   FullWidthDiv,
   CustomCard,
-  ShutdownContainer,
   ProgressContainer,
 }
