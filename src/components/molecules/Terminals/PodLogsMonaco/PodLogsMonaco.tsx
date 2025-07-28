@@ -25,7 +25,7 @@ export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({
 }) => {
   const [currentContainer, setCurrentContainer] = useState<string | undefined>(containers[0] || undefined)
 
-  const endpoint = `/api/clusters/${cluster}/openapi-bff-ws/terminal/podLogs/podLogs`
+  const endpoint = `/api/clusters/${cluster}/openapi-bff-ws/terminal/podLogs/podLogsNonWs`
 
   if (containers.length === 0) {
     return <>No Running Containers</>
