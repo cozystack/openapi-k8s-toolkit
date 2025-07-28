@@ -125,7 +125,8 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
       <Styled.CustomCard $isVisible={isTerminalVisible}>
         <Styled.FullWidthDiv>
           <Editor
-            defaultLanguage="yaml"
+            defaultLanguage="plaintext"
+            language="plaintext"
             width="100%"
             height={`calc(100vh - ${substractHeight}px`}
             theme={theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs'}
