@@ -38,7 +38,7 @@ export const PodLogs: FC<TPodLogsProps> = ({ cluster, namespace, podName, contai
           }}
         />
       </Styled.CustomSelect>
-      <Spacer $space={8} $samespace />
+      <Spacer $space={16} $samespace />
       {currentContainer && (
         <XTerminal
           endpoint={endpoint}

@@ -10,10 +10,11 @@ export type TNodeTerminalProps = {
   cluster: string
   nodeName: string
   substractHeight: number
+  defaultProfile?: string
 }
 
-export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName, substractHeight }) => {
-  const [currentProfile, setCurrentProfile] = useState<string>('general')
+export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName, substractHeight, defaultProfile }) => {
+  const [currentProfile, setCurrentProfile] = useState<string>(defaultProfile || 'general')
 
   const endpoint = `/api/clusters/${cluster}/openapi-bff-ws/terminal/terminalNode/terminalNode`
 
@@ -31,7 +32,7 @@ export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName, substr
           onChange={value => setCurrentProfile(value)}
         />
       </Styled.CustomSelect>
-      <Spacer $space={8} $samespace />
+      <Spacer $space={16} $samespace />
       {currentProfile && (
         <XTerminal
           endpoint={endpoint}

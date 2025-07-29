@@ -1,10 +1,10 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-console */
 import React, { FC, useEffect, useState, useRef } from 'react'
-import { Button, Result, Spin } from 'antd'
+import { Flex, Result, Spin } from 'antd'
 import Editor from '@monaco-editor/react'
 import type * as monaco from 'monaco-editor'
-import { Spacer } from 'components/atoms'
+import { Spacer, PauseCircleIcon, ResumeCircleIcon } from 'components/atoms'
 import { Styled } from './styled'
 
 type TMonacoEditorProps = {
@@ -100,29 +100,32 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
 
   return (
     <>
-      <Styled.RightAboveContainer $isVisible={isTerminalVisible}>
-        <Button
-          onClick={() => {
-            if (isPaused) {
-              setIsPaused(false)
-              socketRef.current?.send(
-                JSON.stringify({
-                  type: 'continue',
-                }),
-              )
-            } else {
-              setIsPaused(true)
-              socketRef.current?.send(
-                JSON.stringify({
-                  type: 'stop',
-                }),
-              )
-            }
-          }}
-        >
-          {isPaused ? 'Continue' : 'Stop'}
-        </Button>
-      </Styled.RightAboveContainer>
+      <Styled.VisibilityContainer $isVisible={isTerminalVisible}>
+        <Flex justify="start" align="center" gap={16}>
+          <Styled.CursorPointerDiv
+            onClick={() => {
+              if (isPaused) {
+                setIsPaused(false)
+                socketRef.current?.send(
+                  JSON.stringify({
+                    type: 'continue',
+                  }),
+                )
+              } else {
+                setIsPaused(true)
+                socketRef.current?.send(
+                  JSON.stringify({
+                    type: 'stop',
+                  }),
+                )
+              }
+            }}
+          >
+            {isPaused ? <ResumeCircleIcon /> : <PauseCircleIcon />}
+          </Styled.CursorPointerDiv>
+          <div>{isPaused ? 'Not streaming events' : 'Streaming events'}</div>
+        </Flex>
+      </Styled.VisibilityContainer>
       <Spacer $space={8} $samespace />
       <Styled.CustomCard $isVisible={isTerminalVisible}>
         <Styled.FullWidthDiv>

@@ -5,6 +5,7 @@ import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
+import { useFactoryConfig } from '../../../DynamicRendererWithProviders/factoryConfigProvider'
 import { parseMutliqueryText } from './utils'
 
 export const NodeTerminal: FC<{ data: TDynamicComponentsAppTypeMap['NodeTerminal']; children?: any }> = ({
@@ -23,6 +24,7 @@ export const NodeTerminal: FC<{ data: TDynamicComponentsAppTypeMap['NodeTerminal
     ...props
   } = data
 
+  const { nodeTerminalDefaultProfile } = useFactoryConfig()
   const partsOfUrl = usePartsOfUrl()
 
   const replaceValues = partsOfUrl.partsOfUrl.reduce<Record<string, string | undefined>>((acc, value, index) => {
@@ -49,7 +51,8 @@ export const NodeTerminal: FC<{ data: TDynamicComponentsAppTypeMap['NodeTerminal
       <Terminal
         cluster={clusterPrepared}
         nodeName={nodeNamePrepared}
-        substractHeight={substractHeight || 332}
+        substractHeight={substractHeight || 340}
+        defaultProfile={nodeTerminalDefaultProfile}
         {...props}
       />
       {children}
