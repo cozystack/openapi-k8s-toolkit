@@ -38,7 +38,7 @@ export const PodTerminal: FC<TPodTerminalProps> = ({ cluster, namespace, podName
           }}
         />
       </Styled.CustomSelect>
-      <Spacer $space={8} $samespace />
+      <Spacer $space={16} $samespace />
       {currentContainer && (
         <XTerminal
           endpoint={endpoint}

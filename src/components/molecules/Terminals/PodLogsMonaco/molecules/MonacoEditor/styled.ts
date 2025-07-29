@@ -19,18 +19,21 @@ const CustomCard = styled.div<TCustomCardProps>`
   }
 `
 
-type TRightAboveContainerProps = {
+type TVisibilityContainerProps = {
   $isVisible?: boolean
 }
 
-const RightAboveContainer = styled.div<TRightAboveContainerProps>`
-  margin-top: -40px;
-  display: flex;
-  justify-content: flex-end;
+const VisibilityContainer = styled.div<TVisibilityContainerProps>`
+  visibility: ${({ $isVisible }) => ($isVisible ? 'visible' : 'hidden')};
+`
+
+export const CursorPointerDiv = styled.div`
+  cursor: pointer;
 `
 
 export const Styled = {
   FullWidthDiv,
   CustomCard,
-  RightAboveContainer,
+  VisibilityContainer,
+  CursorPointerDiv,
 }

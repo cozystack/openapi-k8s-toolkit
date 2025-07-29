@@ -49,7 +49,7 @@ export const NodeTerminal: FC<{ data: TDynamicComponentsAppTypeMap['NodeTerminal
       <Terminal
         cluster={clusterPrepared}
         nodeName={nodeNamePrepared}
-        substractHeight={substractHeight || 332}
+        substractHeight={substractHeight || 340}
         {...props}
       />
       {children}

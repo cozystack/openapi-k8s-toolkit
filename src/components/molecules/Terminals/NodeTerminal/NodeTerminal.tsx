@@ -31,7 +31,7 @@ export const NodeTerminal: FC<TNodeTerminalProps> = ({ cluster, nodeName, substr
           onChange={value => setCurrentProfile(value)}
         />
       </Styled.CustomSelect>
-      <Spacer $space={8} $samespace />
+      <Spacer $space={16} $samespace />
       {currentProfile && (
         <XTerminal
           endpoint={endpoint}

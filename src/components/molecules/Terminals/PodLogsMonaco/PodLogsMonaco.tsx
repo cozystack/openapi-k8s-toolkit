@@ -84,7 +84,7 @@ export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({
           </Styled.CustomSelect>
         )}
       </Flex>
-      <Spacer $space={8} $samespace />
+      <Spacer $space={16} $samespace />
       {currentContainer && (
         <MonacoEditor
           endpoint={endpoint}

@@ -97,7 +97,7 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
         podName={podNamePrepared}
         containers={containers}
         theme={theme}
-        substractHeight={substractHeight || 332}
+        substractHeight={substractHeight || 340 + 35 + 8}
         rawPodInfo={podInfo}
         {...props}
       />
