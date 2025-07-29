@@ -56,7 +56,9 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
     isLoading: isLoadingPodInfo,
   } = useDirectUnknownResource<
     unknown & {
-      status: unknown & { containerStatuses: { name: string; state?: unknown & { running?: unknown } }[] }
+      status: unknown & {
+        containerStatuses: { name: string; state?: unknown & { running?: unknown }; restartCount?: number }[]
+      }
     }
   >({
     uri: `/api/clusters/${clusterPrepared}/k8s/api/v1/namespaces/${namespacePrepared}/pods/${podNamePrepared}`,
@@ -96,6 +98,7 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
         containers={containers}
         theme={theme}
         substractHeight={substractHeight || 332}
+        rawPodInfo={podInfo}
         {...props}
       />
       {children}

@@ -14,6 +14,7 @@ type TMonacoEditorProps = {
   container: string
   theme: 'dark' | 'light'
   substractHeight: number
+  previous: boolean
 }
 
 export const MonacoEditor: FC<TMonacoEditorProps> = ({
@@ -23,6 +24,7 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
   container,
   theme,
   substractHeight,
+  previous,
 }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<Event>()
@@ -61,7 +63,7 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
       socket.send(
         JSON.stringify({
           type: 'init',
-          payload: { namespace, podName, container },
+          payload: { namespace, podName, container, previous },
         }),
       )
       console.log(`[${namespace}/${podName}]: WebSocket Client Connected`)
@@ -94,7 +96,7 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
         socket.close()
       }
     }
-  }, [endpoint, namespace, podName, container])
+  }, [endpoint, namespace, podName, container, previous])
 
   return (
     <>
