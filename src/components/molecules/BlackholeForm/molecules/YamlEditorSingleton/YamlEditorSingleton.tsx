@@ -56,7 +56,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
     const { namespace } = currentValues.metadata as { namespace?: string }
     const { name } = currentValues.metadata as { name?: string }
     const body = currentValues
-    const endpoint = `/api/clusters/${cluster}/k8s/${type === 'builtin' ? '' : 'apis'}/${apiGroupApiVersion}${
+    const endpoint = `/api/clusters/${cluster}/k8s/${type === 'builtin' ? '' : 'apis/'}${apiGroupApiVersion}${
       isNameSpaced ? `/namespaces/${namespace}` : ''
     }/${typeName}/${isCreate ? '' : name}`
     if (isCreate) {
