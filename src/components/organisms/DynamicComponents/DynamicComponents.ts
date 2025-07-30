@@ -21,6 +21,7 @@ import {
   PodTerminal,
   NodeTerminal,
   PodLogs,
+  YamlEditorSingleton,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -46,4 +47,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   PodTerminal,
   NodeTerminal,
   PodLogs,
+  YamlEditorSingleton,
 }
