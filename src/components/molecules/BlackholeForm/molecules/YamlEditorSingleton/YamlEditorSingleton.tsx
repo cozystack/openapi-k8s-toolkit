@@ -56,7 +56,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
     const { namespace } = currentValues.metadata as { namespace?: string }
     const { name } = currentValues.metadata as { name?: string }
     const body = currentValues
-    const endpoint = `/api/clusters/${cluster}/k8s/${type === 'builtin' ? 'api' : 'apis'}/${apiGroupApiVersion}${
+    const endpoint = `/api/clusters/${cluster}/k8s/${type === 'builtin' ? '' : 'apis'}/${apiGroupApiVersion}${
       isNameSpaced ? `/namespaces/${namespace}` : ''
     }/${typeName}/${isCreate ? '' : name}`
     if (isCreate) {
@@ -66,6 +66,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
           if (backlink) {
             navigate(backlink)
           }
+          setIsLoading(false)
         })
         .catch(error => {
           console.log('Form submit error', error)
@@ -79,6 +80,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
           if (backlink) {
             navigate(backlink)
           }
+          setIsLoading(false)
         })
         .catch(error => {
           console.log('Form submit error', error)

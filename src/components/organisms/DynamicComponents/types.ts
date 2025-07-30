@@ -89,4 +89,15 @@ export type TDynamicComponentsAppTypeMap = {
     podName: string
     substractHeight?: number
   }
+  YamlEditorSingleton: {
+    id: number
+    cluster: string
+    isNameSpaced: boolean
+    type: 'builtin' | 'apis'
+    apiGroup?: string
+    apiVersion?: string
+    typeName: string
+    prefillValuesRequestIndex: number
+    substractHeight?: number
+  }
 }
