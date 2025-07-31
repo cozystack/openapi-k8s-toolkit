@@ -49,41 +49,43 @@ export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({
 
   return (
     <>
-      <Flex gap={16}>
-        <Styled.CustomSelect>
-          <Select
-            placeholder="Select container"
-            options={containers.map(container => ({ value: container, label: container }))}
-            filterOption={filterSelectOptions}
-            disabled={containers.length === 0}
-            showSearch
-            value={currentContainer}
-            onChange={value => {
-              setCurrentContainer(value)
-              setPrevious(false)
-            }}
-          />
-        </Styled.CustomSelect>
-        {currentContainer && (
+      <Styled.TopRowContent>
+        <Flex gap={16}>
           <Styled.CustomSelect>
             <Select
-              placeholder="Select current/previous"
-              options={prevCurOptions}
+              placeholder="Select container"
+              options={containers.map(container => ({ value: container, label: container }))}
               filterOption={filterSelectOptions}
-              disabled={!withPrevious}
+              disabled={containers.length === 0}
               showSearch
-              value={previous ? 'previous' : 'current'}
+              value={currentContainer}
               onChange={value => {
-                if (value === 'previous') {
-                  setPrevious(true)
-                } else {
-                  setPrevious(false)
-                }
+                setCurrentContainer(value)
+                setPrevious(false)
               }}
             />
           </Styled.CustomSelect>
-        )}
-      </Flex>
+          {currentContainer && (
+            <Styled.CustomSelect>
+              <Select
+                placeholder="Select current/previous"
+                options={prevCurOptions}
+                filterOption={filterSelectOptions}
+                disabled={!withPrevious}
+                showSearch
+                value={previous ? 'previous' : 'current'}
+                onChange={value => {
+                  if (value === 'previous') {
+                    setPrevious(true)
+                  } else {
+                    setPrevious(false)
+                  }
+                }}
+              />
+            </Styled.CustomSelect>
+          )}
+        </Flex>
+      </Styled.TopRowContent>
       <Spacer $space={16} $samespace />
       {currentContainer && (
         <MonacoEditor
