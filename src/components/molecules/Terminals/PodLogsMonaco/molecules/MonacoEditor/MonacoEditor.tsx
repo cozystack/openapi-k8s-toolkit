@@ -126,7 +126,7 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
           <div>{isPaused ? 'Not streaming events' : 'Streaming events'}</div>
         </Flex>
       </Styled.VisibilityContainer>
-      <Spacer $space={8} $samespace />
+      <Spacer $space={16} $samespace />
       <Styled.CustomCard $isVisible={isTerminalVisible}>
         <Styled.FullWidthDiv>
           <Editor
