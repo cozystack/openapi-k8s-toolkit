@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 /* eslint-disable no-nested-ternary */
 import React, { FC, useEffect, useState } from 'react'
-import { theme as antdtheme, Flex, Button, Modal, Typography } from 'antd'
+import { theme as antdtheme, notification, Flex, Button, Modal, Typography } from 'antd'
 import Editor from '@monaco-editor/react'
 import * as yaml from 'yaml'
 import { useNavigate } from 'react-router-dom'
@@ -23,6 +23,7 @@ type TYamlEditorSingletonProps = {
   backlink?: string | null
   designNewLayout?: boolean
   designNewLayoutHeight?: number
+  openNotification?: boolean
 }
 
 export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
@@ -37,9 +38,11 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
   backlink,
   designNewLayout,
   designNewLayoutHeight,
+  openNotification,
 }) => {
   const { token } = antdtheme.useToken()
   const navigate = useNavigate()
+  const [api, contextHolder] = notification.useNotification()
 
   const [yamlData, setYamlData] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
@@ -67,6 +70,13 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
             navigate(backlink)
           }
           setIsLoading(false)
+          if (openNotification) {
+            api.success({
+              message: 'Created successfully',
+              description: 'Entry was created',
+              placement: 'topRight',
+            })
+          }
         })
         .catch(error => {
           console.log('Form submit error', error)
@@ -81,6 +91,13 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
             navigate(backlink)
           }
           setIsLoading(false)
+          if (openNotification) {
+            api.success({
+              message: 'Updated successfully',
+              description: 'Entry was updated',
+              placement: 'topRight',
+            })
+          }
         })
         .catch(error => {
           console.log('Form submit error', error)
@@ -92,6 +109,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
 
   return (
     <>
+      {contextHolder}
       <Styled.BorderRadiusContainer $designNewLayoutHeight={designNewLayoutHeight}>
         <Editor
           defaultLanguage="yaml"

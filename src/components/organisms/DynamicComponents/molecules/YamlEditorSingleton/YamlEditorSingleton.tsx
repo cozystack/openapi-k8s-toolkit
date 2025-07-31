@@ -93,6 +93,7 @@ export const YamlEditorSingleton: FC<{ data: TDynamicComponentsAppTypeMap['YamlE
         typeName={typeNamePrepared}
         designNewLayout
         designNewLayoutHeight={height}
+        openNotification
         {...props}
       />
       {children}
