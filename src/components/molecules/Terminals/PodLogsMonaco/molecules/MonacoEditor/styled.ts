@@ -30,6 +30,7 @@ const VisibilityContainer = styled.div<TVisibilityContainerProps>`
 
 export const CursorPointerDiv = styled.div`
   cursor: pointer;
+  user-select: none;
 `
 
 export const Styled = {
