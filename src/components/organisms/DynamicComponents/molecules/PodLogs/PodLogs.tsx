@@ -58,6 +58,7 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
     unknown & {
       status: unknown & {
         containerStatuses: { name: string; state?: unknown & { running?: unknown }; restartCount?: number }[]
+        initContainerStatuses: { name: string }[]
       }
     }
   >({
@@ -87,7 +88,7 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
     return <>No Pod Info</>
   }
 
-  const containers = getRunningContainerNames(podInfo)
+  const { containers, initContainers } = getRunningContainerNames(podInfo)
 
   return (
     <>
@@ -96,6 +97,7 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
         namespace={namespacePrepared}
         podName={podNamePrepared}
         containers={containers}
+        initContainers={initContainers}
         theme={theme}
         substractHeight={substractHeight || 340 + 35 + 8}
         rawPodInfo={podInfo}

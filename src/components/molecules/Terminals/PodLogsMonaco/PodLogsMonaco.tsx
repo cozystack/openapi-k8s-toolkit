@@ -11,6 +11,7 @@ export type TPodLogsMonacoProps = {
   namespace: string
   podName: string
   containers: string[]
+  initContainers: string[]
   theme: 'dark' | 'light'
   substractHeight: number
   rawPodInfo: unknown & {
@@ -25,6 +26,7 @@ export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({
   namespace,
   podName,
   containers,
+  initContainers,
   theme,
   substractHeight,
   rawPodInfo,
@@ -47,6 +49,28 @@ export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({
       ]
     : [{ value: 'current', label: 'Current log' }]
 
+  const options =
+    initContainers.length > 0
+      ? [
+          {
+            label: <span>Containers</span>,
+            title: 'Containers',
+            options: containers.map(container => ({ value: container, label: container })),
+          },
+          {
+            label: <span>Init Containers</span>,
+            title: 'Init Containers',
+            options: initContainers.map(container => ({ value: container, label: container })),
+          },
+        ]
+      : [
+          {
+            label: <span>Containers</span>,
+            title: 'Containers',
+            options: containers.map(container => ({ value: container, label: container })),
+          },
+        ]
+
   return (
     <>
       <Styled.TopRowContent>
@@ -54,7 +78,7 @@ export const PodLogsMonaco: FC<TPodLogsMonacoProps> = ({
           <Styled.CustomSelect>
             <Select
               placeholder="Select container"
-              options={containers.map(container => ({ value: container, label: container }))}
+              options={options}
               filterOption={filterSelectOptions}
               disabled={containers.length === 0}
               showSearch
