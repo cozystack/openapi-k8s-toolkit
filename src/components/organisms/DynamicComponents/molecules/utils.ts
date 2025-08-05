@@ -17,8 +17,18 @@ type TDataMap = {
   [key: string]: any
 }
 
-export const parseMutliqueryText = ({ text, multiQueryData }: { text?: string; multiQueryData: TDataMap }) => {
-  if (!text) return ''
+export const parseMutliqueryText = ({
+  text,
+  multiQueryData,
+  customFallback,
+}: {
+  text?: string
+  multiQueryData: TDataMap
+  customFallback?: string
+}): string => {
+  if (!text) {
+    return ''
+  }
 
   // 1: req index
   // 2: comma-separated quoted keys
@@ -42,8 +52,11 @@ export const parseMutliqueryText = ({ text, multiQueryData }: { text?: string; m
 
         // Use lodash.get to safely access deep value
         const value = _.get(multiQueryData[`req${reqIndex}`], path, fallback !== undefined ? fallback : undefined)
-        if (value == null) {
+        if (value == null && !customFallback) {
           return fallback ?? 'Undefined with no fallback'
+        }
+        if (customFallback && (value === undefined || value === null)) {
+          return customFallback
         }
         return String(value)
       } catch {
@@ -56,9 +69,11 @@ export const parseMutliqueryText = ({ text, multiQueryData }: { text?: string; m
 export const parseJsonPathTemplate = ({
   text,
   multiQueryData,
+  customFallback,
 }: {
   text?: string
   multiQueryData: TDataMap
+  customFallback?: string
 }): string => {
   if (!text) return ''
 
@@ -77,10 +92,13 @@ export const parseJsonPathTemplate = ({
         const reqIndex = parseInt(reqIndexStr, 10)
         const jsonRoot = multiQueryData[`req${reqIndex}`]
 
-        if (jsonRoot === undefined) {
+        if (jsonRoot === undefined && !customFallback) {
           // return ''
           // no such request entry → use fallback (or empty)
           return fallback
+        }
+        if (jsonRoot === undefined && customFallback) {
+          return customFallback
         }
 
         // Evaluate JSONPath and pick first result
@@ -89,6 +107,9 @@ export const parseJsonPathTemplate = ({
         //   return ''
         // }
         if (results.length === 0 || results[0] == null || results[0] === undefined) {
+          if (customFallback) {
+            return customFallback
+          }
           // no result or null → fallback
           return fallback
         }
@@ -101,6 +122,26 @@ export const parseJsonPathTemplate = ({
       }
     },
   )
+}
+
+export const parseWithoutPartsOfUrl = ({
+  text,
+  multiQueryData,
+  customFallback,
+}: {
+  text: string
+  multiQueryData: TDataMap
+  customFallback?: string
+}): string => {
+  return parseJsonPathTemplate({
+    text: parseMutliqueryText({
+      text,
+      multiQueryData,
+      customFallback,
+    }),
+    multiQueryData,
+    customFallback,
+  })
 }
 
 export const parseAll = ({

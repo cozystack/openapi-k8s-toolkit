@@ -107,4 +107,8 @@ export type TDynamicComponentsAppTypeMap = {
     prefillValuesRequestIndex: number
     substractHeight?: number
   }
+  VisibilityContainer: {
+    id: number
+    value: string
+  }
 }
