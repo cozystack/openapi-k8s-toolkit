@@ -10,7 +10,8 @@ import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
-import { parseMutliqueryText, serializeLabels } from './utils'
+import { parseAll } from '../utils'
+import { serializeLabels } from './utils'
 
 export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTable']; children?: any }> = ({
   data,
@@ -44,20 +45,13 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     replaceValues,
   })
 
-  const fetchUrlPrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: fetchUrl, multiQueryData }),
-    replaceValues,
-  })
+  const fetchUrlPrepared = parseAll({ text: fetchUrl, replaceValues, multiQueryData })
 
   let labelsSuffix: string | undefined
   if (labelsSelector) {
     const parsedObject: Record<string, string> = Object.fromEntries(
       Object.entries(labelsSelector).map(
-        ([key, value]) =>
-          [key, prepareTemplate({ template: parseMutliqueryText({ text: value, multiQueryData }), replaceValues })] as [
-            string,
-            string,
-          ],
+        ([key, value]) => [key, parseAll({ text: value, replaceValues, multiQueryData })] as [string, string],
       ),
     )
     const serializedLabels = serializeLabels(parsedObject)
@@ -72,7 +66,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
 
   let fieldSelectorSuffix: string | undefined
   if (fieldSelector) {
-    const preparedFieldSelectorValueText = parseMutliqueryText({ text: fieldSelector?.parsedText, multiQueryData })
+    const preparedFieldSelectorValueText = parseAll({ text: fieldSelector?.parsedText, replaceValues, multiQueryData })
 
     const preparedFieldSelectorValueTextWithPartsOfUrl = prepareTemplate({
       template: preparedFieldSelectorValueText,

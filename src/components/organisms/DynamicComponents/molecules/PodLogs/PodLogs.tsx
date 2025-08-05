@@ -3,12 +3,12 @@ import React, { FC } from 'react'
 import { Flex, Spin } from 'antd'
 import { PodLogsMonaco as Editor } from 'components'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
-import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
-import { getRunningContainerNames, parseMutliqueryText } from './utils'
+import { parseAll } from '../utils'
+import { getRunningContainerNames } from './utils'
 
 export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; children?: any }> = ({
   data,
@@ -35,20 +35,11 @@ export const PodLogs: FC<{ data: TDynamicComponentsAppTypeMap['PodLogs']; childr
     return acc
   }, {})
 
-  const clusterPrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: cluster, multiQueryData }),
-    replaceValues,
-  })
+  const clusterPrepared = parseAll({ text: cluster, replaceValues, multiQueryData })
 
-  const namespacePrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: namespace, multiQueryData }),
-    replaceValues,
-  })
+  const namespacePrepared = parseAll({ text: namespace, replaceValues, multiQueryData })
 
-  const podNamePrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: podName, multiQueryData }),
-    replaceValues,
-  })
+  const podNamePrepared = parseAll({ text: podName, replaceValues, multiQueryData })
 
   const {
     data: podInfo,

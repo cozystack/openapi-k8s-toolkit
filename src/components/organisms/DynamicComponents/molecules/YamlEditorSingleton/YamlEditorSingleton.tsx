@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC, useState, useEffect } from 'react'
 import { YamlEditorSingleton as Editor } from 'components'
-import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
-import { parseMutliqueryText } from './utils'
+import { parseAll } from '../utils'
 
 export const YamlEditorSingleton: FC<{ data: TDynamicComponentsAppTypeMap['YamlEditorSingleton']; children?: any }> = ({
   data,
@@ -54,25 +53,15 @@ export const YamlEditorSingleton: FC<{ data: TDynamicComponentsAppTypeMap['YamlE
     return acc
   }, {})
 
-  const clusterPrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: cluster, multiQueryData }),
-    replaceValues,
-  })
+  const clusterPrepared = parseAll({ text: cluster, replaceValues, multiQueryData })
 
-  const apiGroupPrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: apiGroup, multiQueryData }),
-    replaceValues,
-  })
+  const apiGroupPrepared = apiGroup ? parseAll({ text: apiGroup, replaceValues, multiQueryData }) : 'no-api-group'
 
-  const apiVersionPrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: apiVersion, multiQueryData }),
-    replaceValues,
-  })
+  const apiVersionPrepared = apiVersion
+    ? parseAll({ text: apiVersion, replaceValues, multiQueryData })
+    : 'no-api-version'
 
-  const typeNamePrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: typeName, multiQueryData }),
-    replaceValues,
-  })
+  const typeNamePrepared = parseAll({ text: typeName, replaceValues, multiQueryData })
 
   const prefillValues = multiQueryData[`req${prefillValuesRequestIndex}`]
 

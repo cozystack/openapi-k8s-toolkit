@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
 import { Typography } from 'antd'
-import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
-import { parseMutliqueryText } from './utils'
+import { parseAll } from '../utils'
 
 export const AntdLink: FC<{ data: TDynamicComponentsAppTypeMap['antdLink']; children?: any }> = ({
   data,
@@ -22,15 +21,9 @@ export const AntdLink: FC<{ data: TDynamicComponentsAppTypeMap['antdLink']; chil
     return acc
   }, {})
 
-  const textPrepared = prepareTemplate({
-    template: parseMutliqueryText({ text, multiQueryData }),
-    replaceValues,
-  })
+  const textPrepared = parseAll({ text, replaceValues, multiQueryData })
 
-  const hrefPrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: href, multiQueryData }),
-    replaceValues,
-  })
+  const hrefPrepared = parseAll({ text: href, replaceValues, multiQueryData })
 
   if (isMultiqueryLoading) {
     return <div>Loading multiquery</div>

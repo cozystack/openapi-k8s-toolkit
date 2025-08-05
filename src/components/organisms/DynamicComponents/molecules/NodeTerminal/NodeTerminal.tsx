@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
 import { NodeTerminal as Terminal } from 'components'
-import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { useFactoryConfig } from '../../../DynamicRendererWithProviders/factoryConfigProvider'
-import { parseMutliqueryText } from './utils'
+import { parseAll } from '../utils'
 
 export const NodeTerminal: FC<{ data: TDynamicComponentsAppTypeMap['NodeTerminal']; children?: any }> = ({
   data,
@@ -32,15 +31,9 @@ export const NodeTerminal: FC<{ data: TDynamicComponentsAppTypeMap['NodeTerminal
     return acc
   }, {})
 
-  const clusterPrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: cluster, multiQueryData }),
-    replaceValues,
-  })
+  const clusterPrepared = parseAll({ text: cluster, replaceValues, multiQueryData })
 
-  const nodeNamePrepared = prepareTemplate({
-    template: parseMutliqueryText({ text: nodeName, multiQueryData }),
-    replaceValues,
-  })
+  const nodeNamePrepared = parseAll({ text: nodeName, replaceValues, multiQueryData })
 
   if (isMultiqueryLoading) {
     return <div>Loading multiquery</div>
