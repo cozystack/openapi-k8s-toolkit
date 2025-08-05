@@ -1,4 +1,5 @@
 export * from './AntdText'
+export * from './AntdLink'
 export * from './AntdCard'
 export * from './AntdFlex'
 export * from './AntdRow'
