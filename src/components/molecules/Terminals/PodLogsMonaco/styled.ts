@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 
 const TopRowContent = styled.div`
-  width: 100%;
   height: 35px;
   margin-left: 202px;
   display: flex;

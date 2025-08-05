@@ -22,12 +22,14 @@ import {
   NodeTerminal,
   PodLogs,
   YamlEditorSingleton,
+  AntdLink,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
 export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap> = {
   DefaultDiv,
   antdText: AntdText,
+  antdLink: AntdLink,
   antdCard: AntdCard,
   antdFlex: AntdFlex,
   antdRow: AntdRow,

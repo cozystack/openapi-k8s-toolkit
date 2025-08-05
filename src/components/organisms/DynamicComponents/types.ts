@@ -1,11 +1,18 @@
+import { CSSProperties } from 'react'
 import { CardProps, FlexProps, RowProps, ColProps, ButtonProps, TabsProps } from 'antd'
 import type { TextProps } from 'antd/es/typography/Text'
+import type { LinkProps } from 'antd/es/typography/Link'
 import { TContentCardProps, TSpacerProps } from 'components/atoms'
 import { TManageableSidebarWithDataProviderProps, TEnrichedTableProviderProps } from 'components/molecules'
 
 export type TDynamicComponentsAppTypeMap = {
   DefaultDiv: { id: number } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
   antdText: { id: number; text: string } & Omit<TextProps, 'id' | 'children'>
+  antdLink: {
+    id: number
+    text: string
+    href: string
+  } & Omit<LinkProps, 'id' | 'children' | 'href'>
   // antdCard: { id: number; price: number }
   antdCard: { id: number } & Omit<CardProps, 'id'>
   antdFlex: { id: number } & Omit<FlexProps, 'id' | 'children'>
@@ -15,7 +22,7 @@ export type TDynamicComponentsAppTypeMap = {
   antdButton: { id: number; text: string } & Omit<ButtonProps, 'id' | 'children'>
   partsOfUrl: { id: number; text: string }
   multiQuery: { id: number; text: string }
-  parsedText: { id: number; text: string }
+  parsedText: { id: number; text: string; style?: CSSProperties }
   ProjectInfoCard: {
     id: number
     clusterNamePartOfUrl: string

@@ -59,5 +59,5 @@ export const ParsedText: FC<{ data: TDynamicComponentsAppTypeMap['parsedText'] }
     replaceValues,
   })
 
-  return <span>{preparedTextWithPartsOfUrl}</span>
+  return <span style={data.style}>{preparedTextWithPartsOfUrl}</span>
 }
