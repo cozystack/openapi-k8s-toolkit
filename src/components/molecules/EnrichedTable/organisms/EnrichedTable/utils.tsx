@@ -75,7 +75,10 @@ export const getEnrichedColumns = ({
             return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={possibleUndefinedValue} />
           }
         }
-        return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={`Raw: ${JSON.stringify(value)}`} />
+        if (value === undefined) {
+          return <div>Raw: undefined</div>
+        }
+        return <div>Raw: {JSON.stringify(value)}</div>
       },
       width: possibleColWidth,
       filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
