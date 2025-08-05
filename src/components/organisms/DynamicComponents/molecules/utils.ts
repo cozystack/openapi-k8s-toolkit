@@ -83,7 +83,9 @@ export const parseJsonPathTemplate = ({
   // Regex to match either:
   // 1) {reqsJsonPath[<index>]['<path>']}
   // 2) {reqsJsonPath[<index>]['<path>']['<fallback>']}
-  const placeholderRegex = /\{reqsJsonPath\[(\d+)\]\s*\[\s*(['"])([^'"]+)\2\s*\](?:\s*\[\s*(['"])([^'"]*)\4\s*\])?\}/g
+  // const placeholderRegex = /\{reqsJsonPath\[(\d+)\]\s*\[\s*(['"])([^'"]+)\2\s*\](?:\s*\[\s*(['"])([^'"]*)\4\s*\])?\}/g
+  const placeholderRegex =
+    /\{reqsJsonPath\[(\d+)\]\s*\[\s*(['"])([\s\S]*?)\2\s*\](?:\s*\[\s*(['"])([\s\S]*?)\4\s*\])?\}/g
 
   return text.replace(
     placeholderRegex,
