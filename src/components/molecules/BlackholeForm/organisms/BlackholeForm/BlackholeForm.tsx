@@ -20,7 +20,7 @@ import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { normalizeValuesForQuotasToNumber } from 'utils/normalizeValuesForQuotas'
 import { getAllPathsFromObj } from 'utils/getAllPathsFromObj'
 import { getPrefixSubarrays } from 'utils/getPrefixSubArrays'
-import { Spacer } from 'components/atoms'
+import { FlexGrow, Spacer } from 'components/atoms'
 import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
 import { handleSubmitError, handleValidationError } from './utilsErrorHandler'
@@ -492,6 +492,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           <YamlEditor theme={theme} currentValues={yamlValues || {}} onChange={onYamlChangeCallback} />
         </div>
       </Styled.Container>
+      <FlexGrow />
       <Styled.ControlsRowContainer $bgColor={token.colorPrimaryBg} $designNewLayout={designNewLayout}>
         <Flex gap={designNewLayout ? 10 : 16} align="center">
           <Button type="primary" onClick={onSubmit} loading={isLoading}>
