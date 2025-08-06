@@ -45,6 +45,7 @@ export type TDynamicComponentsAppTypeMap = {
     mpResourceName: string
     mpResourceKind: string
     baseprefix?: string
+    standalone?: boolean
   }
   ContentCard: { id: number } & TContentCardProps
   Spacer: { id: number } & TSpacerProps
