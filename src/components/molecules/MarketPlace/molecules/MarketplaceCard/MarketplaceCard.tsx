@@ -15,6 +15,7 @@ export type TMarketplaceCardProps = {
   onDeleteClick?: () => void
   onEditClick?: () => void
   addedMode?: boolean
+  standalone?: boolean
 } & Omit<TMarketPlacePanel, 'hidden'>
 
 export const MarketplaceCard: FC<TMarketplaceCardProps> = ({
@@ -35,6 +36,7 @@ export const MarketplaceCard: FC<TMarketplaceCardProps> = ({
   onDeleteClick,
   onEditClick,
   addedMode,
+  standalone,
 }) => {
   const { useToken } = theme
   const { token } = useToken()
@@ -48,27 +50,28 @@ export const MarketplaceCard: FC<TMarketplaceCardProps> = ({
     decodedIcon = "Can't decode"
   }
 
-  const navigateUrl = addedMode
-    ? getPathToNav({
-        clusterName,
-        namespace,
-        type,
-        pathToNav,
-        typeName,
-        apiGroup,
-        apiVersion,
-        baseprefix,
-      })
-    : getCreatePathToNav({
-        clusterName,
-        namespace,
-        type,
-        pathToNav,
-        typeName,
-        apiGroup,
-        apiVersion,
-        baseprefix,
-      })
+  const navigateUrl =
+    addedMode || standalone
+      ? getPathToNav({
+          clusterName,
+          namespace,
+          type,
+          pathToNav,
+          typeName,
+          apiGroup,
+          apiVersion,
+          baseprefix,
+        })
+      : getCreatePathToNav({
+          clusterName,
+          namespace,
+          type,
+          pathToNav,
+          typeName,
+          apiGroup,
+          apiVersion,
+          baseprefix,
+        })
 
   const listUrl: string | undefined =
     addedMode && type !== 'direct'
