@@ -58,14 +58,14 @@ export const getCreatePathToNav = ({
   }
 
   if (type === 'crd') {
-    return `/${baseprefix}/${clusterName}/${namespace}/forms/crds/${apiGroup}/${apiVersion}/${typeName}`
+    return `/${baseprefix}/${clusterName}/${namespace}/forms/crds/${apiGroup}/${apiVersion}/${typeName}?backlink=${window.location.pathname}`
   }
 
   if (type === 'nonCrd') {
-    return `/${baseprefix}/${clusterName}/${namespace}/forms/apis/${apiGroup}/${apiVersion}/${typeName}`
+    return `/${baseprefix}/${clusterName}/${namespace}/forms/apis/${apiGroup}/${apiVersion}/${typeName}?backlink=${window.location.pathname}`
   }
 
-  return `/${baseprefix}/${clusterName}/${namespace}/forms/builtin/${apiVersion}/${typeName}`
+  return `/${baseprefix}/${clusterName}/${namespace}/forms/builtin/${apiVersion}/${typeName}?backlink=${window.location.pathname}`
 }
 
 export const getListPath = ({
