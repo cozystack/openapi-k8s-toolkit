@@ -24,6 +24,7 @@ import {
   YamlEditorSingleton,
   AntdLink,
   VisibilityContainer,
+  ArrayOfObjectsToKeyValues,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -52,4 +53,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   PodLogs,
   YamlEditorSingleton,
   VisibilityContainer,
+  ArrayOfObjectsToKeyValues,
 }

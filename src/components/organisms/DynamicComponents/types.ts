@@ -6,25 +6,25 @@ import { TContentCardProps, TSpacerProps } from 'components/atoms'
 import { TManageableSidebarWithDataProviderProps, TEnrichedTableProviderProps } from 'components/molecules'
 
 export type TDynamicComponentsAppTypeMap = {
-  DefaultDiv: { id: number } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
-  antdText: { id: number; text: string } & Omit<TextProps, 'id' | 'children'>
+  DefaultDiv: { id: number | string } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+  antdText: { id: number | string; text: string } & Omit<TextProps, 'id' | 'children'>
   antdLink: {
-    id: number
+    id: number | string
     text: string
     href: string
   } & Omit<LinkProps, 'id' | 'children' | 'href'>
-  // antdCard: { id: number; price: number }
-  antdCard: { id: number } & Omit<CardProps, 'id'>
-  antdFlex: { id: number } & Omit<FlexProps, 'id' | 'children'>
-  antdRow: { id: number } & Omit<RowProps, 'id' | 'children'>
-  antdCol: { id: number } & Omit<ColProps, 'id' | 'children'>
-  antdTabs: { id: number } & Omit<TabsProps, 'id' | 'children'>
-  antdButton: { id: number; text: string } & Omit<ButtonProps, 'id' | 'children'>
-  partsOfUrl: { id: number; text: string }
-  multiQuery: { id: number; text: string }
-  parsedText: { id: number; text: string; style?: CSSProperties }
+  // antdCard: { id: number | string; price: number }
+  antdCard: { id: number | string } & Omit<CardProps, 'id'>
+  antdFlex: { id: number | string } & Omit<FlexProps, 'id' | 'children'>
+  antdRow: { id: number | string } & Omit<RowProps, 'id' | 'children'>
+  antdCol: { id: number | string } & Omit<ColProps, 'id' | 'children'>
+  antdTabs: { id: number | string } & Omit<TabsProps, 'id' | 'children'>
+  antdButton: { id: number | string; text: string } & Omit<ButtonProps, 'id' | 'children'>
+  partsOfUrl: { id: number | string; text: string }
+  multiQuery: { id: number | string; text: string }
+  parsedText: { id: number | string; text: string; style?: CSSProperties }
   ProjectInfoCard: {
-    id: number
+    id: number | string
     clusterNamePartOfUrl: string
     namespacePartOfUrl: string
     baseApiGroup: string
@@ -37,7 +37,7 @@ export type TDynamicComponentsAppTypeMap = {
     baseprefix?: string
   }
   MarketplaceCard: {
-    id: number
+    id: number | string
     clusterNamePartOfUrl: string
     namespacePartOfUrl: string
     baseApiGroup: string
@@ -47,19 +47,19 @@ export type TDynamicComponentsAppTypeMap = {
     baseprefix?: string
     standalone?: boolean
   }
-  ContentCard: { id: number } & TContentCardProps
-  Spacer: { id: number } & TSpacerProps
+  ContentCard: { id: number | string } & TContentCardProps
+  Spacer: { id: number | string } & TSpacerProps
   StatusText: {
-    id: number
+    id: number | string
     value: string
     criteria: 'equals' | 'notEquals'
     valueToCompare: unknown
     successText: string
     errorText: string
   } & Omit<TextProps, 'id' | 'children'>
-  SidebarProvider: { id: number } & Omit<TManageableSidebarWithDataProviderProps, 'replaceValues'>
+  SidebarProvider: { id: number | string } & Omit<TManageableSidebarWithDataProviderProps, 'replaceValues'>
   EnrichedTable: {
-    id: number
+    id: number | string
     fetchUrl: string
     pathToItems: string[]
     clusterNamePartOfUrl: string
@@ -77,27 +77,27 @@ export type TDynamicComponentsAppTypeMap = {
     'tableMappingsReplaceValues' | 'cluster' | 'theme' | 'tableProps' | 'dataItems' | 'withoutControls'
   >
   PodTerminal: {
-    id: number
+    id: number | string
     cluster: string
     namespace: string
     podName: string
     substractHeight?: number
   }
   NodeTerminal: {
-    id: number
+    id: number | string
     cluster: string
     nodeName: string
     substractHeight?: number
   }
   PodLogs: {
-    id: number
+    id: number | string
     cluster: string
     namespace: string
     podName: string
     substractHeight?: number
   }
   YamlEditorSingleton: {
-    id: number
+    id: number | string
     cluster: string
     isNameSpaced: boolean
     type: 'builtin' | 'apis'
@@ -108,7 +108,19 @@ export type TDynamicComponentsAppTypeMap = {
     substractHeight?: number
   }
   VisibilityContainer: {
-    id: number
+    id: number | string
     value: string
+  }
+  ArrayOfObjectsToKeyValues: {
+    id: number | string
+    reqIndex: string
+    jsonPathToArray: string
+    keyFieldName: string
+    valueFieldName: string
+    separator?: string
+    containerStyle?: CSSProperties
+    rowStyle?: CSSProperties
+    keyFieldStyle?: CSSProperties
+    valueFieldStyle?: CSSProperties
   }
 }
