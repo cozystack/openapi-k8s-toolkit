@@ -4,6 +4,7 @@ import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { parseAll } from '../utils'
+import { formatLocalDate } from './utils'
 
 export const ParsedText: FC<{ data: TDynamicComponentsAppTypeMap['parsedText'] }> = ({ data }) => {
   const { data: multiQueryData, isLoading, isError, errors } = useMultiQuery()
@@ -27,7 +28,9 @@ export const ParsedText: FC<{ data: TDynamicComponentsAppTypeMap['parsedText'] }
     return acc
   }, {})
 
-  const preparedTextWithPartsOfUrl = parseAll({ text: data.text, replaceValues, multiQueryData })
+  const parsedText = parseAll({ text: data.text, replaceValues, multiQueryData })
 
-  return <span style={data.style}>{preparedTextWithPartsOfUrl}</span>
+  const formattedText = data.formatter ? formatLocalDate(parsedText) : parsedText
+
+  return <span style={data.style}>{formattedText}</span>
 }

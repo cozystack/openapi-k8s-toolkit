@@ -20,4 +20,5 @@ export type TPrepareTableRes = {
   pathToNavigate?: string
   recordKeysForNavigation?: string[]
   recordKeysForNavigationSecond?: string[]
+  recordKeysForNavigationThird?: string[]
 }

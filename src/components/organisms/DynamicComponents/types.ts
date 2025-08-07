@@ -22,7 +22,7 @@ export type TDynamicComponentsAppTypeMap = {
   antdButton: { id: number | string; text: string } & Omit<ButtonProps, 'id' | 'children'>
   partsOfUrl: { id: number | string; text: string }
   multiQuery: { id: number | string; text: string }
-  parsedText: { id: number | string; text: string; style?: CSSProperties }
+  parsedText: { id: number | string; text: string; formatter?: 'timestamp'; style?: CSSProperties }
   ProjectInfoCard: {
     id: number | string
     clusterNamePartOfUrl: string
@@ -52,10 +52,13 @@ export type TDynamicComponentsAppTypeMap = {
   StatusText: {
     id: number | string
     value: string
-    criteria: 'equals' | 'notEquals'
-    valueToCompare: unknown
+    criteriaSuccess: 'equals' | 'notEquals'
+    criteriaError: 'equals' | 'notEquals'
+    valueToCompareSuccess: unknown[]
+    valueToCompareError: unknown[]
     successText: string
     errorText: string
+    fallbackText: string
   } & Omit<TextProps, 'id' | 'children'>
   SidebarProvider: { id: number | string } & Omit<TManageableSidebarWithDataProviderProps, 'replaceValues'>
   EnrichedTable: {
