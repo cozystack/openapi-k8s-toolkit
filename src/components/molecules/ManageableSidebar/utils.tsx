@@ -44,11 +44,12 @@ const findMatchingItems = ({
         ? node.internalMetaLink.slice(1)
         : node.internalMetaLink
       const cleanPathname = pathname.startsWith('/') ? pathname.slice(1) : pathname
-      const matched =
-        cleanNodeInternalMetaLink === cleanPathname ||
-        (cleanNodeInternalMetaLink && currentPath && cleanNodeInternalMetaLink.includes(cleanPathname))
-          ? currentPath
-          : []
+      // const matched =
+      //   cleanNodeInternalMetaLink === cleanPathname ||
+      //   (cleanNodeInternalMetaLink && currentPath && cleanNodeInternalMetaLink.includes(cleanPathname))
+      //     ? currentPath
+      //     : []
+      const matched = cleanNodeInternalMetaLink === cleanPathname ? currentPath : []
 
       const tagsToMatch =
         tags && tags.keysAndTags && node.key
