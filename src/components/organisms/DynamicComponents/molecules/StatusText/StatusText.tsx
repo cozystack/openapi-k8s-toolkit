@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
-import jp from 'jsonpath'
 import { Typography } from 'antd'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { parseAll } from '../utils'
+import { getResult } from './utils'
 
 export const StatusText: FC<{ data: TDynamicComponentsAppTypeMap['StatusText']; children?: any }> = ({
   data,
@@ -13,7 +13,18 @@ export const StatusText: FC<{ data: TDynamicComponentsAppTypeMap['StatusText']; 
   children,
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, value, criteria, valueToCompare, successText, errorText, ...props } = data
+  const {
+    id,
+    value,
+    criteriaSuccess,
+    criteriaError,
+    valueToCompareSuccess,
+    valueToCompareError,
+    successText,
+    errorText,
+    fallbackText,
+    ...props
+  } = data
 
   const { data: multiQueryData, isLoading: isMultiqueryLoading, isError, errors } = useMultiQuery()
   const partsOfUrl = usePartsOfUrl()
@@ -25,10 +36,9 @@ export const StatusText: FC<{ data: TDynamicComponentsAppTypeMap['StatusText']; 
 
   const successTextPrepared = parseAll({ text: successText, replaceValues, multiQueryData })
   const errorTextPrepared = parseAll({ text: errorText, replaceValues, multiQueryData })
+  const fallbackTextPrepared = parseAll({ text: fallbackText, replaceValues, multiQueryData })
 
   const valuePrepared = parseAll({ text: value, replaceValues, multiQueryData })
-
-  const result = criteria === 'equals' ? valueToCompare === valuePrepared : valueToCompare !== valuePrepared
 
   if (isMultiqueryLoading) {
     return <div>Loading multiquery</div>
@@ -44,9 +54,20 @@ export const StatusText: FC<{ data: TDynamicComponentsAppTypeMap['StatusText']; 
     )
   }
 
+  const { type, text } = getResult({
+    valuePrepared,
+    criteriaSuccess,
+    criteriaError,
+    valueToCompareSuccess,
+    valueToCompareError,
+    successText: successTextPrepared,
+    errorText: errorTextPrepared,
+    fallbackText: fallbackTextPrepared,
+  })
+
   return (
-    <Typography.Text type={result ? 'success' : 'danger'} {...props}>
-      {result ? successTextPrepared : errorTextPrepared}
+    <Typography.Text type={type} {...props}>
+      {text}
       {children}
     </Typography.Text>
   )

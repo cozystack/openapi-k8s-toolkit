@@ -52,10 +52,13 @@ export type TDynamicComponentsAppTypeMap = {
   StatusText: {
     id: number | string
     value: string
-    criteria: 'equals' | 'notEquals'
-    valueToCompare: unknown
+    criteriaSuccess: 'equals' | 'notEquals'
+    criteriaError: 'equals' | 'notEquals'
+    valueToCompareSuccess: unknown[]
+    valueToCompareError: unknown[]
     successText: string
     errorText: string
+    fallbackText: string
   } & Omit<TextProps, 'id' | 'children'>
   SidebarProvider: { id: number | string } & Omit<TManageableSidebarWithDataProviderProps, 'replaceValues'>
   EnrichedTable: {
