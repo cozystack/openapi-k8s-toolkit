@@ -126,6 +126,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       pathToNavigate={preparedProps.pathToNavigate}
       recordKeysForNavigation={preparedProps.recordKeysForNavigation}
       recordKeysForNavigationSecond={preparedProps.recordKeysForNavigationSecond}
+      recordKeysForNavigationThird={preparedProps.recordKeysForNavigationThird}
       additionalPrinterColumnsUndefinedValues={preparedProps.additionalPrinterColumnsUndefinedValues}
       additionalPrinterColumnsTrimLengths={preparedProps.additionalPrinterColumnsTrimLengths}
       additionalPrinterColumnsColWidths={preparedProps.additionalPrinterColumnsColWidths}

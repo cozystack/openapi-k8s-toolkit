@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
 import React, { FC } from 'react'
 import jp from 'jsonpath'
@@ -9,8 +10,8 @@ export const ArrayOfObjectsToKeyValues: FC<{
   data: TDynamicComponentsAppTypeMap['ArrayOfObjectsToKeyValues']
   children?: any
 }> = ({ data, children }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
     reqIndex,
     jsonPathToArray,

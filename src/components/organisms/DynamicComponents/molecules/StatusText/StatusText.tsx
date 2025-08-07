@@ -9,11 +9,10 @@ import { getResult } from './utils'
 
 export const StatusText: FC<{ data: TDynamicComponentsAppTypeMap['StatusText']; children?: any }> = ({
   data,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   children,
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
     value,
     criteriaSuccess,

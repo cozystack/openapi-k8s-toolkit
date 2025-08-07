@@ -21,6 +21,7 @@ export type TEnrichedTableProps = {
   pathToNavigate?: string
   recordKeysForNavigation?: string[]
   recordKeysForNavigationSecond?: string[]
+  recordKeysForNavigationThird?: string[]
   additionalPrinterColumnsUndefinedValues?: TAdditionalPrinterColumnsUndefinedValues
   additionalPrinterColumnsTrimLengths?: TAdditionalPrinterColumnsTrimLengths
   additionalPrinterColumnsColWidths?: TAdditionalPrinterColumnsColWidths
@@ -50,6 +51,7 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
   pathToNavigate,
   recordKeysForNavigation,
   recordKeysForNavigationSecond,
+  recordKeysForNavigationThird,
   additionalPrinterColumnsUndefinedValues,
   additionalPrinterColumnsTrimLengths,
   additionalPrinterColumnsColWidths,
@@ -146,15 +148,23 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
                   const recordValueRawSecond = recordKeysForNavigationSecond
                     ? get(record, recordKeysForNavigationSecond)
                     : 'no-second-record-keys'
+                  const recordValueRawThird = recordKeysForNavigationThird
+                    ? get(record, recordKeysForNavigationThird)
+                    : 'no-second-record-keys'
+
                   const recordValue =
                     typeof recordValueRaw === 'string' ? recordValueRaw : JSON.stringify(recordValueRaw)
                   const recordValueSecond =
                     typeof recordValueRawSecond === 'string'
                       ? recordValueRawSecond
                       : JSON.stringify(recordValueRawSecond)
+                  const recordValueThird =
+                    typeof recordValueRawThird === 'string' ? recordValueRawThird : JSON.stringify(recordValueRawThird)
+
                   const newPath = pathToNavigate
                     .replaceAll('~recordValue~', recordValue)
                     .replaceAll('~recordValueSecond~', recordValueSecond)
+                    .replaceAll('~recordValueThird~', recordValueThird)
                   navigate(newPath)
                 }
               },

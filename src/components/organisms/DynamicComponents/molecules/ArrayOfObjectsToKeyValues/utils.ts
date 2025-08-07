@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const unknownToString = (value: unknown): string => {
   if (!value) {
     return 'No value'
@@ -36,6 +38,7 @@ export const parseArrayOfAny = (value: any[]): { data?: Record<string, unknown>[
   try {
     flattenArrayOfUnknown = flattenOnce(value)
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.log(e)
     return { error: 'Error while flattening' }
   }
