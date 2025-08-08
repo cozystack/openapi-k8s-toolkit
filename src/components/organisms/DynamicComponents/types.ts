@@ -126,4 +126,11 @@ export type TDynamicComponentsAppTypeMap = {
     keyFieldStyle?: CSSProperties
     valueFieldStyle?: CSSProperties
   }
+  ItemCounter: {
+    id: number | string
+    reqIndex: string
+    jsonPathToArray: string
+    text: string
+    style?: CSSProperties
+  }
 }
