@@ -1,36 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-const flattenOnce = (arr: unknown[][]): unknown[] => arr.reduce<unknown[]>((acc, row) => [...acc, ...row], [])
+const isRecordStringOrNumber = (value: unknown): value is Record<string, string | number> => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false
+  }
 
-const isRecordArray = (val: unknown): val is Record<string, string | number>[] => {
-  return (
-    Array.isArray(val) &&
-    val.every(
-      item =>
-        typeof item === 'object' &&
-        item !== null &&
-        !Array.isArray(item) &&
-        Object.values(item).every(v => typeof v === 'string' || typeof v === 'number'),
-    )
-  )
+  for (const key in value) {
+    if (typeof key !== 'string') return false
+
+    const val = (value as Record<string, unknown>)[key]
+    if (typeof val !== 'string' && typeof val !== 'number') {
+      return false
+    }
+  }
+
+  return true
 }
 
-export const parseArrayOfAny = (value: any[]): { data?: Record<string, string | number>[]; error?: string } => {
+export const parseArrayOfAny = (value: any[]): { data?: Record<string, string | number>; error?: string } => {
   if (!Array.isArray(value)) {
     return { error: 'Value on jsonPath is not an array' }
   }
 
-  let flattenArrayOfUnknown: unknown[] = []
-  try {
-    flattenArrayOfUnknown = flattenOnce(value)
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log(e)
-    return { error: 'Error while flattening' }
-  }
-
-  if (isRecordArray(flattenArrayOfUnknown)) {
-    return { data: flattenArrayOfUnknown }
+  if (isRecordStringOrNumber(value[0])) {
+    return { data: value[0] }
   }
 
   return { error: 'Value on jsonPath is not a record array' }
