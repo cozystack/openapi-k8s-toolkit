@@ -139,4 +139,10 @@ export type TDynamicComponentsAppTypeMap = {
     pathToLabels: string[]
     selectProps?: SelectProps
   }
+  LabelsToSearchParams: {
+    id: number | string
+    reqIndex: string
+    pathToLabels: string[]
+    linkPrefix: string
+  } & Omit<LinkProps, 'id' | 'children' | 'href'>
 }
