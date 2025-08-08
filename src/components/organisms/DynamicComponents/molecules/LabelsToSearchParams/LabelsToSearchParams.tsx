@@ -2,10 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
 import React, { FC } from 'react'
-import _ from 'lodash'
+import jp from 'jsonpath'
 import { Typography } from 'antd'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
+import { parseArrayOfAny } from './utils'
 
 export const LabelsToSearchParams: FC<{
   data: TDynamicComponentsAppTypeMap['LabelsToSearchParams']
@@ -15,7 +16,7 @@ export const LabelsToSearchParams: FC<{
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
     reqIndex,
-    pathToLabels,
+    jsonPathToLabels,
     linkPrefix,
     ...linkProps
   } = data
@@ -35,7 +36,23 @@ export const LabelsToSearchParams: FC<{
     )
   }
 
-  const labelsRaw = _.get(multiQueryData[`req${reqIndex}`], pathToLabels) as Record<string, string | number>
+  const jsonRoot = multiQueryData[`req${reqIndex}`]
+
+  if (jsonRoot === undefined) {
+    return <div>No root for json path</div>
+  }
+
+  const anythingForNow = jp.query(jsonRoot, `$${jsonPathToLabels}`)
+
+  const { data: labelsRaw, error: errorArrayOfObjects } = parseArrayOfAny(anythingForNow)
+
+  if (!labelsRaw) {
+    if (errorArrayOfObjects) {
+      return <div>{errorArrayOfObjects}</div>
+    }
+    return <div>Not a valid data structure</div>
+  }
+
   const labels = Object.entries(labelsRaw)
     .map(([key, value]) => `${key}=${value}`)
     .join(',')
