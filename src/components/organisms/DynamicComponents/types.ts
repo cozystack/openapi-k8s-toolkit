@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react'
-import { CardProps, FlexProps, RowProps, ColProps, ButtonProps, TabsProps } from 'antd'
+import { CardProps, FlexProps, RowProps, ColProps, ButtonProps, TabsProps, SelectProps } from 'antd'
 import type { TextProps } from 'antd/es/typography/Text'
 import type { LinkProps } from 'antd/es/typography/Link'
 import { TContentCardProps, TSpacerProps } from 'components/atoms'
@@ -126,4 +126,23 @@ export type TDynamicComponentsAppTypeMap = {
     keyFieldStyle?: CSSProperties
     valueFieldStyle?: CSSProperties
   }
+  ItemCounter: {
+    id: number | string
+    reqIndex: string
+    jsonPathToArray: string
+    text: string
+    style?: CSSProperties
+  }
+  Labels: {
+    id: number | string
+    reqIndex: string
+    jsonPathToLabels: string
+    selectProps?: SelectProps
+  }
+  LabelsToSearchParams: {
+    id: number | string
+    reqIndex: string
+    jsonPathToLabels: string
+    linkPrefix: string
+  } & Omit<LinkProps, 'id' | 'children' | 'href'>
 }
