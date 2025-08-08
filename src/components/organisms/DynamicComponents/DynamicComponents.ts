@@ -26,6 +26,7 @@ import {
   VisibilityContainer,
   ArrayOfObjectsToKeyValues,
   ItemCounter,
+  Labels,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -56,4 +57,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   VisibilityContainer,
   ArrayOfObjectsToKeyValues,
   ItemCounter,
+  Labels,
 }
