@@ -10,9 +10,22 @@ type TEditModalProps = {
   close: () => void
   values?: Record<string, string | number>
   openNotification?: (msg: string) => void
+  modalTitle: string
+  modalDescriptionText?: string
+  inputLabel?: string
+  notificationSuccessText: string
 }
 
-export const EditModal: FC<TEditModalProps> = ({ open, close, values, openNotification }) => {
+export const EditModal: FC<TEditModalProps> = ({
+  open,
+  close,
+  values,
+  openNotification,
+  modalTitle,
+  modalDescriptionText,
+  inputLabel,
+  notificationSuccessText,
+}) => {
   const [error, setError] = useState<TRequestError | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -31,8 +44,9 @@ export const EditModal: FC<TEditModalProps> = ({ open, close, values, openNotifi
     form
       .validateFields()
       .then(() => {
+        console.log(labels)
         if (openNotification) {
-          openNotification('Labels updated')
+          openNotification(notificationSuccessText)
         }
       })
       .catch(() => console.log('Validating error'))
@@ -40,7 +54,7 @@ export const EditModal: FC<TEditModalProps> = ({ open, close, values, openNotifi
 
   return (
     <Modal
-      title="Manage Labels"
+      title={modalTitle}
       open={open}
       onOk={() => submit()}
       onCancel={() => {
@@ -55,12 +69,41 @@ export const EditModal: FC<TEditModalProps> = ({ open, close, values, openNotifi
       width={400}
       destroyOnHidden
     >
-      {error && <Alert type="error" message="Error while delete" description={error?.response?.data?.message} />}
-      Description text
+      {error && <Alert type="error" message="Error while submitting" description={error?.response?.data?.message} />}
+      {modalDescriptionText}
       <Form<{ labels: string[] }> form={form}>
-        <CustomSizeTitle>Labels</CustomSizeTitle>
-        <ResetedFormItem name="labels">
-          <Select mode="tags" placeholder="Select" filterOption={filterSelectOptions} allowClear />
+        {inputLabel && <CustomSizeTitle>{inputLabel}</CustomSizeTitle>}
+        <ResetedFormItem
+          name="labels"
+          hasFeedback
+          validateTrigger="onBlur"
+          rules={[
+            () => ({
+              validator(_, value) {
+                if (
+                  Array.isArray(value) &&
+                  value.some(str => {
+                    if (typeof str !== 'string') {
+                      return true
+                    }
+                    const splittedStr = str.split('=')
+                    if (splittedStr.length - 1 !== 1) {
+                      return true
+                    }
+                    if (splittedStr[1] !== undefined && splittedStr[1].length < 1) {
+                      return true
+                    }
+                    return false
+                  })
+                ) {
+                  return Promise.reject(new Error('Please enter key=value style'))
+                }
+                return Promise.resolve()
+              },
+            }),
+          ]}
+        >
+          <Select mode="tags" placeholder="Enter key=value" filterOption={filterSelectOptions} allowClear />
         </ResetedFormItem>
       </Form>
     </Modal>
