@@ -1,6 +1,6 @@
 {
   "name": "@prorobotech/openapi-k8s-toolkit",
-  "version": "0.0.1-alpha.90",
+  "version": "0.0.1-alpha.91",
   "description": "ProRobotech OpenAPI k8s tools",
   "main": "dist/openapi-k8s-toolkit.cjs.js",
   "module": "dist/openapi-k8s-toolkit.es.js",
@@ -13,9 +13,12 @@
     "url": "git+https://github.com/PRO-Robotech/openapi-k8s-toolkit.git"
   },
   "scripts": {
-    "dev": "cross-env BASEPREFIX=/toolkit vite --open --port 3002 --strictPort",
-    "build": "vite build && tsc && tsc-alias -p tsconfig.json",
-    "build:local": "vite build && tsc && tsc-alias -p tsconfig.json && yalc publish --replace",
+    "dev": "concurrently \"npm run watch:build\" \"npm run watch:yalc\"",
+    "watch:build": "chokidar \"src/**/*\" -c \"npm run build\" -d 2000",
+    "watch:yalc": "chokidar \"dist/**/*\" -c \"yalc push\" -d 2000",
+    "dev:open": "cross-env BASEPREFIX=/toolkit vite --open --port 3002 --strictPort",
+    "build": "vite build && tsc-alias -p tsconfig.json",
+    "build:local": "vite build && tsc-alias -p tsconfig.json && yalc publish --replace",
     "serve": "vite preview --port 3002 --strictPort",
     "preview": "vite preview --port 3002 --strictPort",
     "tsc": "tsc --project tsconfig.json",
@@ -73,6 +76,8 @@
     "@typescript-eslint/eslint-plugin": "8.6.0",
     "@vitejs/plugin-react-swc": "3.7.0",
     "antd": "5.26.4",
+    "chokidar-cli": "3.0.0",
+    "concurrently": "9.2.0",
     "eslint": "8.57.1",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-prettier": "9.0.0",

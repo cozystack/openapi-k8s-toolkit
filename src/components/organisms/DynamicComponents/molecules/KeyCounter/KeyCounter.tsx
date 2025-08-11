@@ -1,26 +1,24 @@
-/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
 import React, { FC } from 'react'
 import jp from 'jsonpath'
-import { Typography } from 'antd'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { parseAll } from '../utils'
-import { parseArrayOfAny } from './utils'
+import { getItemsInside } from './utils'
 
-export const LabelsToSearchParams: FC<{
-  data: TDynamicComponentsAppTypeMap['LabelsToSearchParams']
-  children?: any
-}> = ({ data, children }) => {
+export const KeyCounter: FC<{ data: TDynamicComponentsAppTypeMap['KeyCounter']; children?: any }> = ({
+  data,
+  children,
+}) => {
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
     reqIndex,
-    jsonPathToLabels,
-    linkPrefix,
-    ...linkProps
+    jsonPathToObj,
+    text,
+    style,
   } = data
 
   const { data: multiQueryData, isLoading: isMultiQueryLoading, isError: isMultiQueryErrors, errors } = useMultiQuery()
@@ -50,29 +48,22 @@ export const LabelsToSearchParams: FC<{
     return <div>No root for json path</div>
   }
 
-  const anythingForNow = jp.query(jsonRoot, `$${jsonPathToLabels}`)
+  const anythingForNow = jp.query(jsonRoot, `$${jsonPathToObj}`)
 
-  const { data: labelsRaw, error: errorArrayOfObjects } = parseArrayOfAny(anythingForNow)
+  const { counter, error: errorArrayOfObjects } = getItemsInside(anythingForNow)
 
-  if (!labelsRaw) {
-    if (errorArrayOfObjects) {
-      return <div>{errorArrayOfObjects}</div>
-    }
-    return <div>Not a valid data structure</div>
+  if (errorArrayOfObjects) {
+    return <div>{errorArrayOfObjects}</div>
   }
 
-  const labels = Object.entries(labelsRaw)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(',')
-  const labelsEncoded = encodeURIComponent(labels)
+  const parsedText = parseAll({ text, replaceValues, multiQueryData })
 
-  const linkPrefixPrepared = parseAll({ text: linkPrefix, replaceValues, multiQueryData })
+  const parsedTextWithCounter = parsedText.replace('~counter~', String(counter || 0))
 
-  const hrefPrepared = `${linkPrefixPrepared}?${labelsEncoded}`
   return (
-    <Typography.Link href={hrefPrepared} {...linkProps}>
-      {labels}
+    <span style={style}>
+      {parsedTextWithCounter}
       {children}
-    </Typography.Link>
+    </span>
   )
 }

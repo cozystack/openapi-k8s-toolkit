@@ -95,7 +95,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
             api.success({
               message: 'Updated successfully',
               description: 'Entry was updated',
-              placement: 'topRight',
+              placement: 'bottomRight',
             })
           }
         })
