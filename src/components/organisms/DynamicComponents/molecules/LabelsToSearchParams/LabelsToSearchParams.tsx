@@ -6,6 +6,8 @@ import jp from 'jsonpath'
 import { Typography } from 'antd'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
+import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
+import { parseAll } from '../utils'
 import { parseArrayOfAny } from './utils'
 
 export const LabelsToSearchParams: FC<{
@@ -22,6 +24,7 @@ export const LabelsToSearchParams: FC<{
   } = data
 
   const { data: multiQueryData, isLoading: isMultiQueryLoading, isError: isMultiQueryErrors, errors } = useMultiQuery()
+  const partsOfUrl = usePartsOfUrl()
 
   if (isMultiQueryLoading) {
     return <div>Loading...</div>
@@ -35,6 +38,11 @@ export const LabelsToSearchParams: FC<{
       </div>
     )
   }
+
+  const replaceValues = partsOfUrl.partsOfUrl.reduce<Record<string, string | undefined>>((acc, value, index) => {
+    acc[index.toString()] = value
+    return acc
+  }, {})
 
   const jsonRoot = multiQueryData[`req${reqIndex}`]
 
@@ -58,7 +66,9 @@ export const LabelsToSearchParams: FC<{
     .join(',')
   const labelsEncoded = encodeURIComponent(labels)
 
-  const hrefPrepared = `${linkPrefix}?${labelsEncoded}`
+  const linkPrefixPrepared = parseAll({ text: linkPrefix, replaceValues, multiQueryData })
+
+  const hrefPrepared = `${linkPrefixPrepared}?${labelsEncoded}`
   return (
     <Typography.Link href={hrefPrepared} {...linkProps}>
       {labels}
