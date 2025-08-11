@@ -45,11 +45,29 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
 
   const { data: labelsRaw, error: errorArrayOfObjects } = parseArrayOfAny(anythingForNow)
 
+  const EmptySelect = (
+    <UncontrolledSelect
+      mode="multiple"
+      {...restSelectProps}
+      value={[]}
+      options={[]}
+      open={false}
+      showSearch={false}
+      removeIcon={() => {
+        return null
+      }}
+      suffixIcon={null}
+      isCursorPointer
+    />
+  )
+
   if (!labelsRaw) {
     if (errorArrayOfObjects) {
-      return <div>{errorArrayOfObjects}</div>
+      // return <div>{errorArrayOfObjects}</div>
+      return EmptySelect
     }
-    return <div>Not a valid data structure</div>
+    // return <div>Not a valid data structure</div>
+    return EmptySelect
   }
 
   const labels = Object.entries(labelsRaw).map(([key, value]) => `${key}=${value}`)
