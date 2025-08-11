@@ -28,6 +28,7 @@ import {
   ItemCounter,
   Labels,
   LabelsToSearchParams,
+  KeyCounter,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -60,4 +61,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   ItemCounter,
   Labels,
   LabelsToSearchParams,
+  KeyCounter,
 }
