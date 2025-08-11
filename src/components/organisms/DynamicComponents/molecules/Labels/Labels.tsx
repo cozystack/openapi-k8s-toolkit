@@ -3,10 +3,11 @@
 /* eslint-disable react/no-array-index-key */
 import React, { FC } from 'react'
 import jp from 'jsonpath'
+import { Popover } from 'antd'
 import { UncontrolledSelect, CursorPointerTag } from 'components/atoms'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
-import { parseArrayOfAny } from './utils'
+import { parseArrayOfAny, truncate } from './utils'
 
 export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children?: any }> = ({ data, children }) => {
   const {
@@ -16,6 +17,8 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     jsonPathToLabels,
     selectProps,
   } = data
+
+  const { maxTagTextLength, ...restSelectProps } = selectProps || { maxTagTextLength: undefined }
 
   const { data: multiQueryData, isLoading: isMultiQueryLoading, isError: isMultiQueryErrors, errors } = useMultiQuery()
 
@@ -56,7 +59,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
       <UncontrolledSelect
         mode="multiple"
         // maxTagCount="responsive"
-        {...selectProps}
+        {...restSelectProps}
         value={labels.map(el => ({ label: el, value: el }))}
         options={labels.map(el => ({ label: el, value: el }))}
         open={false}
@@ -66,13 +69,15 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         }}
         suffixIcon={null}
         tagRender={({ label }) => (
-          <CursorPointerTag
-            onClick={e => {
-              e.stopPropagation()
-            }}
-          >
-            {label}
-          </CursorPointerTag>
+          <Popover content={label}>
+            <CursorPointerTag
+              onClick={e => {
+                e.stopPropagation()
+              }}
+            >
+              {typeof label === 'string' ? truncate(label, maxTagTextLength) : 'Not a string value'}
+            </CursorPointerTag>
+          </Popover>
         )}
         isCursorPointer
       />
