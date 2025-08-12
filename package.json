@@ -123,8 +123,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "MIT",
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "4.46.2"
-  }
+  "license": "MIT"
 }
