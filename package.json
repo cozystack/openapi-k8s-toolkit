@@ -17,8 +17,8 @@
     "watch:build": "chokidar \"src/**/*\" -c \"npm run build\" -d 5000",
     "watch:yalc": "chokidar \"dist/**/*\" -c \"yalc push\" -d 5000",
     "dev:open": "cross-env BASEPREFIX=/toolkit vite --open --port 3002 --strictPort",
-    "build": "vite build && tsc && tsc-alias -p tsconfig.json",
-    "build:local": "vite build && tsc && tsc-alias -p tsconfig.json && yalc publish --replace",
+    "build": "vite build && tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+    "build:local": "vite build && tsc -p tsconfig.json && tsc-alias -p tsconfig.json && yalc publish --replace",
     "serve": "vite preview --port 3002 --strictPort",
     "preview": "vite preview --port 3002 --strictPort",
     "tsc": "tsc --project tsconfig.json",
@@ -27,7 +27,10 @@
     "lint": "npm run lint:js && npm run lint:css && npm run tsc",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "storybook:serve": "serve storybook-static"
   },
   "peerDependencies": {
     "@ant-design/icons": "5.6.0",
@@ -60,6 +63,7 @@
   },
   "devDependencies": {
     "@ant-design/icons": "5.6.0",
+    "@storybook/react-vite": "9.1.2",
     "@stylelint/postcss-css-in-js": "0.38.0",
     "@tanstack/react-query": "5.62.2",
     "@tanstack/react-query-devtools": "5.62.2",
@@ -94,6 +98,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.25.1",
+    "serve": "14.2.4",
     "stylelint": "16.14.1",
     "stylelint-config-standard": "37.0.0",
     "ts-jest": "29.3.2",

@@ -1,0 +1,4 @@
+*.stories.*
+*.stories.*
+**/*.mdx
+.storybook

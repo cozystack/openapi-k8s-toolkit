@@ -33,5 +33,6 @@
     "sourceMap": true,
     "emitDeclarationOnly": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [".storybook", "**/*.stories.*"]
 }
