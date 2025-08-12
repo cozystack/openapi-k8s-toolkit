@@ -26,7 +26,7 @@ jobs:
           cache: 'npm' # 'yarn' or 'pnpm' if you use those
 
       - run: npm install
-      - run: npm run build-storybook
+      - run: npm run storybook:build
 
       - uses: actions/upload-pages-artifact@v3
         with:
