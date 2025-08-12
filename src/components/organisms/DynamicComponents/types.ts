@@ -153,6 +153,7 @@ export type TDynamicComponentsAppTypeMap = {
     modalDescriptionText?: string
     inputLabel?: string
     containerStyle?: CSSProperties
+    maxEditTagTextLength?: number
   }
   LabelsToSearchParams: {
     id: number | string

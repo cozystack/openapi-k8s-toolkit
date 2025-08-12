@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect } from 'react'
-import { Modal, Form, Alert, Select } from 'antd'
+import { Modal, Form, Alert, Tag, Popover } from 'antd'
 import { TRequestError } from 'localTypes/api'
 import { ResetedFormItem, CustomSizeTitle } from 'components/molecules/BlackholeForm/atoms'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
+import { CustomSelect, Spacer } from 'components/atoms'
+import { truncate } from '../../utils'
 
 type TEditModalProps = {
   open: boolean
@@ -13,6 +15,7 @@ type TEditModalProps = {
   modalTitle: string
   modalDescriptionText?: string
   inputLabel?: string
+  maxEditTagTextLength?: number
 }
 
 export const EditModal: FC<TEditModalProps> = ({
@@ -23,6 +26,7 @@ export const EditModal: FC<TEditModalProps> = ({
   modalTitle,
   modalDescriptionText,
   inputLabel,
+  maxEditTagTextLength,
 }) => {
   const [error, setError] = useState<TRequestError | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -71,13 +75,20 @@ export const EditModal: FC<TEditModalProps> = ({
       okText="Save"
       confirmLoading={isLoading}
       maskClosable={false}
-      width="60vw"
+      width={520}
       destroyOnHidden
+      centered
     >
       {error && <Alert type="error" message="Error while submitting" description={error?.response?.data?.message} />}
-      {modalDescriptionText}
+      {modalDescriptionText && (
+        <>
+          <div>{modalDescriptionText}</div>
+          <Spacer $space={10} $samespace />
+        </>
+      )}
       <Form<{ labels: string[] }> form={form}>
-        {inputLabel && <CustomSizeTitle>{inputLabel}</CustomSizeTitle>}
+        {inputLabel && <CustomSizeTitle $designNewLayout>{inputLabel}</CustomSizeTitle>}
+        <Spacer $space={10} $samespace />
         <ResetedFormItem
           name="labels"
           hasFeedback
@@ -85,7 +96,10 @@ export const EditModal: FC<TEditModalProps> = ({
           rules={[
             () => ({
               validator(_, value) {
-                if (Array.isArray(value) && value.every(str => typeof str === 'string' && str.includes('='))) {
+                if (
+                  Array.isArray(value) &&
+                  value.every(str => typeof str === 'string' && str.includes('=') && !str.startsWith('='))
+                ) {
                   return Promise.resolve()
                 }
                 return Promise.reject(new Error('Please enter key=value style'))
@@ -93,13 +107,28 @@ export const EditModal: FC<TEditModalProps> = ({
             }),
           ]}
         >
-          <Select
+          <CustomSelect
             mode="tags"
             placeholder="Enter key=value"
             filterOption={filterSelectOptions}
             allowClear
             tokenSeparators={[' ']}
             open={false}
+            tagRender={({ label, closable, onClose }) => {
+              return (
+                <Popover content={label}>
+                  <Tag
+                    closable={closable}
+                    onClose={onClose}
+                    onClick={e => {
+                      e.stopPropagation()
+                    }}
+                  >
+                    {typeof label === 'string' ? truncate(label, maxEditTagTextLength) : 'Not a string value'}
+                  </Tag>
+                </Popover>
+              )
+            }}
           />
         </ResetedFormItem>
       </Form>

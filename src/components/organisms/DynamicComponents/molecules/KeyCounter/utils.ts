@@ -6,7 +6,8 @@ export const getItemsInside = (value: any[]): { counter?: number; error?: string
   }
 
   if (typeof value[0] !== 'object' || value[0] === null) {
-    return { error: 'Value[0] is not an object' }
+    return { counter: 0 }
+    // return { error: 'Value[0] is not an object' }
   }
 
   return { counter: Object.keys(value[0]).length }
