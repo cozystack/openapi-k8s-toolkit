@@ -25,6 +25,8 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     modalDescriptionText,
     inputLabel,
     containerStyle,
+    maxEditTagTextLength,
+    allowClearEditSelect,
   } = data
 
   const [api, contextHolder] = notification.useNotification()
@@ -123,6 +125,8 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         modalTitle={modalTitlePrepared}
         modalDescriptionText={modalDescriptionTextPrepared}
         inputLabel={inputLabelPrepared}
+        maxEditTagTextLength={maxEditTagTextLength}
+        allowClearEditSelect={allowClearEditSelect}
       />
     </div>
   )
@@ -186,6 +190,8 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         modalTitle={modalTitlePrepared}
         modalDescriptionText={modalDescriptionTextPrepared}
         inputLabel={inputLabelPrepared}
+        maxEditTagTextLength={maxEditTagTextLength}
+        allowClearEditSelect={allowClearEditSelect}
       />
     </div>
   )
