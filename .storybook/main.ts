@@ -5,6 +5,13 @@ import path from 'path'
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(ts|tsx|js|jsx)'],
   addons: ['@storybook/addon-essentials', '@storybook/addon-interactions', '@storybook/addon-a11y'],
+  core: {
+    builder: {
+      name: '@storybook/builder-vite',
+      // 👇 Point to a non-existent file to prevent Storybook from auto-loading your root vite.config
+      options: { viteConfigPath: '../__ignore_app_vite_config__.js' },
+    },
+  },
   framework: {
     name: '@storybook/react-vite',
     options: {},
