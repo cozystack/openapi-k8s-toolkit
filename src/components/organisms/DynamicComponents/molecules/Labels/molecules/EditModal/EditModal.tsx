@@ -9,22 +9,20 @@ type TEditModalProps = {
   open: boolean
   close: () => void
   values?: Record<string, string | number>
-  openNotification?: (msg: string) => void
+  openNotificationSuccess?: () => void
   modalTitle: string
   modalDescriptionText?: string
   inputLabel?: string
-  notificationSuccessText: string
 }
 
 export const EditModal: FC<TEditModalProps> = ({
   open,
   close,
   values,
-  openNotification,
+  openNotificationSuccess,
   modalTitle,
   modalDescriptionText,
   inputLabel,
-  notificationSuccessText,
 }) => {
   const [error, setError] = useState<TRequestError | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -44,9 +42,16 @@ export const EditModal: FC<TEditModalProps> = ({
     form
       .validateFields()
       .then(() => {
-        console.log(labels)
-        if (openNotification) {
-          openNotification(notificationSuccessText)
+        const result: Record<string, string> = {}
+        labels.forEach(label => {
+          const [key, value] = label.split('=')
+          result[key] = value || ''
+        })
+        console.log(JSON.stringify(result))
+        // setIsLoading(false)
+        // setError(undefined)
+        if (openNotificationSuccess) {
+          openNotificationSuccess()
         }
       })
       .catch(() => console.log('Validating error'))
@@ -66,7 +71,7 @@ export const EditModal: FC<TEditModalProps> = ({
       okText="Save"
       confirmLoading={isLoading}
       maskClosable={false}
-      width={400}
+      width="60vw"
       destroyOnHidden
     >
       {error && <Alert type="error" message="Error while submitting" description={error?.response?.data?.message} />}
@@ -80,30 +85,22 @@ export const EditModal: FC<TEditModalProps> = ({
           rules={[
             () => ({
               validator(_, value) {
-                if (
-                  Array.isArray(value) &&
-                  value.some(str => {
-                    if (typeof str !== 'string') {
-                      return true
-                    }
-                    const splittedStr = str.split('=')
-                    if (splittedStr.length - 1 !== 1) {
-                      return true
-                    }
-                    if (splittedStr[1] !== undefined && splittedStr[1].length < 1) {
-                      return true
-                    }
-                    return false
-                  })
-                ) {
-                  return Promise.reject(new Error('Please enter key=value style'))
+                if (Array.isArray(value) && value.every(str => typeof str === 'string' && str.includes('='))) {
+                  return Promise.resolve()
                 }
-                return Promise.resolve()
+                return Promise.reject(new Error('Please enter key=value style'))
               },
             }),
           ]}
         >
-          <Select mode="tags" placeholder="Enter key=value" filterOption={filterSelectOptions} allowClear />
+          <Select
+            mode="tags"
+            placeholder="Enter key=value"
+            filterOption={filterSelectOptions}
+            allowClear
+            tokenSeparators={[' ']}
+            open={false}
+          />
         </ResetedFormItem>
       </Form>
     </Modal>

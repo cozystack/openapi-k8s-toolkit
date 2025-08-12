@@ -147,6 +147,12 @@ export type TDynamicComponentsAppTypeMap = {
     reqIndex: string
     jsonPathToLabels: string
     selectProps?: SelectProps
+    notificationSuccessMessage: string
+    notificationSuccessMessageDescription: string
+    modalTitle: string
+    modalDescriptionText?: string
+    inputLabel?: string
+    containerStyle?: CSSProperties
   }
   LabelsToSearchParams: {
     id: number | string

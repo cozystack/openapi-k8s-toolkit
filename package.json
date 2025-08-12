@@ -14,8 +14,8 @@
   },
   "scripts": {
     "dev": "concurrently \"npm run watch:build\" \"npm run watch:yalc\"",
-    "watch:build": "chokidar \"src/**/*\" -c \"npm run build\" -d 2000",
-    "watch:yalc": "chokidar \"dist/**/*\" -c \"yalc push\" -d 2000",
+    "watch:build": "chokidar \"src/**/*\" -c \"npm run build\" -d 5000",
+    "watch:yalc": "chokidar \"dist/**/*\" -c \"yalc push\" -d 5000",
     "dev:open": "cross-env BASEPREFIX=/toolkit vite --open --port 3002 --strictPort",
     "build": "vite build && tsc && tsc-alias -p tsconfig.json",
     "build:local": "vite build && tsc && tsc-alias -p tsconfig.json && yalc publish --replace",

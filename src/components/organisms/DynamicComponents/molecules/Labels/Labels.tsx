@@ -1,12 +1,15 @@
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
-import { Popover } from 'antd'
-import { UncontrolledSelect, CursorPointerTag } from 'components/atoms'
+import { Popover, notification, Flex, Button } from 'antd'
+import { UncontrolledSelect, CursorPointerTag, EditIcon } from 'components/atoms'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
+import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
+import { parseAll } from '../utils'
+import { EditModal } from './molecules'
 import { parseArrayOfAny, truncate } from './utils'
 
 export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children?: any }> = ({ data, children }) => {
@@ -16,11 +19,21 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     reqIndex,
     jsonPathToLabels,
     selectProps,
+    notificationSuccessMessage,
+    notificationSuccessMessageDescription,
+    modalTitle,
+    modalDescriptionText,
+    inputLabel,
+    containerStyle,
   } = data
+
+  const [api, contextHolder] = notification.useNotification()
+  const [open, setOpen] = useState<boolean>(false)
 
   const { maxTagTextLength, ...restSelectProps } = selectProps || { maxTagTextLength: undefined }
 
   const { data: multiQueryData, isLoading: isMultiQueryLoading, isError: isMultiQueryErrors, errors } = useMultiQuery()
+  const partsOfUrl = usePartsOfUrl()
 
   if (isMultiQueryLoading) {
     return <div>Loading...</div>
@@ -35,6 +48,11 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     )
   }
 
+  const replaceValues = partsOfUrl.partsOfUrl.reduce<Record<string, string | undefined>>((acc, value, index) => {
+    acc[index.toString()] = value
+    return acc
+  }, {})
+
   const jsonRoot = multiQueryData[`req${reqIndex}`]
 
   if (jsonRoot === undefined) {
@@ -45,20 +63,68 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
 
   const { data: labelsRaw, error: errorArrayOfObjects } = parseArrayOfAny(anythingForNow)
 
+  const notificationSuccessMessagePrepared = parseAll({
+    text: notificationSuccessMessage,
+    replaceValues,
+    multiQueryData,
+  })
+  const notificationSuccessMessageDescriptionPrepared = parseAll({
+    text: notificationSuccessMessageDescription,
+    replaceValues,
+    multiQueryData,
+  })
+  const modalTitlePrepared = parseAll({ text: modalTitle, replaceValues, multiQueryData })
+  const modalDescriptionTextPrepared = modalDescriptionText
+    ? parseAll({ text: modalDescriptionText, replaceValues, multiQueryData })
+    : undefined
+  const inputLabelPrepared = inputLabel ? parseAll({ text: inputLabel, replaceValues, multiQueryData }) : undefined
+
+  const openNotificationSuccess = () => {
+    api.success({
+      message: notificationSuccessMessagePrepared,
+      description: notificationSuccessMessageDescriptionPrepared,
+      placement: 'bottomRight',
+    })
+  }
+
   const EmptySelect = (
-    <UncontrolledSelect
-      mode="multiple"
-      {...restSelectProps}
-      value={[]}
-      options={[]}
-      open={false}
-      showSearch={false}
-      removeIcon={() => {
-        return null
-      }}
-      suffixIcon={null}
-      isCursorPointer
-    />
+    <div style={containerStyle}>
+      <Flex justify="flex-end">
+        <Button
+          type="text"
+          size="small"
+          onClick={e => {
+            e.stopPropagation()
+            setOpen(true)
+          }}
+          icon={<EditIcon />}
+        />
+      </Flex>
+      <UncontrolledSelect
+        mode="multiple"
+        {...restSelectProps}
+        value={[]}
+        options={[]}
+        open={false}
+        showSearch={false}
+        removeIcon={() => {
+          return null
+        }}
+        suffixIcon={null}
+        isCursorPointer
+      />
+      {children}
+      {contextHolder}
+      <EditModal
+        open={open}
+        close={() => setOpen(false)}
+        values={labelsRaw}
+        openNotificationSuccess={openNotificationSuccess}
+        modalTitle={modalTitlePrepared}
+        modalDescriptionText={modalDescriptionTextPrepared}
+        inputLabel={inputLabelPrepared}
+      />
+    </div>
   )
 
   if (!labelsRaw) {
@@ -73,7 +139,18 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
   const labels = Object.entries(labelsRaw).map(([key, value]) => `${key}=${value}`)
 
   return (
-    <>
+    <div style={containerStyle}>
+      <Flex justify="flex-end">
+        <Button
+          type="text"
+          size="small"
+          onClick={e => {
+            e.stopPropagation()
+            setOpen(true)
+          }}
+          icon={<EditIcon />}
+        />
+      </Flex>
       <UncontrolledSelect
         mode="multiple"
         // maxTagCount="responsive"
@@ -97,9 +174,19 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
             </CursorPointerTag>
           </Popover>
         )}
-        isCursorPointer
+        // isCursorPointer
       />
       {children}
-    </>
+      {contextHolder}
+      <EditModal
+        open={open}
+        close={() => setOpen(false)}
+        values={labelsRaw}
+        openNotificationSuccess={openNotificationSuccess}
+        modalTitle={modalTitlePrepared}
+        modalDescriptionText={modalDescriptionTextPrepared}
+        inputLabel={inputLabelPrepared}
+      />
+    </div>
   )
 }
