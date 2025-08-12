@@ -86,7 +86,7 @@ export const prepare = ({
             permissions: dataForControls.permissions,
           }
           return {
-            key: el.metadata.name,
+            key: `${el.metadata.name}${el.metadata.namespace ? `-${el.metadata.namespace}` : ''}`,
             ...el,
             internalDataForControls,
           }
@@ -136,7 +136,7 @@ export const prepare = ({
             permissions: dataForControls.permissions,
           }
           return {
-            key: el.metadata.name,
+            key: `${el.metadata.name}${el.metadata.namespace ? `-${el.metadata.namespace}` : ''}`,
             ...el.spec,
             internalDataForControls,
           }
