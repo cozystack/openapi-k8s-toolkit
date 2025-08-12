@@ -16,6 +16,7 @@ type TEditModalProps = {
   modalDescriptionText?: string
   inputLabel?: string
   maxEditTagTextLength?: number
+  allowClearEditSelect?: boolean
 }
 
 export const EditModal: FC<TEditModalProps> = ({
@@ -27,6 +28,7 @@ export const EditModal: FC<TEditModalProps> = ({
   modalDescriptionText,
   inputLabel,
   maxEditTagTextLength,
+  allowClearEditSelect,
 }) => {
   const [error, setError] = useState<TRequestError | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -111,7 +113,7 @@ export const EditModal: FC<TEditModalProps> = ({
             mode="tags"
             placeholder="Enter key=value"
             filterOption={filterSelectOptions}
-            allowClear
+            allowClear={allowClearEditSelect}
             tokenSeparators={[' ']}
             open={false}
             tagRender={({ label, closable, onClose }) => {
