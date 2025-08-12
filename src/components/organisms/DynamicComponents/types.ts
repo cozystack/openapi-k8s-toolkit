@@ -131,6 +131,7 @@ export type TDynamicComponentsAppTypeMap = {
     reqIndex: string
     jsonPathToArray: string
     text: string
+    errorText: string
     style?: CSSProperties
   }
   KeyCounter: {
@@ -138,6 +139,7 @@ export type TDynamicComponentsAppTypeMap = {
     reqIndex: string
     jsonPathToObj: string
     text: string
+    errorText: string
     style?: CSSProperties
   }
   Labels: {

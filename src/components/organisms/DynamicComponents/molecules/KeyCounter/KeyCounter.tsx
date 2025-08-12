@@ -18,6 +18,7 @@ export const KeyCounter: FC<{ data: TDynamicComponentsAppTypeMap['KeyCounter']; 
     reqIndex,
     jsonPathToObj,
     text,
+    errorText,
     style,
   } = data
 
@@ -45,7 +46,8 @@ export const KeyCounter: FC<{ data: TDynamicComponentsAppTypeMap['KeyCounter']; 
   const jsonRoot = multiQueryData[`req${reqIndex}`]
 
   if (jsonRoot === undefined) {
-    return <div>No root for json path</div>
+    console.log('Key Counter: ${id}: No root for json path')
+    return <span style={style}>{errorText}</span>
   }
 
   const anythingForNow = jp.query(jsonRoot, `$${jsonPathToObj}`)
@@ -53,7 +55,8 @@ export const KeyCounter: FC<{ data: TDynamicComponentsAppTypeMap['KeyCounter']; 
   const { counter, error: errorArrayOfObjects } = getItemsInside(anythingForNow)
 
   if (errorArrayOfObjects) {
-    return <div>{errorArrayOfObjects}</div>
+    console.log(`Key Counter: ${id}: ${errorArrayOfObjects}`)
+    return <span style={style}>{errorText}</span>
   }
 
   const parsedText = parseAll({ text, replaceValues, multiQueryData })
