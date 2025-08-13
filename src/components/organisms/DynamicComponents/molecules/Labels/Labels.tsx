@@ -19,6 +19,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     reqIndex,
     jsonPathToLabels,
     selectProps,
+    readOnly,
     notificationSuccessMessage,
     notificationSuccessMessageDescription,
     modalTitle,
@@ -27,6 +28,9 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     containerStyle,
     maxEditTagTextLength,
     allowClearEditSelect,
+    endpoint,
+    pathToValue,
+    editModalWidth,
   } = data
 
   const [api, contextHolder] = notification.useNotification()
@@ -65,21 +69,31 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
 
   const { data: labelsRaw, error: errorArrayOfObjects } = parseArrayOfAny(anythingForNow)
 
-  const notificationSuccessMessagePrepared = parseAll({
-    text: notificationSuccessMessage,
-    replaceValues,
-    multiQueryData,
-  })
-  const notificationSuccessMessageDescriptionPrepared = parseAll({
-    text: notificationSuccessMessageDescription,
-    replaceValues,
-    multiQueryData,
-  })
-  const modalTitlePrepared = parseAll({ text: modalTitle, replaceValues, multiQueryData })
+  const notificationSuccessMessagePrepared = notificationSuccessMessage
+    ? parseAll({
+        text: notificationSuccessMessage,
+        replaceValues,
+        multiQueryData,
+      })
+    : 'Success'
+  const notificationSuccessMessageDescriptionPrepared = notificationSuccessMessageDescription
+    ? parseAll({
+        text: notificationSuccessMessageDescription,
+        replaceValues,
+        multiQueryData,
+      })
+    : 'Success'
+  const modalTitlePrepared = modalTitle ? parseAll({ text: modalTitle, replaceValues, multiQueryData }) : 'Edit'
   const modalDescriptionTextPrepared = modalDescriptionText
     ? parseAll({ text: modalDescriptionText, replaceValues, multiQueryData })
     : undefined
   const inputLabelPrepared = inputLabel ? parseAll({ text: inputLabel, replaceValues, multiQueryData }) : undefined
+  const endpointPrepared = endpoint
+    ? parseAll({ text: endpoint, replaceValues, multiQueryData })
+    : 'no-endpoint-provided'
+  const pathToValuePrepared = pathToValue
+    ? parseAll({ text: pathToValue, replaceValues, multiQueryData })
+    : 'no-pathToValue-provided'
 
   const openNotificationSuccess = () => {
     api.success({
@@ -91,17 +105,19 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
 
   const EmptySelect = (
     <div style={containerStyle}>
-      <Flex justify="flex-end">
-        <Button
-          type="text"
-          size="small"
-          onClick={e => {
-            e.stopPropagation()
-            setOpen(true)
-          }}
-          icon={<EditIcon />}
-        />
-      </Flex>
+      {!readOnly && (
+        <Flex justify="flex-end">
+          <Button
+            type="text"
+            size="small"
+            onClick={e => {
+              e.stopPropagation()
+              setOpen(true)
+            }}
+            icon={<EditIcon />}
+          />
+        </Flex>
+      )}
       <UncontrolledSelect
         mode="multiple"
         {...restSelectProps}
@@ -127,6 +143,9 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         inputLabel={inputLabelPrepared}
         maxEditTagTextLength={maxEditTagTextLength}
         allowClearEditSelect={allowClearEditSelect}
+        endpoint={endpointPrepared}
+        pathToValue={pathToValuePrepared}
+        editModalWidth={editModalWidth}
       />
     </div>
   )
@@ -144,17 +163,19 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
 
   return (
     <div style={containerStyle}>
-      <Flex justify="flex-end">
-        <Button
-          type="text"
-          size="small"
-          onClick={e => {
-            e.stopPropagation()
-            setOpen(true)
-          }}
-          icon={<EditIcon />}
-        />
-      </Flex>
+      {!readOnly && (
+        <Flex justify="flex-end">
+          <Button
+            type="text"
+            size="small"
+            onClick={e => {
+              e.stopPropagation()
+              setOpen(true)
+            }}
+            icon={<EditIcon />}
+          />
+        </Flex>
+      )}
       <UncontrolledSelect
         mode="multiple"
         // maxTagCount="responsive"
@@ -192,6 +213,9 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         inputLabel={inputLabelPrepared}
         maxEditTagTextLength={maxEditTagTextLength}
         allowClearEditSelect={allowClearEditSelect}
+        endpoint={endpointPrepared}
+        pathToValue={pathToValuePrepared}
+        editModalWidth={editModalWidth}
       />
     </div>
   )
