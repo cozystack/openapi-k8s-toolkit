@@ -31,6 +31,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     endpoint,
     pathToValue,
     editModalWidth,
+    paddingContainerEnd,
   } = data
 
   const [api, contextHolder] = notification.useNotification()
@@ -146,6 +147,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         endpoint={endpointPrepared}
         pathToValue={pathToValuePrepared}
         editModalWidth={editModalWidth}
+        paddingContainerEnd={paddingContainerEnd}
       />
     </div>
   )
@@ -216,6 +218,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         endpoint={endpointPrepared}
         pathToValue={pathToValuePrepared}
         editModalWidth={editModalWidth}
+        paddingContainerEnd={paddingContainerEnd}
       />
     </div>
   )

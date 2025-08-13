@@ -158,7 +158,8 @@ export type TDynamicComponentsAppTypeMap = {
     allowClearEditSelect?: boolean
     endpoint?: string
     pathToValue?: string
-    editModalWidth?: number
+    editModalWidth?: number | string
+    paddingContainerEnd?: string
   }
   LabelsToSearchParams: {
     id: number | string

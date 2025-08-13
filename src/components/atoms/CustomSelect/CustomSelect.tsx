@@ -2,6 +2,12 @@ import React, { FC } from 'react'
 import { SelectProps } from 'antd'
 import { Styled } from './styled'
 
-export const CustomSelect: FC<SelectProps> = props => {
-  return <Styled.CustomSelect {...props} />
+type TCustomSelectProps = SelectProps & {
+  paddingContainerEnd?: string
+}
+
+export const CustomSelect: FC<TCustomSelectProps> = props => {
+  const { paddingContainerEnd, ...rest } = props
+
+  return <Styled.CustomSelect $paddingContainerEnd={paddingContainerEnd} {...rest} />
 }
