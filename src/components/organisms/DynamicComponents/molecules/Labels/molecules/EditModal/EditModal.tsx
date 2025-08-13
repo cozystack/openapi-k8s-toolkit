@@ -1,11 +1,13 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect } from 'react'
 import { Modal, Form, Alert, Tag, Popover } from 'antd'
+import { useQueryClient } from '@tanstack/react-query'
 import { TRequestError } from 'localTypes/api'
 import { ResetedFormItem, CustomSizeTitle } from 'components/molecules/BlackholeForm/atoms'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { CustomSelect, Spacer } from 'components/atoms'
 import { truncate } from '../../utils'
+import { patchEntryWithReplaceOp } from 'api/forms'
 
 type TEditModalProps = {
   open: boolean
@@ -17,6 +19,9 @@ type TEditModalProps = {
   inputLabel?: string
   maxEditTagTextLength?: number
   allowClearEditSelect?: boolean
+  endpoint: string
+  pathToValue: string
+  editModalWidth?: number
 }
 
 export const EditModal: FC<TEditModalProps> = ({
@@ -29,7 +34,12 @@ export const EditModal: FC<TEditModalProps> = ({
   inputLabel,
   maxEditTagTextLength,
   allowClearEditSelect,
+  endpoint,
+  pathToValue,
+  editModalWidth,
 }) => {
+  const queryClient = useQueryClient()
+
   const [error, setError] = useState<TRequestError | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -54,11 +64,22 @@ export const EditModal: FC<TEditModalProps> = ({
           result[key] = value || ''
         })
         console.log(JSON.stringify(result))
-        // setIsLoading(false)
-        // setError(undefined)
-        if (openNotificationSuccess) {
-          openNotificationSuccess()
-        }
+        setIsLoading(true)
+        setError(undefined)
+        patchEntryWithReplaceOp({ endpoint, pathToValue, body: result })
+          .then(() => {
+            queryClient.invalidateQueries({ queryKey: ['multi'] })
+            if (openNotificationSuccess) {
+              openNotificationSuccess()
+            }
+            setIsLoading(false)
+            setError(undefined)
+            close()
+          })
+          .catch(error => {
+            setIsLoading(false)
+            setError(error)
+          })
       })
       .catch(() => console.log('Validating error'))
   }
@@ -77,7 +98,7 @@ export const EditModal: FC<TEditModalProps> = ({
       okText="Save"
       confirmLoading={isLoading}
       maskClosable={false}
-      width={520}
+      width={editModalWidth || 520}
       destroyOnHidden
       centered
     >

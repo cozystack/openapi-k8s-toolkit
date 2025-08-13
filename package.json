@@ -1,6 +1,6 @@
 {
   "name": "@prorobotech/openapi-k8s-toolkit",
-  "version": "0.0.1-alpha.95",
+  "version": "0.0.1-alpha.96",
   "description": "ProRobotech OpenAPI k8s tools",
   "main": "dist/openapi-k8s-toolkit.cjs.js",
   "module": "dist/openapi-k8s-toolkit.es.js",
@@ -18,7 +18,7 @@
     "watch:yalc": "chokidar \"dist/**/*\" -c \"yalc push\" -d 5000",
     "dev:open": "cross-env BASEPREFIX=/toolkit vite --open --port 3002 --strictPort",
     "build": "vite build && tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
-    "build:local": "vite build && tsc -p tsconfig.json && tsc-alias -p tsconfig.json && yalc publish --replace",
+    "build:local": "vite build && tsc -p tsconfig.json && tsc-alias -p tsconfig.json && yalc publish --replace && yalc push",
     "serve": "vite preview --port 3002 --strictPort",
     "preview": "vite preview --port 3002 --strictPort",
     "tsc": "tsc --project tsconfig.json",

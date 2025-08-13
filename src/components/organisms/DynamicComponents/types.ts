@@ -147,14 +147,18 @@ export type TDynamicComponentsAppTypeMap = {
     reqIndex: string
     jsonPathToLabels: string
     selectProps?: SelectProps
-    notificationSuccessMessage: string
-    notificationSuccessMessageDescription: string
-    modalTitle: string
+    readOnly?: true
+    notificationSuccessMessage?: string
+    notificationSuccessMessageDescription?: string
+    modalTitle?: string
     modalDescriptionText?: string
     inputLabel?: string
     containerStyle?: CSSProperties
     maxEditTagTextLength?: number
     allowClearEditSelect?: boolean
+    endpoint?: string
+    pathToValue?: string
+    editModalWidth?: number
   }
   LabelsToSearchParams: {
     id: number | string
