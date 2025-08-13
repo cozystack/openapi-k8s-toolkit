@@ -1,13 +1,18 @@
 import styled from 'styled-components'
 import { Select } from 'antd'
 
-const CustomSelect = styled(Select)`
+type TCustomSelectProps = {
+  $paddingContainerEnd?: string
+}
+
+const CustomSelect = styled(Select)<TCustomSelectProps>`
   width: 100%;
   margin: 0;
   padding: 4px;
 
-  && .ant-select-selector {
+  &&& .ant-select-selector {
     background: none;
+    padding-inline-end: ${({ $paddingContainerEnd }) => $paddingContainerEnd || '12px'} !important;
   }
 
   && .ant-select-selector,

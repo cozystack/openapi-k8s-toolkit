@@ -21,7 +21,8 @@ type TEditModalProps = {
   allowClearEditSelect?: boolean
   endpoint: string
   pathToValue: string
-  editModalWidth?: number
+  editModalWidth?: number | string
+  paddingContainerEnd?: string
 }
 
 export const EditModal: FC<TEditModalProps> = ({
@@ -37,6 +38,7 @@ export const EditModal: FC<TEditModalProps> = ({
   endpoint,
   pathToValue,
   editModalWidth,
+  paddingContainerEnd,
 }) => {
   const queryClient = useQueryClient()
 
@@ -152,6 +154,7 @@ export const EditModal: FC<TEditModalProps> = ({
                 </Popover>
               )
             }}
+            paddingContainerEnd={paddingContainerEnd}
           />
         </ResetedFormItem>
       </Form>
