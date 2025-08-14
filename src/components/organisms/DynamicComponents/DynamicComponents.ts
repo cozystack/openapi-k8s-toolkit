@@ -31,6 +31,7 @@ import {
   KeyCounter,
   Taints,
   Tolerations,
+  Annotations,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -66,4 +67,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   KeyCounter,
   Taints,
   Tolerations,
+  Annotations,
 }

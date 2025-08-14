@@ -26,7 +26,9 @@ export const Tolerations: FC<{ data: TDynamicComponentsAppTypeMap['Tolerations']
     notificationSuccessMessageDescription,
     modalTitle,
     modalDescriptionText,
+    modalDescriptionTextStyle,
     inputLabel,
+    inputLabelStyle,
     containerStyle,
     endpoint,
     pathToValue,
@@ -134,6 +136,8 @@ export const Tolerations: FC<{ data: TDynamicComponentsAppTypeMap['Tolerations']
           pathToValue={pathToValuePrepared}
           editModalWidth={editModalWidth}
           cols={cols}
+          modalDescriptionTextStyle={modalDescriptionTextStyle}
+          inputLabelStyle={inputLabelStyle}
         />
       </>
     )
@@ -173,6 +177,8 @@ export const Tolerations: FC<{ data: TDynamicComponentsAppTypeMap['Tolerations']
         pathToValue={pathToValuePrepared}
         editModalWidth={editModalWidth}
         cols={cols}
+        modalDescriptionTextStyle={modalDescriptionTextStyle}
+        inputLabelStyle={inputLabelStyle}
       />
     </>
   )

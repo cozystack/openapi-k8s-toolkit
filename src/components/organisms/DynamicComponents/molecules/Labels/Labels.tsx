@@ -24,7 +24,9 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     notificationSuccessMessageDescription,
     modalTitle,
     modalDescriptionText,
+    modalDescriptionTextStyle,
     inputLabel,
+    inputLabelStyle,
     containerStyle,
     maxEditTagTextLength,
     allowClearEditSelect,
@@ -148,6 +150,8 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         pathToValue={pathToValuePrepared}
         editModalWidth={editModalWidth}
         paddingContainerEnd={paddingContainerEnd}
+        modalDescriptionTextStyle={modalDescriptionTextStyle}
+        inputLabelStyle={inputLabelStyle}
       />
     </div>
   )
@@ -219,6 +223,8 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
         pathToValue={pathToValuePrepared}
         editModalWidth={editModalWidth}
         paddingContainerEnd={paddingContainerEnd}
+        modalDescriptionTextStyle={modalDescriptionTextStyle}
+        inputLabelStyle={inputLabelStyle}
       />
     </div>
   )

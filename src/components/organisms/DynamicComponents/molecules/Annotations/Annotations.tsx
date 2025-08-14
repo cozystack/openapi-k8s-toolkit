@@ -2,8 +2,8 @@
 /* eslint-disable react/no-array-index-key */
 import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
-import { Popover, notification, Flex, Button } from 'antd'
-import { UncontrolledSelect, CursorPointerTag, EditIcon } from 'components/atoms'
+import { notification, Flex, Button } from 'antd'
+import { EditIcon } from 'components/atoms'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
@@ -11,15 +11,17 @@ import { parseAll } from '../utils'
 import { EditModal } from './molecules'
 import { getItemsInside } from './utils'
 
-export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children?: any }> = ({ data, children }) => {
+export const Annotations: FC<{ data: TDynamicComponentsAppTypeMap['Annotations']; children?: any }> = ({
+  data,
+  children,
+}) => {
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
     reqIndex,
-    jsonPathToArray,
+    jsonPathToObj,
     text,
     errorText,
-    style,
     notificationSuccessMessage,
     notificationSuccessMessageDescription,
     modalTitle,
@@ -62,12 +64,12 @@ export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children
 
   if (jsonRoot === undefined) {
     console.log('Item Counter: ${id}: No root for json path')
-    return <span style={style}>{errorText}</span>
+    return <div style={containerStyle}>{errorText}</div>
   }
 
-  const anythingForNow = jp.query(jsonRoot, `$${jsonPathToArray}`)
+  const anythingForNow = jp.query(jsonRoot, `$${jsonPathToObj}`)
 
-  const { counter, taints, error: errorArrayOfObjects } = getItemsInside(anythingForNow)
+  const { counter, annotations, error: errorArrayOfObjects } = getItemsInside(anythingForNow)
 
   const notificationSuccessMessagePrepared = notificationSuccessMessage
     ? parseAll({
@@ -109,7 +111,7 @@ export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children
       <>
         <div style={containerStyle}>
           <Flex align="center" gap={8}>
-            {errorText}{' '}
+            {errorText}
             <Button
               type="text"
               size="small"
@@ -125,7 +127,7 @@ export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children
         <EditModal
           open={open}
           close={() => setOpen(false)}
-          values={taints}
+          values={annotations}
           openNotificationSuccess={openNotificationSuccess}
           modalTitle={modalTitlePrepared}
           modalDescriptionText={modalDescriptionTextPrepared}
@@ -166,7 +168,7 @@ export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children
       <EditModal
         open={open}
         close={() => setOpen(false)}
-        values={taints}
+        values={annotations}
         openNotificationSuccess={openNotificationSuccess}
         modalTitle={modalTitlePrepared}
         modalDescriptionText={modalDescriptionTextPrepared}

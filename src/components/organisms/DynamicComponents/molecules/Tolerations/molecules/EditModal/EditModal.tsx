@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { FC, useState, useEffect } from 'react'
+import React, { FC, useState, useEffect, CSSProperties } from 'react'
 import { Modal, Form, Alert, Space, Input, Select, Button, Tooltip, Row, Col } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -22,6 +22,8 @@ type TEditModalProps = {
   pathToValue: string
   editModalWidth?: number | string
   cols: number[]
+  modalDescriptionTextStyle?: CSSProperties
+  inputLabelStyle?: CSSProperties
 }
 
 export const EditModal: FC<TEditModalProps> = ({
@@ -36,6 +38,8 @@ export const EditModal: FC<TEditModalProps> = ({
   pathToValue,
   editModalWidth,
   cols,
+  modalDescriptionTextStyle,
+  inputLabelStyle,
 }) => {
   const queryClient = useQueryClient()
 
@@ -102,12 +106,16 @@ export const EditModal: FC<TEditModalProps> = ({
       {error && <Alert type="error" message="Error while submitting" description={error?.response?.data?.message} />}
       {modalDescriptionText && (
         <>
-          <div>{modalDescriptionText}</div>
+          <div style={modalDescriptionTextStyle}>{modalDescriptionText}</div>
           <Spacer $space={10} $samespace />
         </>
       )}
       <Form<{ tolerations: TToleration[] }> form={form}>
-        {inputLabel && <CustomSizeTitle $designNewLayout>{inputLabel}</CustomSizeTitle>}
+        {inputLabel && (
+          <CustomSizeTitle $designNewLayout style={inputLabelStyle}>
+            {inputLabel}
+          </CustomSizeTitle>
+        )}
         <Spacer $space={10} $samespace />
         <Row gutter={[16, 16]}>
           <Col span={cols[0]}>
@@ -198,9 +206,6 @@ export const EditModal: FC<TEditModalProps> = ({
                             if (op === 'Equal' && (!v || v === '')) {
                               return Promise.reject(new Error('Value is required when operator is Equal.'))
                             }
-                            if (op === 'Exists' && v) {
-                              return Promise.reject(new Error('Value must be empty when operator is Exists.'))
-                            }
                             return Promise.resolve()
                           },
                         }),
@@ -214,15 +219,15 @@ export const EditModal: FC<TEditModalProps> = ({
                     <ResetedFormItem
                       {...restField}
                       name={[name, 'effect']}
-                      rules={[
-                        { required: true, message: 'Effect is required.' },
-                        {
-                          validator: (_, v) =>
-                            v && effectOptions.includes(v)
-                              ? Promise.resolve()
-                              : Promise.reject(new Error('Select a valid effect.')),
-                        },
-                      ]}
+                      // rules={[
+                      //   { required: true, message: 'Effect is required.' },
+                      //   {
+                      //     validator: (_, v) =>
+                      //       v && effectOptions.includes(v)
+                      //         ? Promise.resolve()
+                      //         : Promise.reject(new Error('Select a valid effect.')),
+                      //   },
+                      // ]}
                     >
                       <Select
                         placeholder="Select effect"

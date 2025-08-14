@@ -152,7 +152,9 @@ export type TDynamicComponentsAppTypeMap = {
     notificationSuccessMessageDescription?: string
     modalTitle?: string
     modalDescriptionText?: string
+    modalDescriptionTextStyle?: CSSProperties
     inputLabel?: string
+    inputLabelStyle?: CSSProperties
     containerStyle?: CSSProperties
     maxEditTagTextLength?: number
     allowClearEditSelect?: boolean
@@ -166,6 +168,7 @@ export type TDynamicComponentsAppTypeMap = {
     reqIndex: string
     jsonPathToLabels: string
     linkPrefix: string
+    errorText: string
   } & Omit<LinkProps, 'id' | 'children' | 'href'>
   Taints: {
     id: number | string
@@ -178,7 +181,9 @@ export type TDynamicComponentsAppTypeMap = {
     notificationSuccessMessageDescription?: string
     modalTitle?: string
     modalDescriptionText?: string
+    modalDescriptionTextStyle?: CSSProperties
     inputLabel?: string
+    inputLabelStyle?: CSSProperties
     containerStyle?: CSSProperties
     endpoint?: string
     pathToValue?: string
@@ -196,10 +201,31 @@ export type TDynamicComponentsAppTypeMap = {
     notificationSuccessMessageDescription?: string
     modalTitle?: string
     modalDescriptionText?: string
+    modalDescriptionTextStyle?: CSSProperties
     inputLabel?: string
+    inputLabelStyle?: CSSProperties
     endpoint?: string
     pathToValue?: string
     editModalWidth?: number | string
     cols: number[] // 5
+  }
+  Annotations: {
+    id: number | string
+    reqIndex: string
+    jsonPathToObj: string
+    text: string
+    errorText: string
+    containerStyle?: CSSProperties
+    notificationSuccessMessage?: string
+    notificationSuccessMessageDescription?: string
+    modalTitle?: string
+    modalDescriptionText?: string
+    modalDescriptionTextStyle?: CSSProperties
+    inputLabel?: string
+    inputLabelStyle?: CSSProperties
+    endpoint?: string
+    pathToValue?: string
+    editModalWidth?: number | string
+    cols: number[] // 3
   }
 }

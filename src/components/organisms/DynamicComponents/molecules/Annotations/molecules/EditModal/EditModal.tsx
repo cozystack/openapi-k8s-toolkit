@@ -1,28 +1,27 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect, CSSProperties } from 'react'
-import { Modal, Form, Alert, Tag, Popover } from 'antd'
+import { Modal, Form, Alert, Space, Input, Select, Button, Tooltip, Row, Col } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { TRequestError } from 'localTypes/api'
 import { ResetedFormItem, CustomSizeTitle } from 'components/molecules/BlackholeForm/atoms'
-import { filterSelectOptions } from 'utils/filterSelectOptions'
-import { CustomSelect, Spacer } from 'components/atoms'
-import { truncate } from '../../utils'
+import { Spacer, PlusIcon, MinusIcon } from 'components/atoms'
 import { patchEntryWithReplaceOp } from 'api/forms'
+import { TStringNumberRecord } from '../../types'
+import { Styled } from './styled'
 
 type TEditModalProps = {
   open: boolean
   close: () => void
-  values?: Record<string, string | number>
+  values?: TStringNumberRecord
   openNotificationSuccess?: () => void
   modalTitle: string
   modalDescriptionText?: string
   inputLabel?: string
-  maxEditTagTextLength?: number
-  allowClearEditSelect?: boolean
   endpoint: string
   pathToValue: string
   editModalWidth?: number | string
-  paddingContainerEnd?: string
+  cols: number[]
   modalDescriptionTextStyle?: CSSProperties
   inputLabelStyle?: CSSProperties
 }
@@ -35,12 +34,10 @@ export const EditModal: FC<TEditModalProps> = ({
   modalTitle,
   modalDescriptionText,
   inputLabel,
-  maxEditTagTextLength,
-  allowClearEditSelect,
   endpoint,
   pathToValue,
   editModalWidth,
-  paddingContainerEnd,
+  cols,
   modalDescriptionTextStyle,
   inputLabelStyle,
 }) => {
@@ -49,13 +46,18 @@ export const EditModal: FC<TEditModalProps> = ({
   const [error, setError] = useState<TRequestError | undefined>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  const [form] = Form.useForm<{ labels: string[] }>()
-  const labels = Form.useWatch<string[]>('labels', form)
+  const [form] = Form.useForm<{ annotations: { key: string; value?: string }[] }>()
+  const annotations = Form.useWatch<{ key: string; value?: string }[]>('annotations', form)
 
   useEffect(() => {
     if (open) {
       form.setFieldsValue({
-        labels: values ? Object.entries(values).map(([key, value]) => `${key}=${value}`) : [],
+        annotations: values
+          ? Object.entries(values).map(([key, value]) => ({
+              key,
+              value,
+            }))
+          : [],
       })
     }
   }, [open, form])
@@ -65,8 +67,7 @@ export const EditModal: FC<TEditModalProps> = ({
       .validateFields()
       .then(() => {
         const result: Record<string, string> = {}
-        labels.forEach(label => {
-          const [key, value] = label.split('=')
+        annotations.forEach(({ key, value }) => {
           result[key] = value || ''
         })
         console.log(JSON.stringify(result))
@@ -115,56 +116,62 @@ export const EditModal: FC<TEditModalProps> = ({
           <Spacer $space={10} $samespace />
         </>
       )}
-      <Form<{ labels: string[] }> form={form}>
+      <Form<{ annotations: { key: string; value?: string }[] }> form={form}>
         {inputLabel && (
           <CustomSizeTitle $designNewLayout style={inputLabelStyle}>
             {inputLabel}
           </CustomSizeTitle>
         )}
         <Spacer $space={10} $samespace />
-        <ResetedFormItem
-          name="labels"
-          hasFeedback
-          validateTrigger="onBlur"
-          rules={[
-            () => ({
-              validator(_, value) {
-                if (
-                  Array.isArray(value) &&
-                  value.every(str => typeof str === 'string' && str.includes('=') && !str.startsWith('='))
-                ) {
-                  return Promise.resolve()
-                }
-                return Promise.reject(new Error('Please enter key=value style'))
-              },
-            }),
-          ]}
-        >
-          <CustomSelect
-            mode="tags"
-            placeholder="Enter key=value"
-            filterOption={filterSelectOptions}
-            allowClear={allowClearEditSelect}
-            tokenSeparators={[' ']}
-            open={false}
-            tagRender={({ label, closable, onClose }) => {
-              return (
-                <Popover content={label}>
-                  <Tag
-                    closable={closable}
-                    onClose={onClose}
-                    onClick={e => {
-                      e.stopPropagation()
-                    }}
-                  >
-                    {typeof label === 'string' ? truncate(label, maxEditTagTextLength) : 'Not a string value'}
-                  </Tag>
-                </Popover>
-              )
-            }}
-            paddingContainerEnd={paddingContainerEnd}
-          />
-        </ResetedFormItem>
+        <Row gutter={[16, 16]}>
+          <Col span={cols[0]}>
+            <div>Key</div>
+          </Col>
+          <Col span={cols[1]}>
+            <div>Value</div>
+          </Col>
+          <Col span={cols[2]}>
+            <div />
+          </Col>
+        </Row>
+        <Spacer $space={10} $samespace />
+        <Styled.ResetedFormList name="annotations">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row key={key} gutter={[16, 16]}>
+                  <Col span={cols[0]}>
+                    <ResetedFormItem
+                      {...restField}
+                      name={[name, 'key']}
+                      rules={[{ required: true, message: 'Key is required' }]}
+                    >
+                      <Input placeholder="key" />
+                    </ResetedFormItem>
+                  </Col>
+
+                  <Col span={cols[1]}>
+                    <ResetedFormItem {...restField} name={[name, 'value']}>
+                      <Input placeholder="value" />
+                    </ResetedFormItem>
+                  </Col>
+
+                  <Col span={cols[2]}>
+                    <Button size="small" type="text" onClick={() => remove(name)}>
+                      <MinusIcon />
+                    </Button>
+                  </Col>
+                </Row>
+              ))}
+
+              <ResetedFormItem>
+                <Button type="text" size="small" onClick={() => add()}>
+                  <PlusIcon />
+                </Button>
+              </ResetedFormItem>
+            </>
+          )}
+        </Styled.ResetedFormList>
       </Form>
     </Modal>
   )
