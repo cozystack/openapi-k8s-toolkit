@@ -167,4 +167,37 @@ export type TDynamicComponentsAppTypeMap = {
     jsonPathToLabels: string
     linkPrefix: string
   } & Omit<LinkProps, 'id' | 'children' | 'href'>
+  Taints: {
+    id: number | string
+    reqIndex: string
+    jsonPathToArray: string
+    text: string
+    errorText: string
+    style?: CSSProperties
+    notificationSuccessMessage?: string
+    notificationSuccessMessageDescription?: string
+    modalTitle?: string
+    modalDescriptionText?: string
+    inputLabel?: string
+    containerStyle?: CSSProperties
+    endpoint?: string
+    pathToValue?: string
+    editModalWidth?: number | string
+  }
+  Tolerations: {
+    id: number | string
+    reqIndex: string
+    jsonPathToArray: string
+    text: string
+    errorText: string
+    containerStyle?: CSSProperties
+    notificationSuccessMessage?: string
+    notificationSuccessMessageDescription?: string
+    modalTitle?: string
+    modalDescriptionText?: string
+    inputLabel?: string
+    endpoint?: string
+    pathToValue?: string
+    editModalWidth?: number | string
+  }
 }
