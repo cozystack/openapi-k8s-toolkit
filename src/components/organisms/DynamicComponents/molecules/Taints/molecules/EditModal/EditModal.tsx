@@ -177,7 +177,7 @@ export const EditModal: FC<TEditModalProps> = ({
                     >
                       <Select
                         placeholder="Select effect"
-                        options={effectOptions.map(eff => ({ key: eff, value: eff }))}
+                        options={effectOptions.map(eff => ({ label: eff, value: eff }))}
                       />
                     </ResetedFormItem>
                   </Col>

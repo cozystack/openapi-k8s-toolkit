@@ -174,15 +174,15 @@ export const EditModal: FC<TEditModalProps> = ({
                         { required: true, message: 'Operator is required.' },
                         {
                           validator: (_, v) =>
-                            v && (v === 'Exists' || v === 'Equal')
+                            v && operatorOptions.includes(v)
                               ? Promise.resolve()
-                              : Promise.reject(new Error('Operator must be Exists or Equal.')),
+                              : Promise.reject(new Error('Select a valid operator.')),
                         },
                       ]}
                     >
                       <Select
                         placeholder="Select operator"
-                        options={operatorOptions.map(op => ({ key: op, label: op }))}
+                        options={operatorOptions.map(op => ({ label: op, value: op }))}
                       />
                     </ResetedFormItem>
                   </Col>
@@ -215,17 +215,18 @@ export const EditModal: FC<TEditModalProps> = ({
                       {...restField}
                       name={[name, 'effect']}
                       rules={[
+                        { required: true, message: 'Effect is required.' },
                         {
                           validator: (_, v) =>
-                            !v || v === 'NoSchedule' || v === 'PreferNoSchedule' || v === 'NoExecute'
+                            v && effectOptions.includes(v)
                               ? Promise.resolve()
-                              : Promise.reject(new Error('Invalid effect.')),
+                              : Promise.reject(new Error('Select a valid effect.')),
                         },
                       ]}
                     >
                       <Select
                         placeholder="Select effect"
-                        options={effectOptions.map(eff => ({ key: eff, label: eff }))}
+                        options={effectOptions.map(eff => ({ label: eff, value: eff }))}
                       />
                     </ResetedFormItem>
                   </Col>
