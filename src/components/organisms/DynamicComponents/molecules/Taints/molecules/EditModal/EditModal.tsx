@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { FC, useState, useEffect } from 'react'
+import React, { FC, useState, useEffect, CSSProperties } from 'react'
 import { Modal, Form, Alert, Input, Select, Button, Row, Col } from 'antd'
 import { useQueryClient } from '@tanstack/react-query'
 import { TRequestError } from 'localTypes/api'
@@ -21,6 +21,8 @@ type TEditModalProps = {
   pathToValue: string
   editModalWidth?: number | string
   cols: number[]
+  modalDescriptionTextStyle?: CSSProperties
+  inputLabelStyle?: CSSProperties
 }
 
 export const EditModal: FC<TEditModalProps> = ({
@@ -35,6 +37,8 @@ export const EditModal: FC<TEditModalProps> = ({
   pathToValue,
   editModalWidth,
   cols,
+  modalDescriptionTextStyle,
+  inputLabelStyle,
 }) => {
   const queryClient = useQueryClient()
 
@@ -100,12 +104,16 @@ export const EditModal: FC<TEditModalProps> = ({
       {error && <Alert type="error" message="Error while submitting" description={error?.response?.data?.message} />}
       {modalDescriptionText && (
         <>
-          <div>{modalDescriptionText}</div>
+          <div style={modalDescriptionTextStyle}>{modalDescriptionText}</div>
           <Spacer $space={10} $samespace />
         </>
       )}
       <Form<{ taints: TTaintLike[] }> form={form}>
-        {inputLabel && <CustomSizeTitle $designNewLayout>{inputLabel}</CustomSizeTitle>}
+        {inputLabel && (
+          <CustomSizeTitle $designNewLayout style={inputLabelStyle}>
+            {inputLabel}
+          </CustomSizeTitle>
+        )}
         <Spacer $space={10} $samespace />
         <Row gutter={[16, 16]}>
           <Col span={cols[0]}>

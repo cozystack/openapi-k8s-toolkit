@@ -20,6 +20,7 @@ export const LabelsToSearchParams: FC<{
     reqIndex,
     jsonPathToLabels,
     linkPrefix,
+    errorText,
     ...linkProps
   } = data
 
@@ -54,19 +55,33 @@ export const LabelsToSearchParams: FC<{
 
   const { data: labelsRaw, error: errorArrayOfObjects } = parseArrayOfAny(anythingForNow)
 
+  const linkPrefixPrepared = parseAll({ text: linkPrefix, replaceValues, multiQueryData })
+
   if (!labelsRaw) {
     if (errorArrayOfObjects) {
-      return <div>{errorArrayOfObjects}</div>
+      console.log(errorArrayOfObjects)
+      // return <div>{errorArrayOfObjects}</div>
+      return (
+        <Typography.Link href={linkPrefixPrepared} {...linkProps}>
+          {errorText}
+          {children}
+        </Typography.Link>
+      )
     }
-    return <div>Not a valid data structure</div>
+    console.log('Not a valid data structure')
+    // return <div>Not a valid data structure</div>      return (
+    return (
+      <Typography.Link href={linkPrefixPrepared} {...linkProps}>
+        {errorText}
+        {children}
+      </Typography.Link>
+    )
   }
 
   const labels = Object.entries(labelsRaw)
     .map(([key, value]) => `${key}=${value}`)
     .join(',')
   const labelsEncoded = encodeURIComponent(labels)
-
-  const linkPrefixPrepared = parseAll({ text: linkPrefix, replaceValues, multiQueryData })
 
   const hrefPrepared = `${linkPrefixPrepared}?${labelsEncoded}`
   return (
