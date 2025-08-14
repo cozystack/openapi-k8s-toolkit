@@ -183,6 +183,7 @@ export type TDynamicComponentsAppTypeMap = {
     endpoint?: string
     pathToValue?: string
     editModalWidth?: number | string
+    cols: number[] // 4
   }
   Tolerations: {
     id: number | string
@@ -199,5 +200,6 @@ export type TDynamicComponentsAppTypeMap = {
     endpoint?: string
     pathToValue?: string
     editModalWidth?: number | string
+    cols: number[] // 5
   }
 }

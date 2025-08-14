@@ -29,6 +29,7 @@ export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children
     endpoint,
     pathToValue,
     editModalWidth,
+    cols,
   } = data
 
   const [api, contextHolder] = notification.useNotification()
@@ -130,6 +131,7 @@ export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children
           endpoint={endpointPrepared}
           pathToValue={pathToValuePrepared}
           editModalWidth={editModalWidth}
+          cols={cols}
         />
       </>
     )
@@ -168,6 +170,7 @@ export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children
         endpoint={endpointPrepared}
         pathToValue={pathToValuePrepared}
         editModalWidth={editModalWidth}
+        cols={cols}
       />
     </>
   )

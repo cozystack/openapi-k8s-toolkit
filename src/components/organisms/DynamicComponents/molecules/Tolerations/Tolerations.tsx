@@ -31,6 +31,7 @@ export const Tolerations: FC<{ data: TDynamicComponentsAppTypeMap['Tolerations']
     endpoint,
     pathToValue,
     editModalWidth,
+    cols,
   } = data
 
   const [api, contextHolder] = notification.useNotification()
@@ -132,6 +133,7 @@ export const Tolerations: FC<{ data: TDynamicComponentsAppTypeMap['Tolerations']
           endpoint={endpointPrepared}
           pathToValue={pathToValuePrepared}
           editModalWidth={editModalWidth}
+          cols={cols}
         />
       </>
     )
@@ -170,6 +172,7 @@ export const Tolerations: FC<{ data: TDynamicComponentsAppTypeMap['Tolerations']
         endpoint={endpointPrepared}
         pathToValue={pathToValuePrepared}
         editModalWidth={editModalWidth}
+        cols={cols}
       />
     </>
   )

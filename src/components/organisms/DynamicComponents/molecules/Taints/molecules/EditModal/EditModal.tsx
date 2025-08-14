@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect } from 'react'
-import { Modal, Form, Alert, Space, Input, Select, Button, Row, Col } from 'antd'
+import { Modal, Form, Alert, Input, Select, Button, Row, Col } from 'antd'
 import { useQueryClient } from '@tanstack/react-query'
 import { TRequestError } from 'localTypes/api'
 import { ResetedFormItem, CustomSizeTitle } from 'components/molecules/BlackholeForm/atoms'
@@ -20,6 +20,7 @@ type TEditModalProps = {
   endpoint: string
   pathToValue: string
   editModalWidth?: number | string
+  cols: number[]
 }
 
 export const EditModal: FC<TEditModalProps> = ({
@@ -33,6 +34,7 @@ export const EditModal: FC<TEditModalProps> = ({
   endpoint,
   pathToValue,
   editModalWidth,
+  cols,
 }) => {
   const queryClient = useQueryClient()
 
@@ -106,25 +108,26 @@ export const EditModal: FC<TEditModalProps> = ({
         {inputLabel && <CustomSizeTitle $designNewLayout>{inputLabel}</CustomSizeTitle>}
         <Spacer $space={10} $samespace />
         <Row gutter={[16, 16]}>
-          <Col span={8}>
+          <Col span={cols[0]}>
             <div>Key</div>
           </Col>
-          <Col span={8}>
+          <Col span={cols[1]}>
             <div>Value</div>
           </Col>
-          <Col span={6}>
+          <Col span={cols[2]}>
             <div>Effect</div>
           </Col>
-          <Col span={2}>
+          <Col span={cols[3]}>
             <div />
           </Col>
         </Row>
+        <Spacer $space={10} $samespace />
         <Styled.ResetedFormList name="taints">
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
                 <Row key={key} gutter={[16, 16]}>
-                  <Col span={8}>
+                  <Col span={cols[0]}>
                     <ResetedFormItem
                       {...restField}
                       name={[name, 'key']}
@@ -141,7 +144,7 @@ export const EditModal: FC<TEditModalProps> = ({
                     </ResetedFormItem>
                   </Col>
 
-                  <Col span={8}>
+                  <Col span={cols[1]}>
                     <ResetedFormItem
                       {...restField}
                       name={[name, 'value']}
@@ -158,7 +161,7 @@ export const EditModal: FC<TEditModalProps> = ({
                     </ResetedFormItem>
                   </Col>
 
-                  <Col span={6}>
+                  <Col span={cols[2]}>
                     <ResetedFormItem
                       {...restField}
                       name={[name, 'effect']}
@@ -174,13 +177,12 @@ export const EditModal: FC<TEditModalProps> = ({
                     >
                       <Select
                         placeholder="Select effect"
-                        style={{ width: 200 }}
                         options={effectOptions.map(eff => ({ key: eff, value: eff }))}
                       />
                     </ResetedFormItem>
                   </Col>
 
-                  <Col span={2}>
+                  <Col span={cols[3]}>
                     <Button size="small" type="text" onClick={() => remove(name)}>
                       <MinusIcon />
                     </Button>

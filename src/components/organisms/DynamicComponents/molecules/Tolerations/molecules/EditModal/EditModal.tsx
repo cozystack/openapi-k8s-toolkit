@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect } from 'react'
-import { Modal, Form, Alert, Space, Input, Select, Button, Tooltip } from 'antd'
+import { Modal, Form, Alert, Space, Input, Select, Button, Tooltip, Row, Col } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { TRequestError } from 'localTypes/api'
@@ -21,6 +21,7 @@ type TEditModalProps = {
   endpoint: string
   pathToValue: string
   editModalWidth?: number | string
+  cols: number[]
 }
 
 export const EditModal: FC<TEditModalProps> = ({
@@ -34,6 +35,7 @@ export const EditModal: FC<TEditModalProps> = ({
   endpoint,
   pathToValue,
   editModalWidth,
+  cols,
 }) => {
   const queryClient = useQueryClient()
 
@@ -107,111 +109,133 @@ export const EditModal: FC<TEditModalProps> = ({
       <Form<{ tolerations: TToleration[] }> form={form}>
         {inputLabel && <CustomSizeTitle $designNewLayout>{inputLabel}</CustomSizeTitle>}
         <Spacer $space={10} $samespace />
+        <Row gutter={[16, 16]}>
+          <Col span={cols[0]}>
+            <div>
+              <span>
+                Key{' '}
+                <Tooltip title="Required when operator is Equal; optional for Exists.">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </span>
+            </div>
+          </Col>
+          <Col span={cols[1]}>
+            <div>Operator</div>
+          </Col>
+          <Col span={cols[2]}>
+            <div>
+              <span>
+                Value{' '}
+                <Tooltip title="Required for Equal; must be empty for Exists.">
+                  <InfoCircleOutlined />
+                </Tooltip>
+              </span>
+            </div>
+          </Col>
+          <Col span={cols[3]}>
+            <div>Effect</div>
+          </Col>
+          <Col span={cols[4]}>
+            <div />
+          </Col>
+        </Row>
+        <Spacer $space={10} $samespace />
         <Styled.ResetedFormList name="tolerations">
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
-                <Space key={key} align="baseline" style={{ display: 'flex', marginBottom: 8 }}>
-                  <ResetedFormItem
-                    {...restField}
-                    name={[name, 'key']}
-                    label={
-                      <span>
-                        Key{' '}
-                        <Tooltip title="Required when operator is Equal; optional for Exists.">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </span>
-                    }
-                    rules={[
-                      ({ getFieldValue }) => ({
-                        validator(_, v) {
-                          const op = getFieldValue(['tolerations', name, 'operator'])
-                          if (op === 'Equal' && (!v || v === '')) {
-                            return Promise.reject(new Error('Key is required when operator is Equal.'))
-                          }
-                          return Promise.resolve()
+                <Row key={key} gutter={[16, 16]}>
+                  <Col span={cols[0]}>
+                    <ResetedFormItem
+                      {...restField}
+                      name={[name, 'key']}
+                      rules={[
+                        ({ getFieldValue }) => ({
+                          validator(_, v) {
+                            const op = getFieldValue(['tolerations', name, 'operator'])
+                            if (op === 'Equal' && (!v || v === '')) {
+                              return Promise.reject(new Error('Key is required when operator is Equal.'))
+                            }
+                            return Promise.resolve()
+                          },
+                        }),
+                      ]}
+                    >
+                      <Input placeholder="key" />
+                    </ResetedFormItem>
+                  </Col>
+
+                  <Col span={cols[1]}>
+                    <ResetedFormItem
+                      {...restField}
+                      name={[name, 'operator']}
+                      rules={[
+                        { required: true, message: 'Operator is required.' },
+                        {
+                          validator: (_, v) =>
+                            v && (v === 'Exists' || v === 'Equal')
+                              ? Promise.resolve()
+                              : Promise.reject(new Error('Operator must be Exists or Equal.')),
                         },
-                      }),
-                    ]}
-                  >
-                    <Input placeholder="key" />
-                  </ResetedFormItem>
+                      ]}
+                    >
+                      <Select
+                        placeholder="Select operator"
+                        options={operatorOptions.map(op => ({ key: op, label: op }))}
+                      />
+                    </ResetedFormItem>
+                  </Col>
 
-                  <ResetedFormItem
-                    {...restField}
-                    name={[name, 'operator']}
-                    label="Operator"
-                    rules={[
-                      { required: true, message: 'Operator is required.' },
-                      {
-                        validator: (_, v) =>
-                          v && (v === 'Exists' || v === 'Equal')
-                            ? Promise.resolve()
-                            : Promise.reject(new Error('Operator must be Exists or Equal.')),
-                      },
-                    ]}
-                  >
-                    <Select
-                      placeholder="Select operator"
-                      style={{ width: 140 }}
-                      options={operatorOptions.map(op => ({ key: op, label: op }))}
-                    />
-                  </ResetedFormItem>
+                  <Col span={cols[2]}>
+                    <ResetedFormItem
+                      {...restField}
+                      name={[name, 'value']}
+                      rules={[
+                        ({ getFieldValue }) => ({
+                          validator(_, v) {
+                            const op = getFieldValue(['tolerations', name, 'operator'])
+                            if (op === 'Equal' && (!v || v === '')) {
+                              return Promise.reject(new Error('Value is required when operator is Equal.'))
+                            }
+                            if (op === 'Exists' && v) {
+                              return Promise.reject(new Error('Value must be empty when operator is Exists.'))
+                            }
+                            return Promise.resolve()
+                          },
+                        }),
+                      ]}
+                    >
+                      <Input placeholder="value" />
+                    </ResetedFormItem>
+                  </Col>
 
-                  <ResetedFormItem
-                    {...restField}
-                    name={[name, 'value']}
-                    label={
-                      <span>
-                        Value{' '}
-                        <Tooltip title="Required for Equal; must be empty for Exists.">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </span>
-                    }
-                    rules={[
-                      ({ getFieldValue }) => ({
-                        validator(_, v) {
-                          const op = getFieldValue(['tolerations', name, 'operator'])
-                          if (op === 'Equal' && (!v || v === '')) {
-                            return Promise.reject(new Error('Value is required when operator is Equal.'))
-                          }
-                          if (op === 'Exists' && v) {
-                            return Promise.reject(new Error('Value must be empty when operator is Exists.'))
-                          }
-                          return Promise.resolve()
+                  <Col span={cols[3]}>
+                    <ResetedFormItem
+                      {...restField}
+                      name={[name, 'effect']}
+                      rules={[
+                        {
+                          validator: (_, v) =>
+                            !v || v === 'NoSchedule' || v === 'PreferNoSchedule' || v === 'NoExecute'
+                              ? Promise.resolve()
+                              : Promise.reject(new Error('Invalid effect.')),
                         },
-                      }),
-                    ]}
-                  >
-                    <Input placeholder="value" />
-                  </ResetedFormItem>
+                      ]}
+                    >
+                      <Select
+                        placeholder="Select effect"
+                        options={effectOptions.map(eff => ({ key: eff, label: eff }))}
+                      />
+                    </ResetedFormItem>
+                  </Col>
 
-                  <ResetedFormItem
-                    {...restField}
-                    name={[name, 'effect']}
-                    label="Effect"
-                    rules={[
-                      {
-                        validator: (_, v) =>
-                          !v || v === 'NoSchedule' || v === 'PreferNoSchedule' || v === 'NoExecute'
-                            ? Promise.resolve()
-                            : Promise.reject(new Error('Invalid effect.')),
-                      },
-                    ]}
-                  >
-                    <Select
-                      placeholder="Select effect"
-                      style={{ width: 160 }}
-                      options={effectOptions.map(eff => ({ key: eff, label: eff }))}
-                    />
-                  </ResetedFormItem>
-
-                  <Button size="small" type="text" onClick={() => remove(name)}>
-                    <MinusIcon />
-                  </Button>
-                </Space>
+                  <Col span={cols[4]}>
+                    <Button size="small" type="text" onClick={() => remove(name)}>
+                      <MinusIcon />
+                    </Button>
+                  </Col>
+                </Row>
               ))}
 
               <ResetedFormItem>
