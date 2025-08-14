@@ -1,43 +1,41 @@
-/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
 import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
-import { Popover, notification, Flex, Button } from 'antd'
-import { UncontrolledSelect, CursorPointerTag, EditIcon } from 'components/atoms'
+import { notification, Flex, Button } from 'antd'
+import { EditIcon } from 'components/atoms'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { parseAll } from '../utils'
 import { EditModal } from './molecules'
-import { parseArrayOfAny, truncate } from './utils'
+import { getItemsInside } from './utils'
 
-export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children?: any }> = ({ data, children }) => {
+export const Tolerations: FC<{ data: TDynamicComponentsAppTypeMap['Tolerations']; children?: any }> = ({
+  data,
+  children,
+}) => {
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
     reqIndex,
-    jsonPathToLabels,
-    selectProps,
-    readOnly,
+    jsonPathToArray,
+    text,
+    errorText,
     notificationSuccessMessage,
     notificationSuccessMessageDescription,
     modalTitle,
     modalDescriptionText,
     inputLabel,
     containerStyle,
-    maxEditTagTextLength,
-    allowClearEditSelect,
     endpoint,
     pathToValue,
     editModalWidth,
-    paddingContainerEnd,
+    cols,
   } = data
 
   const [api, contextHolder] = notification.useNotification()
   const [open, setOpen] = useState<boolean>(false)
-
-  const { maxTagTextLength, ...restSelectProps } = selectProps || { maxTagTextLength: undefined }
 
   const { data: multiQueryData, isLoading: isMultiQueryLoading, isError: isMultiQueryErrors, errors } = useMultiQuery()
   const partsOfUrl = usePartsOfUrl()
@@ -63,12 +61,13 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
   const jsonRoot = multiQueryData[`req${reqIndex}`]
 
   if (jsonRoot === undefined) {
-    return <div>No root for json path</div>
+    console.log('Item Counter: ${id}: No root for json path')
+    return <div style={containerStyle}>{errorText}</div>
   }
 
-  const anythingForNow = jp.query(jsonRoot, `$${jsonPathToLabels}`)
+  const anythingForNow = jp.query(jsonRoot, `$${jsonPathToArray}`)
 
-  const { data: labelsRaw, error: errorArrayOfObjects } = parseArrayOfAny(anythingForNow)
+  const { counter, tolerations, error: errorArrayOfObjects } = getItemsInside(anythingForNow)
 
   const notificationSuccessMessagePrepared = notificationSuccessMessage
     ? parseAll({
@@ -104,122 +103,77 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     })
   }
 
-  const EmptySelect = (
-    <div style={containerStyle}>
-      {!readOnly && (
-        <Flex justify="flex-end">
-          <Button
-            type="text"
-            size="small"
-            onClick={e => {
-              e.stopPropagation()
-              setOpen(true)
-            }}
-            icon={<EditIcon />}
-          />
-        </Flex>
-      )}
-      <UncontrolledSelect
-        mode="multiple"
-        {...restSelectProps}
-        value={[]}
-        options={[]}
-        open={false}
-        showSearch={false}
-        removeIcon={() => {
-          return null
-        }}
-        suffixIcon={null}
-        isCursorPointer
-      />
-      {children}
-      {contextHolder}
-      <EditModal
-        open={open}
-        close={() => setOpen(false)}
-        // values={labelsRaw}
-        openNotificationSuccess={openNotificationSuccess}
-        modalTitle={modalTitlePrepared}
-        modalDescriptionText={modalDescriptionTextPrepared}
-        inputLabel={inputLabelPrepared}
-        maxEditTagTextLength={maxEditTagTextLength}
-        allowClearEditSelect={allowClearEditSelect}
-        endpoint={endpointPrepared}
-        pathToValue={pathToValuePrepared}
-        editModalWidth={editModalWidth}
-        paddingContainerEnd={paddingContainerEnd}
-      />
-    </div>
-  )
-
-  if (!labelsRaw) {
-    if (errorArrayOfObjects) {
-      // return <div>{errorArrayOfObjects}</div>
-      return EmptySelect
-    }
-    // return <div>Not a valid data structure</div>
-    return EmptySelect
-  }
-
-  const labels = Object.entries(labelsRaw).map(([key, value]) => `${key}=${value}`)
-
-  return (
-    <div style={containerStyle}>
-      {!readOnly && (
-        <Flex justify="flex-end">
-          <Button
-            type="text"
-            size="small"
-            onClick={e => {
-              e.stopPropagation()
-              setOpen(true)
-            }}
-            icon={<EditIcon />}
-          />
-        </Flex>
-      )}
-      <UncontrolledSelect
-        mode="multiple"
-        // maxTagCount="responsive"
-        {...restSelectProps}
-        value={labels.map(el => ({ label: el, value: el }))}
-        options={labels.map(el => ({ label: el, value: el }))}
-        open={false}
-        showSearch={false}
-        removeIcon={() => {
-          return null
-        }}
-        suffixIcon={null}
-        tagRender={({ label }) => (
-          <Popover content={label}>
-            <CursorPointerTag
+  if (errorArrayOfObjects) {
+    console.log(`Item Counter: ${id}: ${errorArrayOfObjects}`)
+    return (
+      <>
+        <div style={containerStyle}>
+          <Flex align="center" gap={8}>
+            {errorText}
+            <Button
+              type="text"
+              size="small"
               onClick={e => {
                 e.stopPropagation()
+                setOpen(true)
               }}
-            >
-              {typeof label === 'string' ? truncate(label, maxTagTextLength) : 'Not a string value'}
-            </CursorPointerTag>
-          </Popover>
-        )}
-        // isCursorPointer
-      />
-      {children}
+              icon={<EditIcon />}
+            />
+          </Flex>
+        </div>
+        {contextHolder}
+        <EditModal
+          open={open}
+          close={() => setOpen(false)}
+          values={tolerations}
+          openNotificationSuccess={openNotificationSuccess}
+          modalTitle={modalTitlePrepared}
+          modalDescriptionText={modalDescriptionTextPrepared}
+          inputLabel={inputLabelPrepared}
+          endpoint={endpointPrepared}
+          pathToValue={pathToValuePrepared}
+          editModalWidth={editModalWidth}
+          cols={cols}
+        />
+      </>
+    )
+  }
+
+  const parsedText = parseAll({ text, replaceValues, multiQueryData })
+
+  const parsedTextWithCounter = parsedText.replace('~counter~', String(counter || 0))
+
+  return (
+    <>
+      <div style={containerStyle}>
+        <Flex align="center" gap={8}>
+          {parsedTextWithCounter}
+          <Button
+            type="text"
+            size="small"
+            onClick={e => {
+              e.stopPropagation()
+              setOpen(true)
+            }}
+            icon={<EditIcon />}
+          />
+        </Flex>
+        {children}
+      </div>
       {contextHolder}
       <EditModal
         open={open}
         close={() => setOpen(false)}
-        values={labelsRaw}
+        values={tolerations}
         openNotificationSuccess={openNotificationSuccess}
         modalTitle={modalTitlePrepared}
         modalDescriptionText={modalDescriptionTextPrepared}
         inputLabel={inputLabelPrepared}
-        maxEditTagTextLength={maxEditTagTextLength}
-        allowClearEditSelect={allowClearEditSelect}
         endpoint={endpointPrepared}
         pathToValue={pathToValuePrepared}
         editModalWidth={editModalWidth}
-        paddingContainerEnd={paddingContainerEnd}
+        cols={cols}
       />
-    </div>
+    </>
   )
 }
