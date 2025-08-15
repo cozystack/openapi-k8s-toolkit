@@ -1,5 +1,5 @@
 export const getResult = ({
-  valuePrepared,
+  valuesPrepared,
   criteriaSuccess,
   criteriaError,
   valueToCompareSuccess,
@@ -8,7 +8,7 @@ export const getResult = ({
   errorText,
   fallbackText,
 }: {
-  valuePrepared: string
+  valuesPrepared: string[]
   criteriaSuccess: 'equals' | 'notEquals'
   criteriaError: 'equals' | 'notEquals'
   valueToCompareSuccess: unknown[]
@@ -19,8 +19,8 @@ export const getResult = ({
 }): { type: 'success' | 'danger' | 'warning'; text: string } => {
   const success =
     criteriaSuccess === 'equals'
-      ? valueToCompareSuccess.includes(valuePrepared)
-      : !valueToCompareSuccess.includes(valuePrepared)
+      ? valuesPrepared.some(v => valueToCompareSuccess.includes(v))
+      : valuesPrepared.some(v => !valueToCompareSuccess.includes(v))
 
   if (success) {
     return { type: 'success', text: successText }
@@ -28,8 +28,8 @@ export const getResult = ({
 
   const error =
     criteriaError === 'equals'
-      ? valueToCompareError.includes(valuePrepared)
-      : !valueToCompareError.includes(valuePrepared)
+      ? valuesPrepared.some(v => valueToCompareError.includes(v))
+      : valuesPrepared.some(v => !valueToCompareError.includes(v))
 
   if (error) {
     return { type: 'danger', text: errorText }

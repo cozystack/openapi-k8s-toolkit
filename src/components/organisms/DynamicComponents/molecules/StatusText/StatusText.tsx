@@ -14,7 +14,7 @@ export const StatusText: FC<{ data: TDynamicComponentsAppTypeMap['StatusText']; 
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
-    value,
+    values,
     criteriaSuccess,
     criteriaError,
     valueToCompareSuccess,
@@ -37,7 +37,7 @@ export const StatusText: FC<{ data: TDynamicComponentsAppTypeMap['StatusText']; 
   const errorTextPrepared = parseAll({ text: errorText, replaceValues, multiQueryData })
   const fallbackTextPrepared = parseAll({ text: fallbackText, replaceValues, multiQueryData })
 
-  const valuePrepared = parseAll({ text: value, replaceValues, multiQueryData })
+  const valuesPrepared = values.map(el => parseAll({ text: el, replaceValues, multiQueryData }))
 
   if (isMultiqueryLoading) {
     return <div>Loading multiquery</div>
@@ -54,7 +54,7 @@ export const StatusText: FC<{ data: TDynamicComponentsAppTypeMap['StatusText']; 
   }
 
   const { type, text } = getResult({
-    valuePrepared,
+    valuesPrepared,
     criteriaSuccess,
     criteriaError,
     valueToCompareSuccess,
