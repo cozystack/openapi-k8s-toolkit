@@ -51,7 +51,7 @@ export type TDynamicComponentsAppTypeMap = {
   Spacer: { id: number | string } & TSpacerProps
   StatusText: {
     id: number | string
-    value: string
+    values: string[]
     criteriaSuccess: 'equals' | 'notEquals'
     criteriaError: 'equals' | 'notEquals'
     valueToCompareSuccess: unknown[]
