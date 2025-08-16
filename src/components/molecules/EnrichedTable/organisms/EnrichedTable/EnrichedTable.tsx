@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React, { FC, ReactNode } from 'react'
+import jp from 'jsonpath'
 import { useNavigate } from 'react-router-dom'
 import { Table, TableProps, PaginationProps, TablePaginationConfig } from 'antd'
 import { AnyObject } from 'antd/es/_util/type'
@@ -19,9 +20,9 @@ export type TEnrichedTableProps = {
   dataSource: TableProps['dataSource']
   columns: TableProps['columns']
   pathToNavigate?: string
-  recordKeysForNavigation?: string[]
-  recordKeysForNavigationSecond?: string[]
-  recordKeysForNavigationThird?: string[]
+  recordKeysForNavigation?: string | string[] // jsonpath or keys as string[]
+  recordKeysForNavigationSecond?: string | string[] // jsonpath or keys as string[]
+  recordKeysForNavigationThird?: string | string[] // jsonpath or keys as string[]
   additionalPrinterColumnsUndefinedValues?: TAdditionalPrinterColumnsUndefinedValues
   additionalPrinterColumnsTrimLengths?: TAdditionalPrinterColumnsTrimLengths
   additionalPrinterColumnsColWidths?: TAdditionalPrinterColumnsColWidths
@@ -144,13 +145,27 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
             return {
               onClick: () => {
                 if (pathToNavigate && recordKeysForNavigation) {
-                  const recordValueRaw = get(record, recordKeysForNavigation)
-                  const recordValueRawSecond = recordKeysForNavigationSecond
-                    ? get(record, recordKeysForNavigationSecond)
-                    : 'no-second-record-keys'
-                  const recordValueRawThird = recordKeysForNavigationThird
-                    ? get(record, recordKeysForNavigationThird)
-                    : 'no-second-record-keys'
+                  const recordValueRaw = Array.isArray(recordKeysForNavigation)
+                    ? get(record, recordKeysForNavigation)
+                    : jp.query(record, `$${recordKeysForNavigation}`)[0]
+
+                  let recordValueRawSecond: string = ''
+                  if (recordKeysForNavigationSecond) {
+                    recordValueRawSecond = Array.isArray(recordKeysForNavigationSecond)
+                      ? get(record, recordKeysForNavigationSecond)
+                      : jp.query(record, `$${recordKeysForNavigationSecond}`)[0]
+                  } else {
+                    recordValueRawSecond = 'no-second-record-keys'
+                  }
+
+                  let recordValueRawThird: string = ''
+                  if (recordKeysForNavigationThird) {
+                    recordValueRawThird = Array.isArray(recordKeysForNavigationThird)
+                      ? get(record, recordKeysForNavigationThird)
+                      : jp.query(record, `$${recordKeysForNavigationThird}`)[0]
+                  } else {
+                    recordValueRawThird = 'no-second-record-keys'
+                  }
 
                   const recordValue =
                     typeof recordValueRaw === 'string' ? recordValueRaw : JSON.stringify(recordValueRaw)

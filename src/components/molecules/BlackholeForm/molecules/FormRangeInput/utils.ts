@@ -1,3 +1,4 @@
+import jp from 'jsonpath'
 import _ from 'lodash'
 import { TRangeInputCustomValuesBlock } from 'localTypes/formExtensions'
 import { parseQuotaValueCpu, parseQuotaValueMemoryAndStorage } from 'utils/parseForQuotaValues'
@@ -8,10 +9,12 @@ const getValue = ({
   logic,
 }: {
   valueObj: object
-  keysToValue: string[]
+  keysToValue: string | string[]
   logic: 'memoryLike' | 'cpuLike'
 }): number => {
-  const dirtyValue = _.get(valueObj, keysToValue)
+  const dirtyValue = Array.isArray(keysToValue)
+    ? _.get(valueObj, keysToValue)
+    : jp.query(valueObj, `$${keysToValue}`)[0]
   if (logic === 'cpuLike') {
     return parseQuotaValueCpu(dirtyValue)
   }

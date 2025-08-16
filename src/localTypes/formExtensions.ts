@@ -16,21 +16,21 @@ export type TRangeInputCustomValue =
   | {
       type: 'substractResourceValues'
       firstValueUri: string
-      firstValuesKeysToValue: string[]
+      firstValuesKeysToValue: string | string[] // jsonpath or keys as string[]
       secondValueUri: string
-      secondValuesKeysToValue: string[]
+      secondValuesKeysToValue: string | string[] // jsonpath or keys as string[]
     }
   | {
       type: 'addResourceValues'
       firstValueUri: string
-      firstValuesKeysToValue: string[]
+      firstValuesKeysToValue: string | string[] // jsonpath or keys as string[]
       secondValueUri: string
-      secondValuesKeysToValue: string[]
+      secondValuesKeysToValue: string | string[] // jsonpath or keys as string[]
     }
   | {
       type: 'resourceValue'
       valueUri: string
-      keysToValue: string[]
+      keysToValue: string | string[] // jsonpath or keys as string[]
     }
 
 export type TRangeInputCustomValuesBlock = {
@@ -47,11 +47,11 @@ export type TRangeInputCustomProps = {
 
 export type TListInputCustomProps = {
   valueUri: string
-  keysToValue: string[]
-  keysToLabel?: string[]
+  keysToValue: string | string[] // jsonpath or keys as string[]
+  keysToLabel?: string | string[] // jsonpath or keys as string[]
   mode?: 'multiple' | 'tags'
   criteria?: {
-    keysToValue: string[]
+    keysToValue: string | string[] // jsonpath or keys as string[]
     type: 'equals' | 'notEquals'
     value: unknown
     keepPrefilled?: boolean

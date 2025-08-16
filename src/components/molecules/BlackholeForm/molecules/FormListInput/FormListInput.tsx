@@ -1,6 +1,7 @@
 /* eslint-disable no-unneeded-ternary */
 /* eslint-disable no-nested-ternary */
 import React, { FC, useEffect, useRef } from 'react'
+import jp from 'jsonpath'
 import { Flex, Typography, Tooltip, Select, Form, Button } from 'antd'
 import _ from 'lodash'
 import { TFormName, TPersistedControls, TUrlParams } from 'localTypes/form'
@@ -165,7 +166,9 @@ export const FormListInput: FC<TFormListInputProps> = ({
   const items = !isErrorOptionsObj && !isLoadingOptionsObj && optionsObj ? _.get(optionsObj, ['items']) : []
   const filteredItems = customProps.criteria
     ? items.filter((item: object) => {
-        const objValue = _.get(item, customProps.criteria?.keysToValue || [])
+        const objValue = Array.isArray(customProps.criteria?.keysToValue)
+          ? _.get(item, customProps.criteria?.keysToValue || [])
+          : jp.query(item, `$${customProps.criteria?.keysToValue}`)[0]
         if (customProps.criteria?.type === 'equals') {
           return objValue === customProps.criteria?.value
         }
@@ -174,17 +177,37 @@ export const FormListInput: FC<TFormListInputProps> = ({
     : items
   const itemForPrefilledValue =
     customProps.criteria?.keepPrefilled !== false
-      ? items.find((item: object) => _.get(item, customProps.keysToValue) === fieldValue)
+      ? items.find((item: object) => {
+          if (Array.isArray(customProps.keysToValue)) {
+            return _.get(item, customProps.keysToValue) === fieldValue
+          }
+          return jp.query(item, `$${customProps.keysToValue}`)[0] === fieldValue
+        })
       : undefined
   const filteredItemsAndPrefilledValue = itemForPrefilledValue
     ? [itemForPrefilledValue, ...filteredItems]
     : filteredItems
   const options = Array.isArray(filteredItemsAndPrefilledValue)
     ? filteredItemsAndPrefilledValue
-        .map((item: object) => ({
-          value: _.get(item, customProps.keysToValue),
-          label: customProps.keysToLabel ? _.get(item, customProps.keysToLabel) : _.get(item, customProps.keysToValue),
-        }))
+        .map((item: object) => {
+          const value = Array.isArray(customProps.keysToValue)
+            ? _.get(item, customProps.keysToValue)
+            : jp.query(item, `$${customProps.keysToValue}`)[0]
+          let label: string = ''
+          if (customProps.keysToLabel) {
+            label = Array.isArray(customProps.keysToLabel)
+              ? _.get(item, customProps.keysToLabel)
+              : jp.query(item, `$${customProps.keysToLabel}`)[0]
+          } else {
+            label = Array.isArray(customProps.keysToValue)
+              ? _.get(item, customProps.keysToValue)
+              : jp.query(item, `$${customProps.keysToValue}`)[0]
+          }
+          return {
+            value,
+            label,
+          }
+        })
         .map(({ value, label }: { value: unknown; label: unknown }) => ({
           label: typeof label === 'string' ? label : JSON.stringify(label),
           value: typeof value === 'string' ? value : JSON.stringify(value),

@@ -66,12 +66,12 @@ export type TDynamicComponentsAppTypeMap = {
   EnrichedTable: {
     id: number | string
     fetchUrl: string
-    pathToItems: string[]
+    pathToItems: string | string[] // jsonpath or keys as string[]
     clusterNamePartOfUrl: string
     labelsSelector?: Record<string, string>
     labelsSelectorFull?: {
       reqIndex: number
-      pathToLabels: string[]
+      pathToLabels: string | string[] // jsonpath or keys as string[]
     }
     fieldSelector?: {
       fieldName: string
