@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
+/* eslint-disable no-console */
 import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
-import { Popover, notification, Flex, Button } from 'antd'
-import { UncontrolledSelect, CursorPointerTag, EditIcon } from 'components/atoms'
+import { notification, Flex, Button } from 'antd'
+import { EditIcon } from 'components/atoms'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
@@ -61,7 +62,7 @@ export const Taints: FC<{ data: TDynamicComponentsAppTypeMap['Taints']; children
   const jsonRoot = multiQueryData[`req${reqIndex}`]
 
   if (jsonRoot === undefined) {
-    console.log('Item Counter: ${id}: No root for json path')
+    console.log(`Item Counter: ${id}: No root for json path`)
     return <span style={style}>{errorText}</span>
   }
 

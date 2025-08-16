@@ -10,6 +10,8 @@ const CustomSelect = styled(Select)<TCustomSelectProps>`
   margin: 0;
   padding: 4px;
 
+  /* stylelint-disable declaration-no-important */
+
   &&& .ant-select-selector {
     background: none;
     padding-inline-end: ${({ $paddingContainerEnd }) => $paddingContainerEnd || '12px'} !important;

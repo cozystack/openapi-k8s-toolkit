@@ -54,7 +54,7 @@ export const EditModal: FC<TEditModalProps> = ({
         taints: values || [],
       })
     }
-  }, [open, form])
+  }, [open, values, form])
 
   const submit = () => {
     form

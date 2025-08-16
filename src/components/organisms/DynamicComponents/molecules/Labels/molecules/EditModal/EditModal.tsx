@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint-disable react/no-unstable-nested-components */
 import React, { FC, useState, useEffect, CSSProperties } from 'react'
 import { Modal, Form, Alert, Tag, Popover } from 'antd'
 import { useQueryClient } from '@tanstack/react-query'
@@ -6,8 +7,8 @@ import { TRequestError } from 'localTypes/api'
 import { ResetedFormItem, CustomSizeTitle } from 'components/molecules/BlackholeForm/atoms'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { CustomSelect, Spacer } from 'components/atoms'
-import { truncate } from '../../utils'
 import { patchEntryWithReplaceOp } from 'api/forms'
+import { truncate } from '../../utils'
 
 type TEditModalProps = {
   open: boolean
@@ -58,7 +59,7 @@ export const EditModal: FC<TEditModalProps> = ({
         labels: values ? Object.entries(values).map(([key, value]) => `${key}=${value}`) : [],
       })
     }
-  }, [open, form])
+  }, [open, values, form])
 
   const submit = () => {
     form

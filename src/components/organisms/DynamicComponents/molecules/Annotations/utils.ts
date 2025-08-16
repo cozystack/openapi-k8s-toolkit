@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TStringNumberRecord } from './types'
 
-const flattenOnce = (arr: unknown[][]): unknown[] => arr.reduce<unknown[]>((acc, row) => [...acc, ...row], [])
-
 const isObject = (x: unknown): x is object => typeof x === 'object' && x !== null
 
 const isPlainObject = (x: unknown): x is Record<string, unknown> =>

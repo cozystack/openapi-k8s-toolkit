@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
+/* eslint-disable no-console */
 import React, { FC } from 'react'
 import jp from 'jsonpath'
 import { Typography } from 'antd'
