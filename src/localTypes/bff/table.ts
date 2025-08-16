@@ -18,7 +18,7 @@ export type TPrepareTableRes = {
   additionalPrinterColumnsColWidths?: TAdditionalPrinterColumnsColWidths
 
   pathToNavigate?: string
-  recordKeysForNavigation?: string[]
-  recordKeysForNavigationSecond?: string[]
-  recordKeysForNavigationThird?: string[]
+  recordKeysForNavigation?: string | string[] // jsonpath or keys as string[]
+  recordKeysForNavigationSecond?: string | string[] // jsonpath or keys as string[]
+  recordKeysForNavigationThird?: string | string[] // jsonpath or keys as string[]
 }

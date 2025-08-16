@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
+import jp from 'jsonpath'
 import _ from 'lodash'
 import { Flex, Spin } from 'antd'
 import { EditIcon, DeleteIcon } from 'components/atoms'
@@ -59,7 +60,9 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
   }
 
   if (labelsSelectorFull) {
-    const value = _.get(multiQueryData[`req${labelsSelectorFull.reqIndex}`], labelsSelectorFull.pathToLabels)
+    const value = Array.isArray(labelsSelectorFull.pathToLabels)
+      ? _.get(multiQueryData[`req${labelsSelectorFull.reqIndex}`], labelsSelectorFull.pathToLabels)
+      : jp.query(multiQueryData[`req${labelsSelectorFull.reqIndex}`], `$${labelsSelectorFull.pathToLabels}`)[0]
     const serializedLabels = serializeLabels(value)
     labelsSuffix = serializeLabels.length > 0 ? `?labelSelector=${serializedLabels}` : undefined
   }
@@ -110,7 +113,9 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     return <div>Error: {JSON.stringify(fetchedDataError)}</div>
   }
 
-  const items = _.get(fetchedData, pathToItems)
+  const items = Array.isArray(pathToItems)
+    ? _.get(fetchedData, pathToItems)
+    : jp.query(fetchedData, `$${pathToItems}`)[0]
 
   if (!items) {
     return <div>No data on this path {JSON.stringify(pathToItems)}</div>
