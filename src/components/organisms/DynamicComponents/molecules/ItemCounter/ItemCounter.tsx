@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
+/* eslint-disable no-console */
 import React, { FC } from 'react'
 import jp from 'jsonpath'
 import { TDynamicComponentsAppTypeMap } from '../../types'
@@ -46,7 +47,7 @@ export const ItemCounter: FC<{ data: TDynamicComponentsAppTypeMap['ItemCounter']
   const jsonRoot = multiQueryData[`req${reqIndex}`]
 
   if (jsonRoot === undefined) {
-    console.log('Item Counter: ${id}: No root for json path')
+    console.log(`Item Counter: ${id}: No root for json path`)
     return <span style={style}>{errorText}</span>
   }
 

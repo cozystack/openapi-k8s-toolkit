@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect, CSSProperties } from 'react'
-import { Modal, Form, Alert, Space, Input, Select, Button, Tooltip, Row, Col } from 'antd'
-import { InfoCircleOutlined } from '@ant-design/icons'
+import { Modal, Form, Alert, Input, Button, Row, Col } from 'antd'
 import { useQueryClient } from '@tanstack/react-query'
 import { TRequestError } from 'localTypes/api'
 import { ResetedFormItem, CustomSizeTitle } from 'components/molecules/BlackholeForm/atoms'
@@ -60,6 +59,7 @@ export const EditModal: FC<TEditModalProps> = ({
           : [],
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, form])
 
   const submit = () => {

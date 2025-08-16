@@ -54,6 +54,7 @@ export const EditModal: FC<TEditModalProps> = ({
         taints: values || [],
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, form])
 
   const submit = () => {

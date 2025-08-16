@@ -54,6 +54,8 @@ export type TDynamicComponentsAppTypeMap = {
     values: string[]
     criteriaSuccess: 'equals' | 'notEquals'
     criteriaError: 'equals' | 'notEquals'
+    stategySuccess?: 'some' | 'every' // every - default
+    strategyError?: 'some' | 'every' // every - default
     valueToCompareSuccess: unknown[]
     valueToCompareError: unknown[]
     successText: string

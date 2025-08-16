@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import React, { FC, useState, useEffect, CSSProperties } from 'react'
-import { Modal, Form, Alert, Space, Input, Select, Button, Tooltip, Row, Col } from 'antd'
+import { Modal, Form, Alert, Input, Select, Button, Tooltip, Row, Col } from 'antd'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { TRequestError } from 'localTypes/api'
@@ -55,6 +55,7 @@ export const EditModal: FC<TEditModalProps> = ({
         tolerations: values || [],
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, form])
 
   const submit = () => {
