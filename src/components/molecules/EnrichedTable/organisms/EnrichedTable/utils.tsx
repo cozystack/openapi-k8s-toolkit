@@ -7,22 +7,119 @@ import {
   TAdditionalPrinterColumnsColWidths,
   TAdditionalPrinterColumnsTrimLengths,
   TAdditionalPrinterColumnsUndefinedValues,
+  TAdditionalPrinterColumnsKeyTypeProps,
 } from 'localTypes/richTable'
 import { TJSON } from 'localTypes/JSON'
 import { isFlatObject } from 'utils/isFlatObject'
+import { TableFactory } from '../../molecules'
 import { ShortenedTextWithTooltip, FilterDropdown, TrimmedTags, TextAlignContainer, TinyButton } from './atoms'
 import { TInternalDataForControls } from './types'
+
+export const getCellRender = ({
+  value,
+  record,
+  possibleTrimLength,
+  possibleUndefinedValue,
+  possibleCustomTypeWithProps,
+  theme,
+}: {
+  value: TJSON
+  record: unknown
+  possibleTrimLength?: number
+  possibleUndefinedValue?: string
+  possibleCustomTypeWithProps?: {
+    type?: string
+    customProps?: unknown
+  }
+  theme: 'dark' | 'light'
+}): JSX.Element => {
+  if (possibleCustomTypeWithProps) {
+    const { type, customProps } = possibleCustomTypeWithProps
+    if (type === 'string') {
+      return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={JSON.stringify(value)} />
+    }
+    if (type === 'float' || type === 'integer') {
+      return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={String(Number(value))} />
+    }
+    if (type === 'boolean') {
+      return <div>{Boolean(value)}</div>
+    }
+    if (type === 'array') {
+      let tags: string[] = []
+      if (typeof value === 'object' && !Array.isArray(value) && value !== null && isFlatObject(value)) {
+        tags = Object.entries(value).map(([key, value]) => `${key}: ${String(value)}`)
+      } else if (typeof value === 'object' && !Array.isArray(value) && value !== null && !isFlatObject(value)) {
+        tags = Object.entries(value).map(([key, value]) => `${key}: ${String(value)}`)
+      } else if (Array.isArray(value)) {
+        tags = value.map(el => (el === null ? 'null' : el.toString()))
+      } else if (value === undefined) {
+        if (possibleUndefinedValue) {
+          tags = [possibleUndefinedValue]
+        }
+        if (value === undefined) {
+          tags = ['Raw: undefined']
+        }
+      } else {
+        tags = [String(value)]
+      }
+      return <TrimmedTags tags={tags} trimLength={possibleTrimLength} />
+    }
+    if (type === 'factory') {
+      return <TableFactory record={record} customProps={customProps} theme={theme} />
+    }
+  }
+  if (value === null) {
+    return <div>null</div>
+  }
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    if (isFlatObject(value)) {
+      return (
+        <TrimmedTags
+          tags={Object.entries(value).map(([key, value]) => `${key}: ${String(value)}`)}
+          trimLength={possibleTrimLength}
+        />
+      )
+    }
+    return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={JSON.stringify(value)} />
+  }
+  if (Array.isArray(value)) {
+    if (value.every(el => el && !Array.isArray(el))) {
+      return <TrimmedTags tags={value.map(el => (el ? el.toLocaleString() : 'null'))} trimLength={possibleTrimLength} />
+    }
+    return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={value.join(', ')} />
+  }
+  if (typeof value === 'boolean') {
+    return value ? <CheckOutlined style={{ color: 'green' }} /> : <CloseOutlined style={{ color: 'red' }} />
+  }
+  if (typeof value === 'number') {
+    return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={String(value)} />
+  }
+  if (typeof value === 'string') {
+    return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={value} />
+  }
+  if (value === undefined && possibleUndefinedValue) {
+    return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={possibleUndefinedValue} />
+  }
+  if (value === undefined) {
+    return <div>Raw: undefined</div>
+  }
+  return <div>Raw: {JSON.stringify(value)}</div>
+}
 
 export const getEnrichedColumns = ({
   columns,
   additionalPrinterColumnsUndefinedValues,
   additionalPrinterColumnsTrimLengths,
   additionalPrinterColumnsColWidths,
+  additionalPrinterColumnsKeyTypeProps,
+  theme,
 }: {
   columns: TableProps['columns']
   additionalPrinterColumnsUndefinedValues?: TAdditionalPrinterColumnsUndefinedValues
   additionalPrinterColumnsTrimLengths?: TAdditionalPrinterColumnsTrimLengths
   additionalPrinterColumnsColWidths?: TAdditionalPrinterColumnsColWidths
+  additionalPrinterColumnsKeyTypeProps?: TAdditionalPrinterColumnsKeyTypeProps
+  theme: 'dark' | 'light'
 }): TableProps['columns'] | undefined => {
   if (!columns) {
     return undefined
@@ -32,54 +129,22 @@ export const getEnrichedColumns = ({
     const possibleUndefinedValue = additionalPrinterColumnsUndefinedValues?.find(({ key }) => key === el.key)?.value
     const possibleTrimLength = additionalPrinterColumnsTrimLengths?.find(({ key }) => key === el.key)?.value
     const possibleColWidth = additionalPrinterColumnsColWidths?.find(({ key }) => key === el.key)?.value
+    const possibleCustomTypeWithProps =
+      additionalPrinterColumnsKeyTypeProps && el.key
+        ? additionalPrinterColumnsKeyTypeProps[el.key.toString()]
+        : undefined
 
     return {
       ...el,
-      render: (value: TJSON) => {
-        if (value === null) {
-          return <div>null</div>
-        }
-        if (typeof value === 'object' && !Array.isArray(value)) {
-          if (isFlatObject(value)) {
-            return (
-              <TrimmedTags
-                tags={Object.entries(value).map(([key, value]) => `${key}: ${String(value)}`)}
-                trimLength={possibleTrimLength}
-              />
-            )
-          }
-          return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={JSON.stringify(value)} />
-        }
-        if (Array.isArray(value)) {
-          if (value.every(el => el && !Array.isArray(el))) {
-            return (
-              <TrimmedTags
-                tags={value.map(el => (el ? el.toLocaleString() : 'null'))}
-                trimLength={possibleTrimLength}
-              />
-            )
-          }
-          return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={value.join(', ')} />
-        }
-        if (typeof value === 'boolean') {
-          return value ? <CheckOutlined style={{ color: 'green' }} /> : <CloseOutlined style={{ color: 'red' }} />
-        }
-        if (typeof value === 'number') {
-          return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={String(value)} />
-        }
-        if (typeof value === 'string') {
-          return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={value} />
-        }
-        if (value === undefined && el.key && additionalPrinterColumnsUndefinedValues) {
-          if (possibleUndefinedValue) {
-            return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={possibleUndefinedValue} />
-          }
-        }
-        if (value === undefined) {
-          return <div>Raw: undefined</div>
-        }
-        return <div>Raw: {JSON.stringify(value)}</div>
-      },
+      render: (value: TJSON, record: unknown) =>
+        getCellRender({
+          value,
+          record,
+          possibleTrimLength,
+          possibleUndefinedValue,
+          possibleCustomTypeWithProps,
+          theme,
+        }),
       width: possibleColWidth,
       filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
         <FilterDropdown

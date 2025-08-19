@@ -1,0 +1,1 @@
+export { TableFactory } from './TableFactory'

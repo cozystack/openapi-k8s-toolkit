@@ -7,6 +7,7 @@ import { AnyObject } from 'antd/es/_util/type'
 import { get } from 'lodash'
 import {
   TAdditionalPrinterColumnsColWidths,
+  TAdditionalPrinterColumnsKeyTypeProps,
   TAdditionalPrinterColumnsTrimLengths,
   TAdditionalPrinterColumnsUndefinedValues,
 } from 'localTypes/richTable'
@@ -26,6 +27,7 @@ export type TEnrichedTableProps = {
   additionalPrinterColumnsUndefinedValues?: TAdditionalPrinterColumnsUndefinedValues
   additionalPrinterColumnsTrimLengths?: TAdditionalPrinterColumnsTrimLengths
   additionalPrinterColumnsColWidths?: TAdditionalPrinterColumnsColWidths
+  additionalPrinterColumnsKeyTypeProps?: TAdditionalPrinterColumnsKeyTypeProps
   selectData?: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onChange: (selectedRowKeys: React.Key[], selectedRowsData: { name: string; endpoint: string }[]) => void
@@ -56,6 +58,7 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
   additionalPrinterColumnsUndefinedValues,
   additionalPrinterColumnsTrimLengths,
   additionalPrinterColumnsColWidths,
+  additionalPrinterColumnsKeyTypeProps,
   selectData,
   withoutControls = false,
   tableProps,
@@ -71,6 +74,8 @@ export const EnrichedTable: FC<TEnrichedTableProps> = ({
     additionalPrinterColumnsUndefinedValues,
     additionalPrinterColumnsTrimLengths,
     additionalPrinterColumnsColWidths,
+    additionalPrinterColumnsKeyTypeProps,
+    theme,
   })
 
   if (!enrichedColumns) {

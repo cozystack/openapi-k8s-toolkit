@@ -35,15 +35,18 @@ export const prepare = ({
   let columns: TableProps['columns'] = []
   if (additionalPrinterColumns) {
     columns = additionalPrinterColumns.map(({ name, jsonPath }) => {
-      let newDataIndex: string | undefined = ''
+      let newDataIndex: string | undefined
+      let fieldsPath: string[] | undefined
 
-      if (jsonPath.includes('[')) {
-        // newDataIndex = uuidv4()
-        newDataIndex = JSON.stringify(jsonPath)
-        customFields.push({ dataIndex: newDataIndex, jsonPath })
+      if (jsonPath) {
+        if (jsonPath.includes('[')) {
+          // newDataIndex = uuidv4()
+          newDataIndex = JSON.stringify(jsonPath)
+          customFields.push({ dataIndex: newDataIndex, jsonPath })
+        }
+
+        fieldsPath = jsonPath.split('.').slice(1)
       }
-
-      const fieldsPath = jsonPath.split('.').slice(1)
       return {
         title: name,
         dataIndex: newDataIndex || fieldsPath,

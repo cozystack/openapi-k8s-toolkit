@@ -18,10 +18,11 @@ const MultiQueryContext = createContext<MultiQueryContextType | undefined>(undef
 
 type TMultiQueryProviderProps = {
   urls: string[]
+  dataToApplyToContext: unknown
   children: ReactNode
 }
 
-export const MultiQueryProvider: FC<TMultiQueryProviderProps> = ({ urls, children }) => {
+export const MultiQueryProvider: FC<TMultiQueryProviderProps> = ({ urls, dataToApplyToContext, children }) => {
   const queries = useQueries({
     queries: urls.map((url, index) => ({
       queryKey: ['multi', index, url],
@@ -34,14 +35,23 @@ export const MultiQueryProvider: FC<TMultiQueryProviderProps> = ({ urls, childre
 
   const data: TDataMap = {}
   const errors: (Error | null)[] = []
+  let isLoading: boolean
+  let isError: boolean
 
-  queries.forEach((q, i) => {
-    data[`req${i}`] = q.data
-    errors[i] = q.error ?? null
-  })
+  if (!dataToApplyToContext) {
+    queries.forEach((q, i) => {
+      data[`req${i}`] = q.data
+      errors[i] = q.error ?? null
+    })
 
-  const isLoading = queries.some(q => q.isLoading)
-  const isError = queries.some(q => q.isError)
+    isLoading = queries.some(q => q.isLoading)
+    isError = queries.some(q => q.isError)
+  } else {
+    data.req0 = dataToApplyToContext
+    isLoading = false
+    isError = false
+  }
+
   const value = useMemo(
     () => ({ data, isLoading, isError, errors }),
     /*
