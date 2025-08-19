@@ -3,6 +3,7 @@ import {
   TAdditionalPrinterColumnsUndefinedValues,
   TAdditionalPrinterColumnsTrimLengths,
   TAdditionalPrinterColumnsColWidths,
+  TAdditionalPrinterColumnsKeyTypeProps,
 } from 'localTypes/richTable'
 
 export type TPrepareTableReq = {
@@ -16,6 +17,7 @@ export type TPrepareTableRes = {
   additionalPrinterColumnsUndefinedValues?: TAdditionalPrinterColumnsUndefinedValues
   additionalPrinterColumnsTrimLengths?: TAdditionalPrinterColumnsTrimLengths
   additionalPrinterColumnsColWidths?: TAdditionalPrinterColumnsColWidths
+  additionalPrinterColumnsKeyTypeProps?: TAdditionalPrinterColumnsKeyTypeProps
 
   pathToNavigate?: string
   recordKeysForNavigation?: string | string[] // jsonpath or keys as string[]

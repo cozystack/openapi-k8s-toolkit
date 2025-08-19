@@ -11,12 +11,13 @@ import { MultiQueryProvider } from './multiQueryProvider'
 export const DynamicRendererWithProviders = <T extends TItemTypeMap>(
   props: TDynamicRendererProps<T> & {
     urlsToFetch: string[]
+    dataToApplyToContext?: unknown
     theme: 'dark' | 'light'
     nodeTerminalDefaultProfile?: string
   },
 ): ReactElement => {
   const location = useLocation()
-  const { urlsToFetch, theme, nodeTerminalDefaultProfile } = props
+  const { urlsToFetch, dataToApplyToContext, theme, nodeTerminalDefaultProfile } = props
 
   const preparedUrlsToFetch = prepareUrlsToFetchForDynamicRenderer({
     urls: urlsToFetch,
@@ -27,7 +28,7 @@ export const DynamicRendererWithProviders = <T extends TItemTypeMap>(
     <ThemeProvider theme={theme}>
       <FactoryConfigContextProvider value={{ nodeTerminalDefaultProfile }}>
         <PartsOfUrlProvider value={{ partsOfUrl: location.pathname.split('/') }}>
-          <MultiQueryProvider urls={preparedUrlsToFetch}>
+          <MultiQueryProvider urls={preparedUrlsToFetch} dataToApplyToContext={dataToApplyToContext}>
             <DynamicRenderer {...props} />
           </MultiQueryProvider>
         </PartsOfUrlProvider>
