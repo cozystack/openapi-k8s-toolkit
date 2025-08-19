@@ -36,7 +36,15 @@ export const getCellRender = ({
   if (possibleCustomTypeWithProps) {
     const { type, customProps } = possibleCustomTypeWithProps
     if (type === 'string') {
-      return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={JSON.stringify(value)} />
+      if (typeof value === 'string') {
+        return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={value} />
+      }
+      return (
+        <ShortenedTextWithTooltip
+          trimLength={possibleTrimLength}
+          text={JSON.stringify(value) || possibleUndefinedValue || ''}
+        />
+      )
     }
     if (type === 'float' || type === 'integer') {
       return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={String(Number(value))} />
