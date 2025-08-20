@@ -305,11 +305,23 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     properties,
   ])
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prevInitialValues = useRef<Record<string, any>>()
+
   useEffect(() => {
-    if (initialValues) {
-      onValuesChangeCallback(initialValues)
+    const prev = prevInitialValues.current
+    if (!_.isEqual(prev, initialValues)) {
+      if (initialValues) {
+        console.log('fired initial values', initialValues)
+        onValuesChangeCallback(initialValues)
+      }
+      prevInitialValues.current = initialValues
     }
   }, [onValuesChangeCallback, initialValues])
+
+  useEffect(() => {
+    onValuesChangeCallback()
+  }, [onValuesChangeCallback, persistedKeys])
 
   /* expanded initial */
   useEffect(() => {
