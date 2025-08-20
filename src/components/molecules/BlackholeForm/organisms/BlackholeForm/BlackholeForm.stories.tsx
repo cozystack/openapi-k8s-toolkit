@@ -122,7 +122,25 @@ export const Default: Story = {
     urlParams: {},
     urlParamsForPermissions: {},
     formsPrefills: undefined,
-    staticProperties: { apiVersion: { type: 'string' }, kind: { type: 'string' } },
+    staticProperties: {
+      apiVersion: { type: 'string' },
+      kind: { type: 'string' },
+      spec: {
+        type: 'object',
+        properties: {
+          users: {
+            type: 'object',
+            additionalProperties: {
+              type: 'object',
+              properties: {
+                password: { type: 'string' },
+                replication: { type: 'boolean' },
+              },
+            },
+          },
+        },
+      },
+    },
     required: [],
     hiddenPaths: [],
     expandedPaths: undefined,
