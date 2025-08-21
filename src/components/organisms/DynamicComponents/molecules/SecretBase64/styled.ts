@@ -12,6 +12,7 @@ type TDisabledInputProps = {
 }
 
 const DisabledInput = styled(Input)<TDisabledInputProps>`
+  /* stylelint-disable declaration-no-important */
   cursor: ${({ $hidden }) => ($hidden ? 'default' : 'pointer')} !important;
 `
 
