@@ -35,6 +35,12 @@ export const getCellRender = ({
 }): JSX.Element => {
   if (possibleCustomTypeWithProps) {
     const { type, customProps } = possibleCustomTypeWithProps
+    if (value === undefined && possibleUndefinedValue) {
+      return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={possibleUndefinedValue} />
+    }
+    if (value === undefined) {
+      return <div>Raw: undefined</div>
+    }
     if (type === 'string') {
       if (typeof value === 'string') {
         return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={value} />
@@ -60,13 +66,6 @@ export const getCellRender = ({
         tags = Object.entries(value).map(([key, value]) => `${key}: ${String(value)}`)
       } else if (Array.isArray(value)) {
         tags = value.map(el => (el === null ? 'null' : el.toString()))
-      } else if (value === undefined) {
-        if (possibleUndefinedValue) {
-          tags = [possibleUndefinedValue]
-        }
-        if (value === undefined) {
-          tags = ['Raw: undefined']
-        }
       } else {
         tags = [String(value)]
       }
@@ -104,12 +103,6 @@ export const getCellRender = ({
   }
   if (typeof value === 'string') {
     return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={value} />
-  }
-  if (value === undefined && possibleUndefinedValue) {
-    return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={possibleUndefinedValue} />
-  }
-  if (value === undefined) {
-    return <div>Raw: undefined</div>
   }
   return <div>Raw: {JSON.stringify(value)}</div>
 }
