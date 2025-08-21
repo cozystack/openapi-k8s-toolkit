@@ -1,6 +1,7 @@
 // src/components/ParsedText/ParsedText.stories.tsx
 import type { Meta, StoryObj } from '@storybook/react'
 import React, { CSSProperties } from 'react'
+import { FlexProps } from 'antd'
 import Editor from '@monaco-editor/react'
 import * as yaml from 'yaml'
 import { SecretBase64 } from './SecretBase64'
@@ -8,11 +9,14 @@ import { SecretBase64 } from './SecretBase64'
 // Storybook-only mocks (aliased in .storybook/main.ts via viteFinal)
 import { MultiQueryMockProvider } from '../../../../../../.storybook/mocks/multiQueryProvider'
 import { PartsOfUrlMockProvider } from '../../../../../../.storybook/mocks/partsOfUrlContext'
+import { ThemeProvider } from '../../../../../../.storybook/mocks/themeContext'
 
 type SecretBase64Inner = {
   id: number | string
   base64Value: string // reqs
-  style?: CSSProperties
+  containerStyle?: CSSProperties
+  inputContainerStyle?: CSSProperties
+  flexProps?: Omit<FlexProps, 'children'>
 }
 
 type ProviderArgs = {
@@ -21,6 +25,7 @@ type ProviderArgs = {
   errors: { message: string }[]
   multiQueryData: Record<string, unknown> | null
   partsOfUrl: string[]
+  theme: 'dark' | 'light'
 }
 
 type Args = SecretBase64Inner & ProviderArgs
@@ -32,7 +37,9 @@ const meta: Meta<Args> = {
   argTypes: {
     id: { control: 'text', description: 'data.id' },
     base64Value: { control: 'text', description: 'data.base64Value' },
-    style: { control: 'object', description: 'data.style' },
+    containerStyle: { control: 'object', description: 'data.containerStyle' },
+    inputContainerStyle: { control: 'object', description: 'data.inputContainerStyle' },
+    flexProps: { control: 'object', description: 'data.flexProps' },
 
     // provider knobs
     isLoading: { control: 'boolean' },
@@ -40,41 +47,48 @@ const meta: Meta<Args> = {
     errors: { control: 'object' },
     multiQueryData: { control: 'object' },
     partsOfUrl: { control: 'object' },
+    theme: { options: ['dark', 'light'], control: { type: 'radio' } },
   },
 
   // Map flat args -> component's { data } prop
   render: args => (
     <>
-      <MultiQueryMockProvider
-        value={{
-          isLoading: args.isLoading,
-          isError: args.isError,
-          errors: args.errors,
-          data: args.multiQueryData,
-        }}
-      >
-        <PartsOfUrlMockProvider value={{ partsOfUrl: args.partsOfUrl }}>
-          <div style={{ padding: 16 }}>
-            <SecretBase64
-              data={{
-                id: args.id,
-                base64Value: args.base64Value,
-                style: args.style,
-              }}
-            />
-          </div>
-        </PartsOfUrlMockProvider>
-      </MultiQueryMockProvider>
+      <ThemeProvider value={{ theme: args.theme }}>
+        <MultiQueryMockProvider
+          value={{
+            isLoading: args.isLoading,
+            isError: args.isError,
+            errors: args.errors,
+            data: args.multiQueryData,
+          }}
+        >
+          <PartsOfUrlMockProvider value={{ partsOfUrl: args.partsOfUrl }}>
+            <div style={{ padding: 16 }}>
+              <SecretBase64
+                data={{
+                  id: args.id,
+                  base64Value: args.base64Value,
+                  containerStyle: args.containerStyle,
+                  inputContainerStyle: args.inputContainerStyle,
+                  flexProps: args.flexProps,
+                }}
+              />
+            </div>
+          </PartsOfUrlMockProvider>
+        </MultiQueryMockProvider>
+      </ThemeProvider>
       <Editor
         defaultLanguage="yaml"
         width="100%"
         height={150}
         value={yaml.stringify({
-          type: 'ConverterBytes',
+          type: 'SecretBase64',
           data: {
             id: args.id,
             base64Value: args.base64Value,
-            style: args.style,
+            containerStyle: args.containerStyle,
+            inputContainerStyle: args.inputContainerStyle,
+            flexProps: args.flexProps,
           },
         })}
         theme={'vs-dark'}
@@ -98,7 +112,6 @@ export const Default: Story = {
   args: {
     id: 'example-secterbase64',
     base64Value: "{reqsJsonPath[0]['.data.block.base64value']['-']}",
-    style: { fontSize: 24 },
 
     // providers
     isLoading: false,
@@ -115,14 +128,33 @@ export const Default: Story = {
       },
     },
     partsOfUrl: [],
+    theme: 'light',
   },
 }
 
-// export const Error: Story = {
-//   args: {
-//     ...Default.args,
-//     id: 'example-converter-bytes',
-//     bytesValue: "{reqsJsonPath[0]['.data.block.bytessss']['-']}",
-//     notANumberText: '0',
-//   },
-// }
+export const Wide: Story = {
+  args: {
+    ...Default.args,
+    inputContainerStyle: {
+      minWidth: '400px',
+    },
+  },
+}
+
+export const Narrow: Story = {
+  args: {
+    ...Default.args,
+    inputContainerStyle: {
+      width: '35px',
+    },
+  },
+}
+
+export const FlexGap: Story = {
+  args: {
+    ...Default.args,
+    flexProps: {
+      gap: 50,
+    },
+  },
+}

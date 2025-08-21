@@ -1,20 +1,34 @@
 /* eslint-disable react/no-array-index-key */
-import React, { FC } from 'react'
+import React, { FC, useState, useRef } from 'react'
+import { Flex, Button, message } from 'antd'
+import type { InputRef } from 'antd'
+import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons'
+import { Spoiler } from 'spoiled'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
+import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
 import { parseAll } from '../utils'
+import { Styled } from './styled'
 
 export const SecretBase64: FC<{ data: TDynamicComponentsAppTypeMap['SecretBase64'] }> = ({ data }) => {
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
     base64Value,
-    style,
+    containerStyle,
+    inputContainerStyle,
+    flexProps,
   } = data
+
+  const [hidden, setHidden] = useState(true)
+  const inputRef = useRef<InputRef | null>(null)
+
+  const [messageApi, contextHolder] = message.useMessage()
 
   const { data: multiQueryData, isLoading, isError, errors } = useMultiQuery()
   const partsOfUrl = usePartsOfUrl()
+  const theme = useTheme()
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -38,5 +52,46 @@ export const SecretBase64: FC<{ data: TDynamicComponentsAppTypeMap['SecretBase64
 
   const decodedText = atob(parsedText)
 
-  return <span style={style}>{decodedText}</span>
+  const copyToClipboard = async () => {
+    try {
+      if (decodedText !== null && decodedText !== undefined) {
+        await navigator.clipboard.writeText(decodedText)
+        messageApi.success(`Copied: ${decodedText.substring(0, 5)}...`)
+      } else {
+        messageApi.error('Failed to copy text')
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error)
+      messageApi.error('Failed to copy text')
+    }
+  }
+
+  return (
+    <div style={containerStyle}>
+      <Flex gap={8} {...flexProps}>
+        <Styled.NoSelect style={inputContainerStyle}>
+          <Spoiler theme={theme} hidden={hidden}>
+            <Styled.DisabledInput
+              $hidden={hidden}
+              ref={inputRef}
+              onClick={() => {
+                if (!hidden) {
+                  inputRef.current?.focus({
+                    cursor: 'all',
+                  })
+                  copyToClipboard()
+                }
+              }}
+              value={decodedText}
+            />
+          </Spoiler>
+        </Styled.NoSelect>
+        <Button type="text" onClick={() => setHidden(!hidden)}>
+          {hidden ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+        </Button>
+      </Flex>
+      {contextHolder}
+    </div>
+  )
 }

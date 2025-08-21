@@ -30,6 +30,7 @@ const config: StorybookConfig = {
             __dirname,
             './mocks/partsOfUrlContext.tsx',
           ),
+          '../../../DynamicRendererWithProviders/themeContext': path.resolve(__dirname, './mocks/themeContext.tsx'),
         },
       },
       server: {
