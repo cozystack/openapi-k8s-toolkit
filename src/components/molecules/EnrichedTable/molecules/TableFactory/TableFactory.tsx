@@ -20,7 +20,9 @@ export const TableFactory: FC<TTableFactoryProps> = ({ record, customProps, them
       theme={theme}
       // nodeTerminalDefaultProfile={}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      items={customProps as any}
+      disableEventBubbling={(customProps as any).disableEventBubbling}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      items={(customProps as any).items}
       components={DynamicComponents}
     />
   )

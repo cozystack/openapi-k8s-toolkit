@@ -1,6 +1,7 @@
 import React, { ReactElement } from 'react'
 import { useLocation } from 'react-router-dom'
 import { TItemTypeMap } from 'localTypes/dynamicRender'
+import { CursorDefaultDiv } from 'components/atoms'
 import { prepareUrlsToFetchForDynamicRenderer } from 'utils/prepareUrlsToFetchForDynamicRenderer'
 import { DynamicRenderer, TDynamicRendererProps } from '../DynamicRenderer'
 import { ThemeProvider } from './themeContext'
@@ -14,10 +15,11 @@ export const DynamicRendererWithProviders = <T extends TItemTypeMap>(
     dataToApplyToContext?: unknown
     theme: 'dark' | 'light'
     nodeTerminalDefaultProfile?: string
+    disableEventBubbling?: boolean
   },
 ): ReactElement => {
   const location = useLocation()
-  const { urlsToFetch, dataToApplyToContext, theme, nodeTerminalDefaultProfile } = props
+  const { urlsToFetch, dataToApplyToContext, theme, nodeTerminalDefaultProfile, disableEventBubbling } = props
 
   const preparedUrlsToFetch = prepareUrlsToFetchForDynamicRenderer({
     urls: urlsToFetch,
@@ -25,14 +27,23 @@ export const DynamicRendererWithProviders = <T extends TItemTypeMap>(
   })
 
   return (
-    <ThemeProvider theme={theme}>
-      <FactoryConfigContextProvider value={{ nodeTerminalDefaultProfile }}>
-        <PartsOfUrlProvider value={{ partsOfUrl: location.pathname.split('/') }}>
-          <MultiQueryProvider urls={preparedUrlsToFetch} dataToApplyToContext={dataToApplyToContext}>
-            <DynamicRenderer {...props} />
-          </MultiQueryProvider>
-        </PartsOfUrlProvider>
-      </FactoryConfigContextProvider>
-    </ThemeProvider>
+    <CursorDefaultDiv
+      $default={disableEventBubbling}
+      onClick={e => {
+        if (disableEventBubbling) {
+          e.stopPropagation()
+        }
+      }}
+    >
+      <ThemeProvider theme={theme}>
+        <FactoryConfigContextProvider value={{ nodeTerminalDefaultProfile }}>
+          <PartsOfUrlProvider value={{ partsOfUrl: location.pathname.split('/') }}>
+            <MultiQueryProvider urls={preparedUrlsToFetch} dataToApplyToContext={dataToApplyToContext}>
+              <DynamicRenderer {...props} />
+            </MultiQueryProvider>
+          </PartsOfUrlProvider>
+        </FactoryConfigContextProvider>
+      </ThemeProvider>
+    </CursorDefaultDiv>
   )
 }
