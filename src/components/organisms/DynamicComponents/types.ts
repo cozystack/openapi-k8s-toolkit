@@ -4,6 +4,7 @@ import type { TextProps } from 'antd/es/typography/Text'
 import type { LinkProps } from 'antd/es/typography/Link'
 import { TContentCardProps, TSpacerProps } from 'components/atoms'
 import { TManageableSidebarWithDataProviderProps, TEnrichedTableProviderProps } from 'components/molecules'
+import { TUnitInput } from './molecules/ConverterBytes/types'
 
 export type TDynamicComponentsAppTypeMap = {
   DefaultDiv: { id: number | string } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
@@ -229,5 +230,28 @@ export type TDynamicComponentsAppTypeMap = {
     pathToValue?: string
     editModalWidth?: number | string
     cols: number[] // 3
+  }
+  ConverterBytes: {
+    id: number | string
+    bytesValue: string // reqs
+    unit?: TUnitInput // do not enter if wanna auto format
+    /** If true, returns "12.3 GiB" instead of just 12.3 */
+    format?: boolean
+    /** Max fraction digits when formatting (default 2) */
+    precision?: number
+    /** Locale for number formatting (default: undefined => user agent) */
+    locale?: string
+    standard?: 'si' | 'iec'
+    notANumberText?: string
+    style?: CSSProperties
+  }
+  SecretBase64Plain: {
+    id: number | string
+    base64Value?: string // reqs | one of required
+    plainTextValue?: string // reqs | one of required
+    containerStyle?: CSSProperties
+    inputContainerStyle?: CSSProperties
+    flexProps?: Omit<FlexProps, 'children'>
+    niceLooking?: boolean
   }
 }

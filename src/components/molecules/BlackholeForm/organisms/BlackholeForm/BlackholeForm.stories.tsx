@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { OpenAPIV2 } from 'openapi-types'
 import { TJSON } from '../../../../../localTypes/JSON'
 import { TFormPrefill } from '../../../../../localTypes/formExtensions'
@@ -72,7 +72,7 @@ const meta: Meta<Args> = {
   // Map flat args -> component's { data } prop
   render: args => (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <MemoryRouter>
         <Routes>
           <Route
             path="*"
@@ -103,7 +103,7 @@ const meta: Meta<Args> = {
             }
           />
         </Routes>
-      </BrowserRouter>{' '}
+      </MemoryRouter>
     </QueryClientProvider>
   ),
 

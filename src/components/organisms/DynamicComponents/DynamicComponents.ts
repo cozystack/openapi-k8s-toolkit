@@ -32,6 +32,8 @@ import {
   Taints,
   Tolerations,
   Annotations,
+  ConverterBytes,
+  SecretBase64Plain,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -68,4 +70,6 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   Taints,
   Tolerations,
   Annotations,
+  ConverterBytes,
+  SecretBase64Plain,
 }
