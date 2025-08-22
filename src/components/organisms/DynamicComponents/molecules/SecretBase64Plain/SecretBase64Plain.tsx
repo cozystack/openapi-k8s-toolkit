@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable react/no-array-index-key */
 import React, { FC, useState, useRef } from 'react'
 import { Flex, Button, message } from 'antd'
@@ -11,11 +12,12 @@ import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
 import { parseAll } from '../utils'
 import { Styled } from './styled'
 
-export const SecretBase64: FC<{ data: TDynamicComponentsAppTypeMap['SecretBase64'] }> = ({ data }) => {
+export const SecretBase64Plain: FC<{ data: TDynamicComponentsAppTypeMap['SecretBase64Plain'] }> = ({ data }) => {
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     id,
     base64Value,
+    plainTextValue,
     containerStyle,
     inputContainerStyle,
     flexProps,
@@ -48,9 +50,13 @@ export const SecretBase64: FC<{ data: TDynamicComponentsAppTypeMap['SecretBase64
     return acc
   }, {})
 
-  const parsedText = parseAll({ text: base64Value, replaceValues, multiQueryData })
+  const parsedText = parseAll({
+    text: base64Value || plainTextValue || 'Oneof required',
+    replaceValues,
+    multiQueryData,
+  })
 
-  const decodedText = atob(parsedText)
+  const decodedText = base64Value ? atob(parsedText) : parsedText
 
   const copyToClipboard = async () => {
     try {
@@ -58,12 +64,13 @@ export const SecretBase64: FC<{ data: TDynamicComponentsAppTypeMap['SecretBase64
         await navigator.clipboard.writeText(decodedText)
         messageApi.success(`Copied: ${decodedText.substring(0, 5)}...`)
       } else {
-        messageApi.error('Failed to copy text')
+        // messageApi.error('Failed to copy text')
+        console.log('Failed to copy text')
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error)
-      messageApi.error('Failed to copy text')
+      // messageApi.error('Failed to copy text')
     }
   }
 

@@ -245,9 +245,10 @@ export type TDynamicComponentsAppTypeMap = {
     notANumberText?: string
     style?: CSSProperties
   }
-  SecretBase64: {
+  SecretBase64Plain: {
     id: number | string
-    base64Value: string // reqs
+    base64Value?: string // reqs | one of required
+    plainTextValue?: string // reqs | one of required
     containerStyle?: CSSProperties
     inputContainerStyle?: CSSProperties
     flexProps?: Omit<FlexProps, 'children'>

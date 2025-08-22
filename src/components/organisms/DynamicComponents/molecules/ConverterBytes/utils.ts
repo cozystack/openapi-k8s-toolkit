@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // bytes -> requested unit (SI or IEC) with friendly aliases.
 import { TCanonicalUnit, TUnitInput, TConvertOptions } from './types'
 
@@ -42,11 +43,16 @@ const ALIASES: Readonly<Record<string, TCanonicalUnit>> = (() => {
   return Object.fromEntries([...entries, ...canon])
 })()
 
-/** Normalize any unit token to its canonical form, or throw. */
+/** Normalize any unit token to its canonical form, or console error and return GB. */
 const normalizeUnit = (u: TUnitInput): TCanonicalUnit => {
   const key = String(u).trim().toLowerCase()
   const canon = ALIASES[key]
-  if (!canon) throw new Error(`Unknown unit: "${u}"`)
+  // if (!canon) throw new Error(`Unknown unit: "${u}"`)
+  if (!canon) {
+    // eslint-disable-next-line no-console
+    console.error(`Unknown unit: "${u}"`)
+    return 'GB'
+  }
   return canon
 }
 
@@ -59,8 +65,16 @@ export const convertBytes: (bytes: number, unit: TUnitInput, opts?: TConvertOpti
   unit,
   opts,
 ) => {
-  if (!Number.isFinite(bytes)) throw new Error('bytes must be a finite number')
-  if (bytes < 0) throw new Error('bytes must be >= 0')
+  if (!Number.isFinite(bytes)) {
+    // throw new Error('bytes must be a finite number')
+    console.error('bytes must be a finite number')
+    return -1
+  }
+  if (bytes < 0) {
+    // throw new Error('bytes must be >= 0')
+    console.error('bytes must be >= 0')
+    return -1
+  }
 
   const canon = normalizeUnit(unit)
   const factor = UNIT_FACTORS[canon]
@@ -82,8 +96,16 @@ export const formatBytesAuto: (
   bytes: number,
   options?: { standard?: 'si' | 'iec'; precision?: number; locale?: string },
 ) => string = (bytes, { standard = 'si', precision = 2, locale } = {}) => {
-  if (!Number.isFinite(bytes)) throw new Error('bytes must be a finite number')
-  if (bytes < 0) throw new Error('bytes must be >= 0')
+  if (!Number.isFinite(bytes)) {
+    // throw new Error('bytes must be a finite number')
+    console.error('bytes must be a finite number')
+    return 'infinite'
+  }
+  if (bytes < 0) {
+    // throw new Error('bytes must be >= 0')
+    console.error('bytes must be >= 0')
+    return 'less then zero'
+  }
 
   const ladder: TCanonicalUnit[] =
     standard === 'iec' ? ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB'] : ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB']
