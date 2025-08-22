@@ -21,6 +21,7 @@ export const SecretBase64Plain: FC<{ data: TDynamicComponentsAppTypeMap['SecretB
     containerStyle,
     inputContainerStyle,
     flexProps,
+    niceLooking,
   } = data
 
   const [hidden, setHidden] = useState(true)
@@ -78,7 +79,23 @@ export const SecretBase64Plain: FC<{ data: TDynamicComponentsAppTypeMap['SecretB
     <div style={containerStyle}>
       <Flex gap={8} {...flexProps}>
         <Styled.NoSelect style={inputContainerStyle}>
-          <Spoiler theme={theme} hidden={hidden}>
+          {niceLooking ? (
+            <Spoiler theme={theme} hidden={hidden}>
+              <Styled.DisabledInput
+                $hidden={hidden}
+                ref={inputRef}
+                onClick={() => {
+                  if (!hidden) {
+                    inputRef.current?.focus({
+                      cursor: 'all',
+                    })
+                    copyToClipboard()
+                  }
+                }}
+                value={decodedText}
+              />
+            </Spoiler>
+          ) : (
             <Styled.DisabledInput
               $hidden={hidden}
               ref={inputRef}
@@ -90,9 +107,9 @@ export const SecretBase64Plain: FC<{ data: TDynamicComponentsAppTypeMap['SecretB
                   copyToClipboard()
                 }
               }}
-              value={decodedText}
+              value={hidden ? '' : decodedText}
             />
-          </Spoiler>
+          )}
         </Styled.NoSelect>
         <Button type="text" onClick={() => setHidden(!hidden)}>
           {hidden ? <EyeOutlined /> : <EyeInvisibleOutlined />}

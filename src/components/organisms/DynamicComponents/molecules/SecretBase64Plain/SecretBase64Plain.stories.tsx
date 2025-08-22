@@ -18,6 +18,7 @@ type SecretBase64PlainInner = {
   containerStyle?: CSSProperties
   inputContainerStyle?: CSSProperties
   flexProps?: Omit<FlexProps, 'children'>
+  niceLooking?: boolean
 }
 
 type ProviderArgs = {
@@ -42,6 +43,7 @@ const meta: Meta<Args> = {
     containerStyle: { control: 'object', description: 'data.containerStyle' },
     inputContainerStyle: { control: 'object', description: 'data.inputContainerStyle' },
     flexProps: { control: 'object', description: 'data.flexProps' },
+    niceLooking: { control: 'boolean' },
 
     // provider knobs
     isLoading: { control: 'boolean' },
@@ -74,6 +76,7 @@ const meta: Meta<Args> = {
                   containerStyle: args.containerStyle,
                   inputContainerStyle: args.inputContainerStyle,
                   flexProps: args.flexProps,
+                  niceLooking: args.niceLooking,
                 }}
               />
             </div>
@@ -85,7 +88,7 @@ const meta: Meta<Args> = {
         width="100%"
         height={150}
         value={yaml.stringify({
-          type: 'SecretBase64',
+          type: 'SecretBase64Plain',
           data: {
             id: args.id,
             base64Value: args.base64Value,
@@ -93,6 +96,7 @@ const meta: Meta<Args> = {
             containerStyle: args.containerStyle,
             inputContainerStyle: args.inputContainerStyle,
             flexProps: args.flexProps,
+            niceLooking: args.niceLooking,
           },
         })}
         theme={'vs-dark'}
@@ -169,5 +173,12 @@ export const PlainText: Story = {
     ...Default.args,
     base64Value: undefined,
     plainTextValue: "{reqsJsonPath[0]['.data.block.plainTextValue']['-']}",
+  },
+}
+
+export const NiceLooking: Story = {
+  args: {
+    ...Default.args,
+    niceLooking: true,
   },
 }

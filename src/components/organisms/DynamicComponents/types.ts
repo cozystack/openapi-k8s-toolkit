@@ -252,5 +252,6 @@ export type TDynamicComponentsAppTypeMap = {
     containerStyle?: CSSProperties
     inputContainerStyle?: CSSProperties
     flexProps?: Omit<FlexProps, 'children'>
+    niceLooking?: boolean
   }
 }
