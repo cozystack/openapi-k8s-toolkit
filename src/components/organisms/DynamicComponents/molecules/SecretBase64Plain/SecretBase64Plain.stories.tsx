@@ -19,6 +19,8 @@ type SecretBase64PlainInner = {
   inputContainerStyle?: CSSProperties
   flexProps?: Omit<FlexProps, 'children'>
   niceLooking?: boolean
+  notificationWidth?: string // default 300px
+  notificationText?: string // Text copied to clipboard
 }
 
 type ProviderArgs = {
@@ -44,6 +46,8 @@ const meta: Meta<Args> = {
     inputContainerStyle: { control: 'object', description: 'data.inputContainerStyle' },
     flexProps: { control: 'object', description: 'data.flexProps' },
     niceLooking: { control: 'boolean' },
+    notificationWidth: { control: 'text', description: 'data.notificationWidth' },
+    notificationText: { control: 'text', description: 'data.notificationText' },
 
     // provider knobs
     isLoading: { control: 'boolean' },
@@ -77,6 +81,8 @@ const meta: Meta<Args> = {
                   inputContainerStyle: args.inputContainerStyle,
                   flexProps: args.flexProps,
                   niceLooking: args.niceLooking,
+                  notificationWidth: args.notificationWidth,
+                  notificationText: args.notificationText,
                 }}
               />
             </div>
@@ -97,6 +103,8 @@ const meta: Meta<Args> = {
             inputContainerStyle: args.inputContainerStyle,
             flexProps: args.flexProps,
             niceLooking: args.niceLooking,
+            notificationWidth: args.notificationWidth,
+            notificationText: args.notificationText,
           },
         })}
         theme={'vs-dark'}
@@ -180,5 +188,13 @@ export const NiceLooking: Story = {
   args: {
     ...Default.args,
     niceLooking: true,
+  },
+}
+
+export const CustomNotification: Story = {
+  args: {
+    ...Default.args,
+    notificationText: 'Some custom text',
+    notificationWidth: '600px',
   },
 }
