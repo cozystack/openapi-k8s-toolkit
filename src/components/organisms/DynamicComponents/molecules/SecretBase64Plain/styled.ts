@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 import { Input } from 'antd'
 
 const NoSelect = styled.div`
@@ -16,7 +16,14 @@ const DisabledInput = styled(Input)<TDisabledInputProps>`
   cursor: ${({ $hidden }) => ($hidden ? 'default' : 'pointer')} !important;
 `
 
+const NotificationOverrides = createGlobalStyle`
+  .no-message-notif .ant-notification-notice-message {
+    margin-bottom: 0 !important;
+  }
+`
+
 export const Styled = {
   NoSelect,
   DisabledInput,
+  NotificationOverrides,
 }

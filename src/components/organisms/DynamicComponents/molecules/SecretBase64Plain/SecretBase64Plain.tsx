@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable react/no-array-index-key */
 import React, { FC, useState, useRef } from 'react'
-import { Flex, Button, message } from 'antd'
+import { Flex, Button, notification } from 'antd'
 import type { InputRef } from 'antd'
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons'
 import { Spoiler } from 'spoiled'
@@ -22,12 +22,14 @@ export const SecretBase64Plain: FC<{ data: TDynamicComponentsAppTypeMap['SecretB
     inputContainerStyle,
     flexProps,
     niceLooking,
+    notificationText,
+    notificationWidth,
   } = data
 
   const [hidden, setHidden] = useState(true)
   const inputRef = useRef<InputRef | null>(null)
 
-  const [messageApi, contextHolder] = message.useMessage()
+  const [notificationApi, contextHolder] = notification.useNotification()
 
   const { data: multiQueryData, isLoading, isError, errors } = useMultiQuery()
   const partsOfUrl = usePartsOfUrl()
@@ -63,7 +65,16 @@ export const SecretBase64Plain: FC<{ data: TDynamicComponentsAppTypeMap['SecretB
     try {
       if (decodedText !== null && decodedText !== undefined) {
         await navigator.clipboard.writeText(decodedText)
-        messageApi.success(`Copied: ${decodedText.substring(0, 5)}...`)
+        notificationApi.info({
+          // message: `Copied: ${decodedText.substring(0, 5)}...`,
+          message: notificationText || 'Text copied to clipboard',
+          placement: 'bottomRight',
+          closeIcon: null,
+          style: {
+            width: notificationWidth || '300px',
+          },
+          className: 'no-message-notif',
+        })
       } else {
         // messageApi.error('Failed to copy text')
         console.log('Failed to copy text')
@@ -77,6 +88,7 @@ export const SecretBase64Plain: FC<{ data: TDynamicComponentsAppTypeMap['SecretB
 
   return (
     <div style={containerStyle}>
+      <Styled.NotificationOverrides />
       <Flex gap={8} {...flexProps}>
         <Styled.NoSelect style={inputContainerStyle}>
           {niceLooking ? (

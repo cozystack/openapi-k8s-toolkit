@@ -253,5 +253,7 @@ export type TDynamicComponentsAppTypeMap = {
     inputContainerStyle?: CSSProperties
     flexProps?: Omit<FlexProps, 'children'>
     niceLooking?: boolean
+    notificationWidth?: string // default 300px
+    notificationText?: string // Text copied to clipboard
   }
 }
