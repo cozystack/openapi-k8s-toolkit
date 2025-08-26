@@ -256,4 +256,10 @@ export type TDynamicComponentsAppTypeMap = {
     notificationWidth?: string // default 300px
     notificationText?: string // Text copied to clipboard
   }
+  ResourceBadge: {
+    id: number | string
+    value: string // to get color and maybe abbr
+    abbreviation?: string
+    spanStyle?: CSSProperties
+  }
 }
