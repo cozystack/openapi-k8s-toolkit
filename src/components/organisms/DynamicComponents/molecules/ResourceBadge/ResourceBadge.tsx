@@ -1,0 +1,64 @@
+/* eslint-disable no-console */
+/* eslint-disable react/no-array-index-key */
+import React, { FC } from 'react'
+import { TDynamicComponentsAppTypeMap } from '../../types'
+import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
+import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
+import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
+import { parseAll } from '../utils'
+import { hslFromString } from './utils'
+import { Styled } from './styled'
+
+export const ResourceBadge: FC<{ data: TDynamicComponentsAppTypeMap['ResourceBadge'] }> = ({ data }) => {
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    id,
+    value,
+    abbreviation,
+    spanStyle,
+  } = data
+
+  const { data: multiQueryData, isLoading, isError, errors } = useMultiQuery()
+  const partsOfUrl = usePartsOfUrl()
+  const theme = useTheme()
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (isError) {
+    return (
+      <div>
+        <h4>Errors:</h4>
+        <ul>{errors.map((e, i) => e && <li key={i}>{e.message}</li>)}</ul>
+      </div>
+    )
+  }
+
+  const replaceValues = partsOfUrl.partsOfUrl.reduce<Record<string, string | undefined>>((acc, value, index) => {
+    acc[index.toString()] = value
+    return acc
+  }, {})
+
+  const parsedValue = parseAll({
+    text: value,
+    replaceValues,
+    multiQueryData,
+  })
+
+  const parsedAbbreviation = abbreviation
+    ? parseAll({
+        text: abbreviation,
+        replaceValues,
+        multiQueryData,
+      })
+    : parsedValue[0].toUpperCase()
+
+  const bgColor = hslFromString(parsedValue, theme)
+
+  return (
+    <Styled.RoundSpan $bgColor={bgColor} style={spanStyle}>
+      {parsedAbbreviation}
+    </Styled.RoundSpan>
+  )
+}
