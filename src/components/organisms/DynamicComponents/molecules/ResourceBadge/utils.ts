@@ -44,3 +44,11 @@ export const hslFromString: (value: string, theme: Theme) => string = (value, th
 hslFromString('alice@example.com', 'light'); // e.g. "hsl(123, 8%, 92%)"
 hslFromString('alice@example.com', 'dark');  // e.g. "hsl(123, 12%, 21%)"
 */
+
+export const getUppercase = (s: string): string => {
+  const uppercases = [...s] // spread string into array of chars
+    .filter(c => c >= 'A' && c <= 'Z') // keep only A–Z
+    .join('') // join back into string
+
+  return uppercases.length > 0 ? uppercases : s[0].toUpperCase()
+}

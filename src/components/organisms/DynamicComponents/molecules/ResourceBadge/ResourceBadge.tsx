@@ -6,7 +6,7 @@ import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryP
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
 import { parseAll } from '../utils'
-import { hslFromString } from './utils'
+import { hslFromString, getUppercase } from './utils'
 import { Styled } from './styled'
 
 export const ResourceBadge: FC<{ data: TDynamicComponentsAppTypeMap['ResourceBadge'] }> = ({ data }) => {
@@ -52,7 +52,7 @@ export const ResourceBadge: FC<{ data: TDynamicComponentsAppTypeMap['ResourceBad
         replaceValues,
         multiQueryData,
       })
-    : parsedValue[0].toUpperCase()
+    : getUppercase(parsedValue)
 
   const bgColor = hslFromString(parsedValue, theme)
 
