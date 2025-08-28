@@ -140,6 +140,23 @@ export const WithAbbreviation: Story = {
   },
 }
 
+export const AutoUppercase: Story = {
+  args: {
+    ...Default.args,
+    value: 'VirtualMachine',
+  },
+}
+
+export const AutoUppercaseLong: Story = {
+  args: {
+    ...Default.args,
+    value: 'CustomColumnsOverrideCustomColumnsOverride',
+    spanStyle: {
+      width: '4rem',
+    },
+  },
+}
+
 export const CustomStyle: Story = {
   args: {
     ...Default.args,
