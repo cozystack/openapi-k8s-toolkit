@@ -12,6 +12,7 @@ export type TCrdResource = {
     id: string
     menuItems: TLink[]
     keysAndTags?: Record<string, string[]>
+    externalKeys?: string[]
   }
 } & unknown
 
