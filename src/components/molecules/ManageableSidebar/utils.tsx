@@ -4,18 +4,54 @@ import { ItemType } from 'antd/es/menu/interface'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { TLink } from './types'
 
+const getLabel = ({
+  preparedLink,
+  label,
+  key,
+  externalKeys,
+}: {
+  preparedLink?: string
+  label: string
+  key: string
+  externalKeys?: string[]
+}): string | JSX.Element => {
+  if (preparedLink) {
+    if (externalKeys && externalKeys.includes(key)) {
+      return (
+        <a
+          href={preparedLink}
+          onClick={e => {
+            e.preventDefault()
+            e.stopPropagation()
+
+            const url = preparedLink.startsWith('/') ? `${window.location.origin}${preparedLink}` : preparedLink
+
+            window.location.href = url
+          }}
+        >
+          {label}
+        </a>
+      )
+    }
+    return <Link to={preparedLink}>{label}</Link>
+  }
+  return label
+}
+
 const mapLinksFromRaw = ({
   rawLinks,
   replaceValues,
+  externalKeys,
 }: {
   rawLinks: TLink[]
   replaceValues: Record<string, string | undefined>
+  externalKeys?: string[]
 }): (ItemType & { internalMetaLink?: string })[] => {
   return rawLinks.map(({ key, label, link, children }) => {
     const preparedLink = link ? prepareTemplate({ template: link, replaceValues }) : undefined
     return {
       key,
-      label: preparedLink ? <Link to={preparedLink}>{label}</Link> : label,
+      label: getLabel({ preparedLink, label, key, externalKeys }),
       internalMetaLink: preparedLink,
       children: children
         ? mapLinksFromRaw({
@@ -79,7 +115,7 @@ export const prepareDataForManageableSidebar = ({
   idToCompare,
   currentTags,
 }: {
-  data: { id: string; menuItems: TLink[]; keysAndTags?: Record<string, string[]> }[]
+  data: { id: string; menuItems: TLink[]; keysAndTags?: Record<string, string[]>; externalKeys?: string[] }[]
   replaceValues: Record<string, string | undefined>
   pathname: string
   idToCompare: string
@@ -95,6 +131,7 @@ export const prepareDataForManageableSidebar = ({
     menuItems: mapLinksFromRaw({
       rawLinks: foundData.menuItems,
       replaceValues,
+      externalKeys: foundData.externalKeys,
     }),
   }
 
