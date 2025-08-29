@@ -26,7 +26,8 @@ const getLabel = ({
 
             const url = preparedLink.startsWith('/') ? `${window.location.origin}${preparedLink}` : preparedLink
 
-            window.location.href = url
+            // window.location.href = url
+            window.open(url)
           }}
         >
           {label}
