@@ -19,7 +19,7 @@ const getLabel = ({
     if (externalKeys && externalKeys.includes(key)) {
       return (
         <a
-          href={preparedLink}
+          // href={preparedLink}
           onClick={e => {
             e.preventDefault()
             e.stopPropagation()
@@ -58,6 +58,7 @@ const mapLinksFromRaw = ({
         ? mapLinksFromRaw({
             rawLinks: children,
             replaceValues,
+            externalKeys,
           })
         : undefined,
     }
