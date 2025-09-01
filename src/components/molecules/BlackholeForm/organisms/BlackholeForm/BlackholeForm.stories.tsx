@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import { OpenAPIV2 } from 'openapi-types'
+// import { OpenAPIV2 } from 'openapi-types'
 import { TJSON } from '../../../../../localTypes/JSON'
 import { TFormPrefill } from '../../../../../localTypes/formExtensions'
 import { TUrlParams } from '../../../../../localTypes/form'
@@ -17,7 +17,8 @@ type BlackholeFormProps = {
     typeName?: string
   }
   formsPrefills?: TFormPrefill
-  staticProperties: OpenAPIV2.SchemaObject['properties']
+  // staticProperties: OpenAPIV2.SchemaObject['properties']
+  staticProperties: any
   required: string[]
   hiddenPaths?: string[][]
   expandedPaths: string[][]
@@ -135,6 +136,23 @@ export const Default: Story = {
               properties: {
                 password: { type: 'string' },
                 replication: { type: 'boolean' },
+              },
+            },
+          },
+          limits: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                default: {
+                  type: 'object',
+                  additionalProperties: {
+                    type: 'string',
+                  },
+                },
+                default2: {
+                  type: 'string',
+                },
               },
             },
           },

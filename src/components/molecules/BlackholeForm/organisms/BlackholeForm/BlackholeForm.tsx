@@ -20,6 +20,7 @@ import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { normalizeValuesForQuotasToNumber } from 'utils/normalizeValuesForQuotas'
 import { getAllPathsFromObj } from 'utils/getAllPathsFromObj'
 import { getPrefixSubarrays } from 'utils/getPrefixSubArrays'
+import { deepMerge } from 'utils/deepMerge'
 import { FlexGrow, Spacer } from 'components/atoms'
 import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
@@ -392,7 +393,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       { [name]: { type, items, properties: nestedProperties, required, isAdditionalProperties: true } },
     )
     const oldProperties = _.cloneDeep(properties)
-    const newProperties = _.merge(oldProperties, newObject)
+    // const newProperties = _.merge(oldProperties, newObject)
+    const newProperties = deepMerge(oldProperties, newObject)
+    console.log('oldProperties', oldProperties)
     console.log('newObject', newObject)
     console.log('newProperties', newProperties)
     setProperties(newProperties)
