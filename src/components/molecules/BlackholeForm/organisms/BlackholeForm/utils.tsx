@@ -9,6 +9,7 @@ import { getStringByName } from 'utils/getStringByName'
 import { TListInputCustomProps, TRangeInputCustomProps } from 'localTypes/formExtensions'
 import { TFormName, TExpandedControls, TNamespaceData, TPersistedControls, TUrlParams } from 'localTypes/form'
 import { PlusIcon } from 'components/atoms'
+import { deepMerge } from 'utils/deepMerge'
 import { ResetedFormItem, ArrayInsideContainer, HiddenContainer } from '../../atoms'
 import {
   FormNamespaceInput,
@@ -396,6 +397,10 @@ export const getArrayFormItemFromSwagger = ({
                 const entry = schema.items as
                   | (OpenAPIV2.ItemsObject & { properties?: OpenAPIV2.SchemaObject; required?: string[] })
                   | undefined
+                // additional properties are place near items
+                const additionalProperties = schema.properties as
+                  | Record<number, { properties?: OpenAPIV2.SchemaObject }>
+                  | undefined
                 return (
                   <ArrayInsideContainer key={field.key}>
                     {fieldType !== 'object' && (
@@ -525,7 +530,8 @@ export const getArrayFormItemFromSwagger = ({
                     {fieldType === 'object' &&
                       entry?.properties &&
                       getObjectFormItemFromSwagger({
-                        properties: entry.properties,
+                        // merging properties near items by this
+                        properties: deepMerge(entry.properties, additionalProperties?.[field.key]?.properties || {}),
                         name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
                         arrKey: field.key,
                         arrName: [field.name],
