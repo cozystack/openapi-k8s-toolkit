@@ -18,6 +18,7 @@ export {
   filterIfBuiltInInstanceNamespaceScoped,
 } from './api/bff/scopes/filterScopes'
 export { checkIfApiInstanceNamespaceScoped, checkIfBuiltInInstanceNamespaceScoped } from './api/bff/scopes/checkScopes'
+export { getKinds } from './api/bff/search/getKinds'
 /* hooks */
 export { useClusterList } from './hooks/useClusterList'
 export { useApiResources, useApiResourceSingle } from './hooks/useApiResource'
@@ -71,4 +72,6 @@ export type {
   TFilterIfBuiltInInstanceNamespaceScopedReq,
   TFilterIfBuiltInInstanceNamespaceScopedRes,
 } from './localTypes/bff/scopes'
+export type { TVersionEntry, TKindItem, TKindIndex } from './localTypes/bff/search'
 export type { TGetDerefedSwaggerRes } from './localTypes/bff/swagger'
+export type { TKindWithVersion } from './localTypes/search'
