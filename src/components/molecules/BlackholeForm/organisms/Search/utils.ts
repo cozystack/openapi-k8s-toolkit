@@ -1,0 +1,30 @@
+import { useRef } from 'react'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const useDebouncedCallback = <T extends (...args: any[]) => void>(fn: T, delay = 300) => {
+  const timer = useRef<number | undefined>(undefined)
+  return (...args: Parameters<T>) => {
+    if (timer.current) window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => fn(...args), delay)
+  }
+}
+
+// Convert between array<string> and a single comma-separated query param.
+export const getArrayParam = (sp: URLSearchParams, key: string): string[] => {
+  const raw = sp.get(key)
+  if (!raw) return []
+  return raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+}
+
+export const setArrayParam = (sp: URLSearchParams, key: string, values: string[] | undefined | null) => {
+  const next = new URLSearchParams(sp) // preserve other params
+  if (!values || values.length === 0) {
+    next.delete(key)
+  } else {
+    next.set(key, values.join(','))
+  }
+  return next
+}
