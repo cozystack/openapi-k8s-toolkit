@@ -24,13 +24,22 @@ const SelectTagSpan = styled.span`
   flex-direction: column;
 `
 
-const SelectContainer = styled.div`
+const FormContainer = styled.div`
   width: 450px;
+`
+
+type THideableContainerProps = {
+  $isHidden?: boolean
+}
+
+const HideableContainer = styled.div<THideableContainerProps>`
+  display: ${({ $isHidden }) => ($isHidden ? 'none' : 'initial')};
 `
 
 export const Styled = {
   CatContainer,
   SelectTag,
   SelectTagSpan,
-  SelectContainer,
+  FormContainer,
+  HideableContainer,
 }
