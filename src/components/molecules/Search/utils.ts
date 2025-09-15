@@ -28,3 +28,15 @@ export const setArrayParam = (sp: URLSearchParams, key: string, values: string[]
   }
   return next
 }
+
+export const getStringParam = (sp: URLSearchParams, key: string): string => {
+  return sp.get(key) ?? ''
+}
+
+export const setStringParam = (sp: URLSearchParams, key: string, value: string | undefined | null) => {
+  const next = new URLSearchParams(sp) // preserve other params
+  const v = (value ?? '').trim()
+  if (!v) next.delete(key)
+  else next.set(key, v)
+  return next
+}
