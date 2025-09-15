@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import React, { FC, useState, useEffect } from 'react'
-import { Typography, Form, Select, SelectProps, Input } from 'antd'
+import { Form, Select, SelectProps, Input } from 'antd'
 import type { CustomTagProps } from 'rc-select/lib/BaseSelect'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { getKinds } from 'api/bff/search/getKinds'
@@ -8,7 +8,7 @@ import { getSortedKinds } from 'utils/getSortedKinds'
 import { TKindIndex } from 'localTypes/bff/search'
 import { TKindWithVersion } from 'localTypes/search'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
-import { useDebouncedCallback, getArrayParam, setArrayParam } from './utils'
+import { useDebouncedCallback, getArrayParam, setArrayParam, getStringParam, setStringParam } from './utils'
 import { Styled } from './styled'
 
 type TSearchProps = {
@@ -23,8 +23,12 @@ export const Search: FC<TSearchProps> = ({ cluster }) => {
   const FIELD_NAME = 'kinds'
   const FIELD_NAME_STRING = 'name'
   const FIELD_NAME_MULTIPLE = 'labels'
+
   const TYPE_SELECTOR = 'TYPE_SELECTOR'
+
   const QUERY_KEY = 'kinds' // the query param name
+  const NAME_QUERY_KEY = 'name'
+  const LABELS_QUERY_KEY = 'labels'
 
   const watchedKinds = Form.useWatch<string[] | undefined>(FIELD_NAME, form)
   const watchedName = Form.useWatch<string | undefined>(FIELD_NAME_STRING, form)
@@ -46,14 +50,40 @@ export const Search: FC<TSearchProps> = ({ cluster }) => {
 
   // Apply current values from search params on mount / when URL changes
   useEffect(() => {
-    const fromUrl = getArrayParam(searchParams, QUERY_KEY)
-    const current = form.getFieldValue(FIELD_NAME)
+    const fromKinds = getArrayParam(searchParams, QUERY_KEY)
+    const currentKinds = form.getFieldValue(FIELD_NAME)
+    const kindsDiffer =
+      (fromKinds.length || 0) !== (currentKinds?.length || 0) || fromKinds.some((v, i) => v !== currentKinds?.[i])
+
+    // name
+    const fromName = getStringParam(searchParams, NAME_QUERY_KEY)
+    const currentName = form.getFieldValue(FIELD_NAME_STRING) as string | undefined
+    const nameDiffer = (fromName || '') !== (currentName || '')
+
+    // labels
+    const fromLabels = getArrayParam(searchParams, LABELS_QUERY_KEY)
+    const currentLabels = form.getFieldValue(FIELD_NAME_MULTIPLE) as string[] | undefined
+    const labelsDiffer =
+      (fromLabels.length || 0) !== (currentLabels?.length || 0) || fromLabels.some((v, i) => v !== currentLabels?.[i])
+
+    // decide type from params
+    const currentType = form.getFieldValue(TYPE_SELECTOR)
+    let inferredType: string | undefined
+    if (fromName) {
+      inferredType = 'name'
+    } else if (fromLabels.length > 0) {
+      inferredType = 'labels'
+    }
+    const typeDiffer = inferredType !== currentType
 
     // Only update the form if URL differs from form (prevents loops)
-    const differ = (fromUrl.length || 0) !== (current?.length || 0) || fromUrl.some((v, i) => v !== current?.[i])
-
-    if (differ) {
-      form.setFieldsValue({ [FIELD_NAME]: fromUrl })
+    if (kindsDiffer || nameDiffer || labelsDiffer) {
+      form.setFieldsValue({
+        [FIELD_NAME]: kindsDiffer ? fromKinds : currentKinds,
+        [FIELD_NAME_STRING]: nameDiffer ? fromName : currentName,
+        [FIELD_NAME_MULTIPLE]: labelsDiffer ? fromLabels : currentLabels,
+        [TYPE_SELECTOR]: typeDiffer ? inferredType : currentType,
+      })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search]) // react to back/forward, external URL edits
@@ -64,13 +94,49 @@ export const Search: FC<TSearchProps> = ({ cluster }) => {
     setSearchParams(next, { replace: true }) // replace to keep history cleaner
   }, 250)
 
+  const debouncedPushName = useDebouncedCallback((value: string) => {
+    const next = setStringParam(searchParams, NAME_QUERY_KEY, value)
+    setSearchParams(next, { replace: true })
+  }, 250)
+
+  const debouncedPushLabels = useDebouncedCallback((values: string[]) => {
+    const next = setArrayParam(searchParams, LABELS_QUERY_KEY, values)
+    setSearchParams(next, { replace: true })
+  }, 250)
+
   useEffect(() => {
     debouncedPush(watchedKinds || [])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchedKinds])
 
-  // eslint-disable-next-line no-console
-  console.log(kindWithVersion)
+  useEffect(() => {
+    debouncedPushName((watchedName || '').trim())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedName])
+
+  useEffect(() => {
+    debouncedPushLabels(watchedMultiple || [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedMultiple])
+
+  useEffect(() => {
+    if (watchedTypedSelector === 'name') {
+      // Clear labels when switching to "name"
+      const cur = form.getFieldValue(FIELD_NAME_MULTIPLE) as string[] | undefined
+      if (cur?.length) {
+        form.setFieldsValue({ [FIELD_NAME_MULTIPLE]: [] })
+      }
+    } else if (watchedTypedSelector === 'labels') {
+      // Clear name when switching to "labels"
+      const cur = (form.getFieldValue(FIELD_NAME_STRING) as string | undefined) ?? ''
+      if (cur) {
+        form.setFieldsValue({ [FIELD_NAME_STRING]: '' })
+      }
+    }
+    // Optional: if undefined (e.g., initial), choose a default behavior:
+    // else { form.setFieldsValue({ [FIELD_NAME_STRING]: '', [FIELD_NAME_MULTIPLE]: [] }) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedTypedSelector])
 
   const options: SelectProps['options'] =
     kindWithVersion?.map(({ kind, notUnique, group, version }) => ({
@@ -101,7 +167,7 @@ export const Search: FC<TSearchProps> = ({ cluster }) => {
   )
 
   return (
-    <Styled.CatContainer>
+    <div>
       <Form form={form} layout="vertical">
         <Styled.FormContainer>
           <Form.Item name={FIELD_NAME} label="Kinds">
@@ -113,6 +179,7 @@ export const Search: FC<TSearchProps> = ({ cluster }) => {
               allowClear
               showSearch
               tagRender={tagRender}
+              maxTagCount="responsive"
             />
           </Form.Item>
           <Form.Item name={TYPE_SELECTOR} label="Type">
@@ -163,13 +230,12 @@ export const Search: FC<TSearchProps> = ({ cluster }) => {
               />
             </Form.Item>
           </Styled.HideableContainer>
-          {/* Example of "watching" the value for display or side-effects */}
-          <div>Current: {(watchedKinds || []).join(', ')}</div>
-          <div>Current name: {watchedName}</div>
-          <div>Current labels: {(watchedMultiple || []).join(', ')}</div>
         </Styled.FormContainer>
       </Form>
-      <Typography.Title>To Be Done</Typography.Title>
-    </Styled.CatContainer>
+      {/* Example of "watching" the value for display or side-effects */}
+      <div>Current: {(watchedKinds || []).join(', ')}</div>
+      <div>Current name: {watchedName}</div>
+      <div>Current labels: {(watchedMultiple || []).join(', ')}</div>
+    </div>
   )
 }

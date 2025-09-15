@@ -1,14 +1,6 @@
 import { Tag } from 'antd'
 import styled from 'styled-components'
 
-export const CatContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-flow: column;
-  margin: auto;
-`
-
 const SelectTag = styled(Tag)`
   margin-inline-end: 4px;
   padding: 4px 6px;
@@ -25,7 +17,9 @@ const SelectTagSpan = styled.span`
 `
 
 const FormContainer = styled.div`
-  width: 450px;
+  display: grid;
+  grid-template-columns: 300px 100px 1fr;
+  gap: 16px;
 `
 
 type THideableContainerProps = {
@@ -37,7 +31,6 @@ const HideableContainer = styled.div<THideableContainerProps>`
 `
 
 export const Styled = {
-  CatContainer,
   SelectTag,
   SelectTagSpan,
   FormContainer,
