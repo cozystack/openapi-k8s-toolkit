@@ -21,6 +21,7 @@ export type TProjectInfoCardProps = {
   mpResourceName: string
   baseprefix?: string
   accessGroups: string[]
+  showZeroResources?: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children?: any
 }
@@ -36,6 +37,7 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
   projectResourceName,
   baseprefix,
   accessGroups,
+  showZeroResources,
   children,
 }) => {
   const navigate = useNavigate()
@@ -178,6 +180,7 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
                 apiGroup={apiGroup}
                 apiVersion={apiVersion}
                 tags={tags}
+                showZeroResources={showZeroResources}
                 addedMode
               />
             ))}

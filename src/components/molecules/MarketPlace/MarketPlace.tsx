@@ -19,6 +19,8 @@ export type TMarketPlaceProps = {
   mpResourceKind: string
   baseprefix?: string
   standalone?: boolean
+  forceAddedMode?: boolean
+  showZeroResources?: boolean
 }
 
 export const MarketPlace: FC<TMarketPlaceProps> = ({
@@ -30,6 +32,8 @@ export const MarketPlace: FC<TMarketPlaceProps> = ({
   mpResourceKind,
   baseprefix,
   standalone,
+  forceAddedMode,
+  showZeroResources,
 }) => {
   const [api, contextHolder] = notification.useNotification()
 
@@ -229,6 +233,8 @@ export const MarketPlace: FC<TMarketPlaceProps> = ({
                   setIsAddEditOpen(marketplacePanels.items.find(({ spec }) => spec.name === name) || false)
                 }}
                 standalone={standalone}
+                addedMode={forceAddedMode}
+                showZeroResources={showZeroResources}
               />
             ),
           )}

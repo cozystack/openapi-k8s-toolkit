@@ -16,6 +16,7 @@ export type TMarketplaceCardProps = {
   onEditClick?: () => void
   addedMode?: boolean
   standalone?: boolean
+  showZeroResources?: boolean
 } & Omit<TMarketPlacePanel, 'hidden'>
 
 export const MarketplaceCard: FC<TMarketplaceCardProps> = ({
@@ -37,6 +38,7 @@ export const MarketplaceCard: FC<TMarketplaceCardProps> = ({
   onEditClick,
   addedMode,
   standalone,
+  showZeroResources,
 }) => {
   const { useToken } = theme
   const { token } = useToken()
@@ -92,7 +94,7 @@ export const MarketplaceCard: FC<TMarketplaceCardProps> = ({
     isEnabled: addedMode && listUrl !== undefined,
   })
 
-  if (addedMode && (k8sListError || type === 'direct')) {
+  if (addedMode && (k8sListError || type === 'direct') && !showZeroResources) {
     return null
   }
 
