@@ -36,6 +36,7 @@ export type TDynamicComponentsAppTypeMap = {
     mpResourceName: string
     accessGroups: string[]
     baseprefix?: string
+    showZeroResources?: boolean
   }
   MarketplaceCard: {
     id: number | string
@@ -47,6 +48,8 @@ export type TDynamicComponentsAppTypeMap = {
     mpResourceKind: string
     baseprefix?: string
     standalone?: boolean
+    forceAddedMode?: boolean
+    showZeroResources?: boolean
   }
   ContentCard: { id: number | string } & TContentCardProps
   Spacer: { id: number | string } & TSpacerProps
