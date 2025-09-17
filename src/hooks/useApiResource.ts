@@ -10,6 +10,7 @@ export const useApiResources = ({
   typeName,
   limit,
   refetchInterval,
+  isEnabled,
 }: {
   clusterName: string
   namespace?: string
@@ -18,6 +19,7 @@ export const useApiResources = ({
   typeName: string
   limit: string | null
   refetchInterval?: number | false
+  isEnabled?: boolean
 }) => {
   return useQuery({
     queryKey: ['useApiResources', clusterName, namespace, apiGroup, apiVersion, typeName, limit],
@@ -39,6 +41,7 @@ export const useApiResources = ({
       return data as TApiResources
     },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
+    enabled: isEnabled,
   })
 }
 

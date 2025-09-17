@@ -8,12 +8,14 @@ export const useBuiltinResources = ({
   typeName,
   limit,
   refetchInterval,
+  isEnabled,
 }: {
   clusterName: string
   namespace?: string
   typeName: string
   limit: string | null
   refetchInterval?: number | false
+  isEnabled?: boolean
 }) => {
   return useQuery({
     queryKey: ['useBuiltinResourceType', clusterName, namespace, typeName, limit],
@@ -28,6 +30,7 @@ export const useBuiltinResources = ({
       return data as TBuiltinResources
     },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
+    enabled: isEnabled,
   })
 }
 
