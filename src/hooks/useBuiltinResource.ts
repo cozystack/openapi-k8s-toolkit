@@ -6,6 +6,8 @@ export const useBuiltinResources = ({
   clusterName,
   namespace,
   typeName,
+  specificName,
+  labels,
   limit,
   refetchInterval,
   isEnabled,
@@ -13,14 +15,23 @@ export const useBuiltinResources = ({
   clusterName: string
   namespace?: string
   typeName: string
+  specificName?: string
+  labels?: string[]
   limit: string | null
   refetchInterval?: number | false
   isEnabled?: boolean
 }) => {
   return useQuery({
-    queryKey: ['useBuiltinResourceType', clusterName, namespace, typeName, limit],
+    queryKey: ['useBuiltinResourceType', clusterName, namespace, typeName, specificName, labels, limit],
     queryFn: async () => {
-      const response = await getBuiltinResources<TBuiltinResources>({ clusterName, namespace, typeName, limit })
+      const response = await getBuiltinResources<TBuiltinResources>({
+        clusterName,
+        namespace,
+        typeName,
+        specificName,
+        labels,
+        limit,
+      })
       // Deep clone the data (to avoid mutating the original response)
       const data = JSON.parse(JSON.stringify(response.data))
       // Remove deeply nested field

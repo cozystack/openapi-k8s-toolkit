@@ -13,7 +13,7 @@ import { Styled } from './styled'
 
 type TSearchProps = {
   cluster: string
-  updateCurrentSearch: (value?: string[]) => void
+  updateCurrentSearch: ({ resources, name, labels }: { resources?: string[]; name?: string; labels?: string[] }) => void
 }
 
 export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
@@ -240,7 +240,12 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
             </Form.Item>
           </Styled.HideableContainer>
           <Form.Item label="Search">
-            <Button type="primary" onClick={() => updateCurrentSearch(watchedKinds)}>
+            <Button
+              type="primary"
+              onClick={() =>
+                updateCurrentSearch({ resources: watchedKinds, name: watchedName, labels: watchedMultiple })
+              }
+            >
               Search
             </Button>
           </Form.Item>
