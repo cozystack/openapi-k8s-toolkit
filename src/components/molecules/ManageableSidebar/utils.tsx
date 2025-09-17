@@ -9,12 +9,15 @@ const getLabel = ({
   label,
   key,
   externalKeys,
+  replaceValues,
 }: {
   preparedLink?: string
   label: string
   key: string
   externalKeys?: string[]
+  replaceValues: Record<string, string | undefined>
 }): string | JSX.Element => {
+  const preparedLabel = prepareTemplate({ template: label, replaceValues })
   if (preparedLink) {
     if (externalKeys && externalKeys.includes(key)) {
       return (
@@ -30,13 +33,13 @@ const getLabel = ({
             window.open(url)
           }}
         >
-          {label}
+          {preparedLabel}
         </a>
       )
     }
-    return <Link to={preparedLink}>{label}</Link>
+    return <Link to={preparedLink}>{preparedLabel}</Link>
   }
-  return label
+  return preparedLabel
 }
 
 const mapLinksFromRaw = ({
@@ -52,7 +55,7 @@ const mapLinksFromRaw = ({
     const preparedLink = link ? prepareTemplate({ template: link, replaceValues }) : undefined
     return {
       key,
-      label: getLabel({ preparedLink, label, key, externalKeys }),
+      label: getLabel({ preparedLink, label, key, externalKeys, replaceValues }),
       internalMetaLink: preparedLink,
       children: children
         ? mapLinksFromRaw({
