@@ -18,7 +18,7 @@ const SelectTagSpan = styled.span`
 
 const FormContainer = styled.div`
   display: grid;
-  grid-template-columns: 300px 100px 1fr;
+  grid-template-columns: 300px 100px 1fr 100px;
   gap: 16px;
 `
 

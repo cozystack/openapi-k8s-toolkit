@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import React, { FC, useState, useEffect } from 'react'
-import { Form, Select, SelectProps, Input } from 'antd'
+import { Form, Select, SelectProps, Input, Button } from 'antd'
 import type { CustomTagProps } from 'rc-select/lib/BaseSelect'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { getKinds } from 'api/bff/search/getKinds'
@@ -13,9 +13,10 @@ import { Styled } from './styled'
 
 type TSearchProps = {
   cluster: string
+  updateCurrentSearch: (value?: string[]) => void
 }
 
-export const Search: FC<TSearchProps> = ({ cluster }) => {
+export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
   const [form] = Form.useForm()
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
@@ -139,15 +140,23 @@ export const Search: FC<TSearchProps> = ({ cluster }) => {
   }, [watchedTypedSelector])
 
   const options: SelectProps['options'] =
-    kindWithVersion?.map(({ kind, notUnique, group, version }) => ({
-      label: notUnique ? (
+    kindWithVersion?.map(({ kind, group, version }) => ({
+      // kindWithVersion?.map(({ kind, notUnique, group, version }) => ({
+      // label: notUnique ? (
+      //   <div>
+      //     {kind}
+      //     <br />
+      //     {version.groupVersion}
+      //   </div>
+      // ) : (
+      //   kind
+      // ),
+      label: (
         <div>
           {kind}
           <br />
           {version.groupVersion}
         </div>
-      ) : (
-        kind
       ),
       value: `${group}~${version.version}~${version.resource}`,
     })) || []
@@ -230,6 +239,11 @@ export const Search: FC<TSearchProps> = ({ cluster }) => {
               />
             </Form.Item>
           </Styled.HideableContainer>
+          <Form.Item label="Search">
+            <Button type="primary" onClick={() => updateCurrentSearch(watchedKinds)}>
+              Search
+            </Button>
+          </Form.Item>
         </Styled.FormContainer>
       </Form>
       {/* Example of "watching" the value for display or side-effects */}

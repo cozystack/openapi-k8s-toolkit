@@ -10,6 +10,7 @@ export const useCrdResources = <T = TJSON[]>({
   apiVersion,
   crdName,
   refetchInterval,
+  isEnabled,
 }: {
   clusterName: string
   namespace?: string
@@ -17,6 +18,7 @@ export const useCrdResources = <T = TJSON[]>({
   apiVersion: string
   crdName: string
   refetchInterval?: number | false
+  isEnabled?: boolean
 }) => {
   return useQuery({
     queryKey: ['useCrdResources', clusterName, namespace, apiGroup, apiVersion, crdName],
@@ -37,6 +39,7 @@ export const useCrdResources = <T = TJSON[]>({
       return data as TCrdResources<T>
     },
     refetchInterval: refetchInterval !== undefined ? refetchInterval : 5000,
+    enabled: isEnabled,
   })
 }
 
