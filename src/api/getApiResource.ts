@@ -6,6 +6,8 @@ export const getApiResources = async <T>({
   apiGroup,
   apiVersion,
   typeName,
+  specificName,
+  labels,
   limit,
 }: {
   clusterName: string
@@ -13,13 +15,22 @@ export const getApiResources = async <T>({
   apiGroup: string
   apiVersion: string
   typeName: string
+  specificName?: string
+  labels?: string[]
   limit: string | null
 }): Promise<AxiosResponse<T>> => {
-  const parsedLimit = limit !== null ? `?limit=${limit}` : ''
+  const params = new URLSearchParams()
+  if (limit !== null) {
+    params.set('limit', limit)
+  }
+  if (labels && labels.length > 0) {
+    params.set('labelSelector', labels.join(','))
+  }
+  const searchParams = params.toString()
   return axios.get(
     `/api/clusters/${clusterName}/k8s/apis/${apiGroup}/${apiVersion}${
       namespace ? `/namespaces/${namespace}` : ''
-    }/${typeName}${parsedLimit}`,
+    }/${typeName}${specificName ? `/${specificName}` : ''}${searchParams.length > 0 ? `?${searchParams}` : ''}`,
   )
 }
 

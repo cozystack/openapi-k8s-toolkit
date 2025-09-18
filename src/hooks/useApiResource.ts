@@ -8,6 +8,8 @@ export const useApiResources = ({
   apiGroup,
   apiVersion,
   typeName,
+  specificName,
+  labels,
   limit,
   refetchInterval,
   isEnabled,
@@ -17,12 +19,14 @@ export const useApiResources = ({
   apiGroup: string
   apiVersion: string
   typeName: string
+  specificName?: string
+  labels?: string[]
   limit: string | null
   refetchInterval?: number | false
   isEnabled?: boolean
 }) => {
   return useQuery({
-    queryKey: ['useApiResources', clusterName, namespace, apiGroup, apiVersion, typeName, limit],
+    queryKey: ['useApiResources', clusterName, namespace, apiGroup, apiVersion, typeName, specificName, labels, limit],
     queryFn: async () => {
       const response = await getApiResources<TApiResources>({
         clusterName,
@@ -30,6 +34,8 @@ export const useApiResources = ({
         apiGroup,
         apiVersion,
         typeName,
+        specificName,
+        labels,
         limit,
       })
       // Deep clone the data (to avoid mutating the original response)
