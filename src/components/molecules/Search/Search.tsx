@@ -13,7 +13,17 @@ import { Styled } from './styled'
 
 type TSearchProps = {
   cluster: string
-  updateCurrentSearch: ({ resources, name, labels }: { resources?: string[]; name?: string; labels?: string[] }) => void
+  updateCurrentSearch: ({
+    resources,
+    name,
+    labels,
+    fields,
+  }: {
+    resources?: string[]
+    name?: string
+    labels?: string[]
+    fields?: string[]
+  }) => void
 }
 
 export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
@@ -23,17 +33,20 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
 
   const FIELD_NAME = 'kinds'
   const FIELD_NAME_STRING = 'name'
-  const FIELD_NAME_MULTIPLE = 'labels'
+  const FIELD_NAME_LABELS = 'labels'
+  const FIELD_NAME_FIELDS = 'fields'
 
   const TYPE_SELECTOR = 'TYPE_SELECTOR'
 
   const QUERY_KEY = 'kinds' // the query param name
   const NAME_QUERY_KEY = 'name'
   const LABELS_QUERY_KEY = 'labels'
+  const FIELDS_QUERY_KEY = 'fields'
 
   const watchedKinds = Form.useWatch<string[] | undefined>(FIELD_NAME, form)
   const watchedName = Form.useWatch<string | undefined>(FIELD_NAME_STRING, form)
-  const watchedMultiple = Form.useWatch<string[] | undefined>(FIELD_NAME_MULTIPLE, form)
+  const watchedLabels = Form.useWatch<string[] | undefined>(FIELD_NAME_LABELS, form)
+  const watchedFields = Form.useWatch<string[] | undefined>(FIELD_NAME_FIELDS, form)
   const watchedTypedSelector = Form.useWatch<string | undefined>(TYPE_SELECTOR, form)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,9 +76,15 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
 
     // labels
     const fromLabels = getArrayParam(searchParams, LABELS_QUERY_KEY)
-    const currentLabels = form.getFieldValue(FIELD_NAME_MULTIPLE) as string[] | undefined
+    const currentLabels = form.getFieldValue(FIELD_NAME_LABELS) as string[] | undefined
     const labelsDiffer =
       (fromLabels.length || 0) !== (currentLabels?.length || 0) || fromLabels.some((v, i) => v !== currentLabels?.[i])
+
+    // labels
+    const fromFields = getArrayParam(searchParams, FIELDS_QUERY_KEY)
+    const currentFields = form.getFieldValue(FIELD_NAME_FIELDS) as string[] | undefined
+    const fieldsDiffer =
+      (fromFields.length || 0) !== (currentFields?.length || 0) || fromFields.some((v, i) => v !== currentFields?.[i])
 
     // decide type from params
     const currentType = form.getFieldValue(TYPE_SELECTOR)
@@ -74,15 +93,18 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
       inferredType = 'name'
     } else if (fromLabels.length > 0) {
       inferredType = 'labels'
+    } else if (fromFields.length > 0) {
+      inferredType = 'fields'
     }
     const typeDiffer = inferredType !== currentType
 
     // Only update the form if URL differs from form (prevents loops)
-    if (kindsDiffer || nameDiffer || labelsDiffer) {
+    if (kindsDiffer || nameDiffer || labelsDiffer || fieldsDiffer) {
       form.setFieldsValue({
         [FIELD_NAME]: kindsDiffer ? fromKinds : currentKinds,
         [FIELD_NAME_STRING]: nameDiffer ? fromName : currentName,
-        [FIELD_NAME_MULTIPLE]: labelsDiffer ? fromLabels : currentLabels,
+        [FIELD_NAME_LABELS]: labelsDiffer ? fromLabels : currentLabels,
+        [FIELD_NAME_FIELDS]: fieldsDiffer ? fromFields : currentFields,
         [TYPE_SELECTOR]: typeDiffer ? inferredType : currentType,
       })
     }
@@ -105,6 +127,11 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
     setSearchParams(next, { replace: true })
   }, 250)
 
+  const debouncedPushFields = useDebouncedCallback((values: string[]) => {
+    const next = setArrayParam(searchParams, FIELDS_QUERY_KEY, values)
+    setSearchParams(next, { replace: true })
+  }, 250)
+
   useEffect(() => {
     debouncedPush(watchedKinds || [])
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,23 +143,34 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
   }, [watchedName])
 
   useEffect(() => {
-    debouncedPushLabels(watchedMultiple || [])
+    debouncedPushLabels(watchedLabels || [])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watchedMultiple])
+  }, [watchedLabels])
+
+  useEffect(() => {
+    debouncedPushFields(watchedFields || [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedFields])
 
   useEffect(() => {
     if (watchedTypedSelector === 'name') {
       // Clear labels when switching to "name"
-      const cur = form.getFieldValue(FIELD_NAME_MULTIPLE) as string[] | undefined
-      if (cur?.length) {
-        form.setFieldsValue({ [FIELD_NAME_MULTIPLE]: [] })
-      }
+      // const cur = form.getFieldValue(FIELD_NAME_LABELS) as string[] | undefined
+      // if (cur?.length) {
+      form.setFieldsValue({ [FIELD_NAME_LABELS]: [], [FIELD_NAME_FIELDS]: [] })
+      // }
     } else if (watchedTypedSelector === 'labels') {
       // Clear name when switching to "labels"
-      const cur = (form.getFieldValue(FIELD_NAME_STRING) as string | undefined) ?? ''
-      if (cur) {
-        form.setFieldsValue({ [FIELD_NAME_STRING]: '' })
-      }
+      // const cur = (form.getFieldValue(FIELD_NAME_STRING) as string | undefined) ?? ''
+      // if (cur) {
+      form.setFieldsValue({ [FIELD_NAME_STRING]: '', [FIELD_NAME_FIELDS]: [] })
+      // }
+    } else if (watchedTypedSelector === 'fields') {
+      // Clear name when switching to "labels"
+      // const cur = (form.getFieldValue(FIELD_NAME_STRING) as string | undefined) ?? ''
+      // if (cur) {
+      form.setFieldsValue({ [FIELD_NAME_STRING]: '', [FIELD_NAME_LABELS]: [] })
+      // }
     }
     // Optional: if undefined (e.g., initial), choose a default behavior:
     // else { form.setFieldsValue({ [FIELD_NAME_STRING]: '', [FIELD_NAME_MULTIPLE]: [] }) }
@@ -197,21 +235,61 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
               options={[
                 { label: 'Name', value: 'name' },
                 { label: 'Labels', value: 'labels' },
+                { label: 'Fields', value: 'fields' },
               ]}
               defaultValue="name"
               filterOption={filterSelectOptions}
               showSearch
             />
           </Form.Item>
-          <Styled.HideableContainer $isHidden={watchedTypedSelector === 'labels'}>
+          <Styled.HideableContainer $isHidden={watchedTypedSelector === 'labels' || watchedTypedSelector === 'fields'}>
             <Form.Item name={FIELD_NAME_STRING} label="Name">
               <Input allowClear />
             </Form.Item>
           </Styled.HideableContainer>
-          <Styled.HideableContainer $isHidden={watchedTypedSelector === 'name' || watchedTypedSelector === undefined}>
+          <Styled.HideableContainer
+            $isHidden={
+              watchedTypedSelector === 'name' || watchedTypedSelector === 'fields' || watchedTypedSelector === undefined
+            }
+          >
             <Form.Item
-              name={FIELD_NAME_MULTIPLE}
+              name={FIELD_NAME_LABELS}
               label="Labels"
+              validateTrigger="onBlur"
+              rules={[
+                () => ({
+                  validator(_, value) {
+                    if (
+                      Array.isArray(value) &&
+                      value.every(str => typeof str === 'string' && str.includes('=') && !str.startsWith('='))
+                    ) {
+                      return Promise.resolve()
+                    }
+                    return Promise.reject(new Error('Please enter key=value style'))
+                  },
+                }),
+              ]}
+            >
+              <Select
+                mode="tags"
+                allowClear
+                placeholder="Select"
+                // dropdownStyle={{ display: 'none' }}
+                tokenSeparators={[',', ' ', '	']}
+                suffixIcon={null}
+                filterOption={filterSelectOptions}
+                tagRender={tagRender}
+              />
+            </Form.Item>
+          </Styled.HideableContainer>
+          <Styled.HideableContainer
+            $isHidden={
+              watchedTypedSelector === 'name' || watchedTypedSelector === 'labels' || watchedTypedSelector === undefined
+            }
+          >
+            <Form.Item
+              name={FIELD_NAME_FIELDS}
+              label="Fields"
               validateTrigger="onBlur"
               rules={[
                 () => ({
@@ -243,7 +321,12 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
             <Button
               type="primary"
               onClick={() =>
-                updateCurrentSearch({ resources: watchedKinds, name: watchedName, labels: watchedMultiple })
+                updateCurrentSearch({
+                  resources: watchedKinds,
+                  name: watchedName,
+                  labels: watchedLabels,
+                  fields: watchedFields,
+                })
               }
             >
               Search
@@ -254,7 +337,8 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
       {/* Example of "watching" the value for display or side-effects */}
       <div>Current: {(watchedKinds || []).join(', ')}</div>
       <div>Current name: {watchedName}</div>
-      <div>Current labels: {(watchedMultiple || []).join(', ')}</div>
+      <div>Current labels: {(watchedLabels || []).join(', ')}</div>
+      <div>Current fields: {(watchedFields || []).join(', ')}</div>
     </div>
   )
 }

@@ -8,6 +8,7 @@ export const getApiResources = async <T>({
   typeName,
   specificName,
   labels,
+  fields,
   limit,
 }: {
   clusterName: string
@@ -17,6 +18,7 @@ export const getApiResources = async <T>({
   typeName: string
   specificName?: string
   labels?: string[]
+  fields?: string[]
   limit: string | null
 }): Promise<AxiosResponse<T>> => {
   const params = new URLSearchParams()
@@ -25,6 +27,9 @@ export const getApiResources = async <T>({
   }
   if (labels && labels.length > 0) {
     params.set('labelSelector', labels.join(','))
+  }
+  if (fields && fields.length > 0) {
+    params.set('fieldSelector', fields.join(','))
   }
   const searchParams = params.toString()
   return axios.get(

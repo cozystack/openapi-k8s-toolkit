@@ -8,6 +8,7 @@ export const useBuiltinResources = ({
   typeName,
   specificName,
   labels,
+  fields,
   limit,
   refetchInterval,
   isEnabled,
@@ -17,12 +18,13 @@ export const useBuiltinResources = ({
   typeName: string
   specificName?: string
   labels?: string[]
+  fields?: string[]
   limit: string | null
   refetchInterval?: number | false
   isEnabled?: boolean
 }) => {
   return useQuery({
-    queryKey: ['useBuiltinResourceType', clusterName, namespace, typeName, specificName, labels, limit],
+    queryKey: ['useBuiltinResourceType', clusterName, namespace, typeName, specificName, labels, fields, limit],
     queryFn: async () => {
       const response = await getBuiltinResources<TBuiltinResources>({
         clusterName,
@@ -30,6 +32,7 @@ export const useBuiltinResources = ({
         typeName,
         specificName,
         labels,
+        fields,
         limit,
       })
       // Deep clone the data (to avoid mutating the original response)
