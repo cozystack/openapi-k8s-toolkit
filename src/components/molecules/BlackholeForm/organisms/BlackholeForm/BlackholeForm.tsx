@@ -104,6 +104,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
 
   const overflowRef = useRef<HTMLDivElement | null>(null)
+  const valuesToYamlReqId = useRef(0)
+  const yamlToValuesReqId = useRef(0)
+  const skipFirstPersistedKeysEffect = useRef(true)
 
   const createPermission = usePermissions({
     apiGroup: type === 'builtin' ? '' : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
@@ -233,34 +236,43 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (values?: any) => {
       const v = values || form.getFieldsValue()
-
       const payload: TYamlByValuesReq = {
         values: v,
         persistedKeys,
         properties,
       }
+
+      const myId = ++valuesToYamlReqId.current
+
       axios
         .post<TYamlByValuesRes>(
           `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
           payload,
         )
-        .then(({ data }) => debouncedSetYamlValues(data))
+        .then(({ data }) => {
+          if (myId !== valuesToYamlReqId.current) return
+          debouncedSetYamlValues(data)
+        })
+        .catch(() => {
+          /* no-op for live typing */
+        })
     },
     [form, debouncedSetYamlValues, properties, persistedKeys, cluster],
   )
 
   const onYamlChangeCallback = useCallback(
     (values: Record<string, unknown>) => {
-      const payload: TValuesByYamlReq = {
-        values,
-        properties,
-      }
+      const payload: TValuesByYamlReq = { values, properties }
+      const myId = ++yamlToValuesReqId.current
+
       axios
         .post<TValuesByYamlRes>(`/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`, payload)
         .then(({ data }) => {
-          if (data) {
-            form.setFieldsValue(data)
-          }
+          if (myId !== yamlToValuesReqId.current) return
+          if (data) form.setFieldsValue(data)
+        })
+        .catch(() => {
+          /* ignore transient parse errors while typing */
         })
     },
     [form, properties, cluster],
@@ -321,8 +333,14 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   }, [onValuesChangeCallback, initialValues])
 
   useEffect(() => {
+    if (skipFirstPersistedKeysEffect.current) {
+      skipFirstPersistedKeysEffect.current = false
+      return
+    }
     onValuesChangeCallback()
-  }, [onValuesChangeCallback, persistedKeys])
+  // do not include the callback in deps to avoid re-run when its identity changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistedKeys])
 
   /* expanded initial */
   useEffect(() => {
@@ -451,7 +469,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           <Form
             form={form}
             initialValues={initialValues}
-            onValuesChange={(_, allValues) => onValuesChangeCallback(allValues)}
+            onValuesChange={(_: any, allValues: any) => onValuesChangeCallback(allValues)}
           >
             <DesignNewLayoutProvider value={designNewLayout}>
               <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
