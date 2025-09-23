@@ -222,7 +222,9 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
               mode="multiple"
               placeholder="Select"
               options={options}
-              filterOption={filterSelectOptions}
+              filterOption={(input, option) =>
+                (option?.value || '').toString().toLowerCase().includes(input.toLowerCase())
+              }
               allowClear
               showSearch
               tagRender={tagRender}
