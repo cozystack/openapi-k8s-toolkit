@@ -233,9 +233,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   }
 
   const onValuesChangeCallback = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (values?: any) => {
-      const v = values || form.getFieldsValue()
+      const v = values ?? form.getFieldsValue(true)
       const payload: TYamlByValuesReq = {
         values: v,
         persistedKeys,
@@ -253,12 +252,47 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           if (myId !== valuesToYamlReqId.current) return
           debouncedSetYamlValues(data)
         })
-        .catch(() => {
-          /* no-op for live typing */
-        })
+        .catch(() => {})
     },
     [form, debouncedSetYamlValues, properties, persistedKeys, cluster],
   )
+
+  const pruneAdditionalForValues = (
+    props: OpenAPIV2.SchemaObject['properties'],
+    values: Record<string, unknown>,
+  ): OpenAPIV2.SchemaObject['properties'] => {
+    const next = _.cloneDeep(props) || {}
+
+    const walk = (schemaNode: any, valueNode: any) => {
+      if (!schemaNode) return
+      if (schemaNode.type === 'object') {
+        const vo = valueNode && typeof valueNode === 'object' && !Array.isArray(valueNode) ? valueNode : {}
+        if (schemaNode.properties) {
+          Object.keys(schemaNode.properties).forEach(k => {
+            const child = schemaNode.properties[k] as any
+            if (child?.isAdditionalProperties && !(k in vo)) {
+              delete schemaNode.properties[k]
+              return
+            }
+            walk(child as OpenAPIV2.SchemaObject, vo?.[k])
+          })
+        }
+      }
+      if (schemaNode.type === 'array' && schemaNode.items && Array.isArray(valueNode)) {
+        valueNode.forEach((item, idx) => {
+          if ((schemaNode as any).properties?.[idx]) {
+            walk(schemaNode.items as OpenAPIV2.SchemaObject, item)
+          }
+        })
+      }
+    }
+
+    Object.keys(next || {}).forEach(top => {
+      walk(next[top] as OpenAPIV2.SchemaObject, (values as any)?.[top])
+    })
+
+    return next
+  }
 
   const materializeAdditionalFromValues = (
     props: OpenAPIV2.SchemaObject['properties'],
@@ -332,29 +366,47 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       const myId = ++yamlToValuesReqId.current
 
       axios
-        .post<TValuesByYamlRes>(`/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`, payload)
+        .post<TValuesByYamlRes>(
+          `/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`,
+          payload,
+        )
         .then(({ data }) => {
           if (myId !== yamlToValuesReqId.current) return
-          if (data) {
-            form.setFieldsValue(data)
-            setProperties(prev => {
-              const { props: p2, toExpand } = materializeAdditionalFromValues(prev, data as Record<string, unknown>)
-              setExpandedKeys(prevEk => {
-                const seen = new Set<string>()
-                return [...(prevEk || []), ...toExpand].filter(p => {
-                  const k = JSON.stringify(p)
-                  if (seen.has(k)) return false
-                  seen.add(k)
-                  return true
-                })
+          if (!data) return
+
+          const prevAll = form.getFieldsValue(true)
+          const prevPaths = getAllPathsFromObj(prevAll)
+          const nextPaths = getAllPathsFromObj(data as Record<string, unknown>)
+          const nextSet = new Set(nextPaths.map(p => JSON.stringify(p)))
+
+          prevPaths.forEach(p => {
+            const k = JSON.stringify(p)
+            if (!nextSet.has(k)) {
+              form.setFieldValue(p as any, undefined)
+            }
+          })
+
+          form.setFieldsValue(data)
+
+          setProperties(prevProps => {
+            const pruned = pruneAdditionalForValues(prevProps, data as Record<string, unknown>)
+            const { props: materialized, toExpand } = materializeAdditionalFromValues(
+              pruned,
+              data as Record<string, unknown>,
+            )
+            setExpandedKeys(prevEk => {
+              const seen = new Set<string>()
+              return [...(prevEk || []), ...toExpand].filter(p => {
+                const key = JSON.stringify(p)
+                if (seen.has(key)) return false
+                seen.add(key)
+                return true
               })
-              return p2
             })
-          }
+            return materialized
+          })
         })
-        .catch(() => {
-          /* ignore transient parse errors while typing */
-        })
+        .catch(() => {})
     },
     [form, properties, cluster],
   )
