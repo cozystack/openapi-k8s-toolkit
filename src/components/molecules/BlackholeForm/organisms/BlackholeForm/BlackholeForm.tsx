@@ -48,6 +48,7 @@ type TBlackholeFormCreateProps = {
   hiddenPaths?: string[][]
   expandedPaths: string[][]
   persistedPaths: string[][]
+  sortPaths?: string[][]
   prefillValuesSchema?: TJSON
   prefillValueNamespaceOnly?: string
   isNameSpaced?: false | string[]
@@ -74,6 +75,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   hiddenPaths,
   expandedPaths,
   persistedPaths,
+  sortPaths,
   prefillValuesSchema,
   prefillValueNamespaceOnly,
   isNameSpaced,
@@ -730,6 +732,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                       isEdit: !isCreate,
                       expandedControls: { onExpandOpen, onExpandClose, expandedKeys },
                       persistedControls: { onPersistMark, onPersistUnmark, persistedKeys },
+                      sortPaths,
                       urlParams,
                     })}
                   </HiddenPathsProvider>
