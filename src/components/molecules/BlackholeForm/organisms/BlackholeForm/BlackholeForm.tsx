@@ -265,32 +265,33 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   ): OpenAPIV2.SchemaObject['properties'] => {
     const next = _.cloneDeep(props) || {}
 
-    const walk = (schemaNode: any, valueNode: any) => {
+    const walk = (schemaNode: any, valueNode: any, path: (string | number)[] = []) => {
       if (!schemaNode) return
       if (schemaNode.type === 'object') {
         const vo = valueNode && typeof valueNode === 'object' && !Array.isArray(valueNode) ? valueNode : {}
         if (schemaNode.properties) {
           Object.keys(schemaNode.properties).forEach(k => {
             const child = schemaNode.properties[k] as any
-            if (child?.isAdditionalProperties && !(k in vo)) {
+            const currentPath = pathKey([...path, k])
+            if (child?.isAdditionalProperties && (!(k in vo) || blockedPathsRef.current.has(currentPath))) {
               delete schemaNode.properties[k]
               return
             }
-            walk(child as OpenAPIV2.SchemaObject, vo?.[k])
+            walk(child as OpenAPIV2.SchemaObject, vo?.[k], [...path, k])
           })
         }
       }
       if (schemaNode.type === 'array' && schemaNode.items && Array.isArray(valueNode)) {
         valueNode.forEach((item, idx) => {
           if ((schemaNode as any).properties?.[idx]) {
-            walk(schemaNode.items as OpenAPIV2.SchemaObject, item)
+            walk(schemaNode.items as OpenAPIV2.SchemaObject, item, [...path, idx])
           }
         })
       }
     }
 
     Object.keys(next || {}).forEach(top => {
-      walk(next[top] as OpenAPIV2.SchemaObject, (values as any)?.[top])
+      walk(next[top] as OpenAPIV2.SchemaObject, (values as any)?.[top], [top])
     })
 
     return next
@@ -299,9 +300,10 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const materializeAdditionalFromValues = (
     props: OpenAPIV2.SchemaObject['properties'],
     values: Record<string, unknown>,
-  ): { props: OpenAPIV2.SchemaObject['properties']; toExpand: TFormName[] } => {
+  ): { props: OpenAPIV2.SchemaObject['properties']; toExpand: TFormName[]; toPersist: TFormName[] } => {
     const next = _.cloneDeep(props) || {}
     const toExpand: TFormName[] = []
+    const toPersist: TFormName[] = []
 
     const makeChildFromAP = (ap: any): OpenAPIV2.SchemaObject => {
       const t = ap?.type ?? 'object'
@@ -336,6 +338,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
               ;(schemaNode.properties![k] as any).properties ??= _.cloneDeep(ap.properties)
             }
             toExpand.push([...path, k])
+
+            // If the value under additionalProperties is an empty object {}, mark it for persist
+            const v = vo[k]
+            if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v as object).length === 0) {
+              toPersist.push([...path, k])
+            }
           })
         }
         if (schemaNode.properties && valueNode && typeof valueNode === 'object' && !Array.isArray(valueNode)) {
@@ -362,7 +370,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       walk(next[top] as OpenAPIV2.SchemaObject, (values as any)?.[top], [top])
     })
 
-    return { props: next, toExpand }
+    return { props: next, toExpand, toPersist }
   }
 
   const onYamlChangeCallback = useCallback(
@@ -388,6 +396,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
             const k = pathKey(p)
             if (!nextSet.has(k)) {
               form.setFieldValue(p as any, undefined)
+              // Block the path that was removed from YAML
+              blockedPathsRef.current.add(k)
             }
           })
 
@@ -403,7 +413,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
           setProperties(prevProps => {
             const pruned = pruneAdditionalForValues(prevProps, data as Record<string, unknown>)
-            const { props: materialized, toExpand } = materializeAdditionalFromValues(
+            const { props: materialized, toExpand, toPersist } = materializeAdditionalFromValues(
               pruned, data as Record<string, unknown>
             )
             setExpandedKeys(prevEk => {
@@ -415,6 +425,24 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 return true
               })
             })
+            // Add persist for empty {} under additionalProperties
+            if (toPersist.length) {
+              setPersistedKeys(prev => {
+                const seen = new Set(prev.map(x => JSON.stringify(x)))
+                const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
+                if (!hasNew) return prev // If there are no new paths, do not update the state
+                
+                const merged = [...prev]
+                toPersist.forEach(p => {
+                  const k = JSON.stringify(p)
+                  if (!seen.has(k)) {
+                    seen.add(k)
+                    merged.push(p)
+                  }
+                })
+                return merged
+              })
+            }
             return materialized
           })
         })
@@ -515,7 +543,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   useEffect(() => {
     if (!initialValues) return
     setProperties(prev => {
-      const { props: p2, toExpand } = materializeAdditionalFromValues(prev, initialValues as Record<string, unknown>)
+      const { props: p2, toExpand, toPersist } = materializeAdditionalFromValues(prev, initialValues as Record<string, unknown>)
       setExpandedKeys(prevEk => {
         const seen = new Set<string>()
         return [...(prevEk || []), ...toExpand].filter(p => {
@@ -525,6 +553,23 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           return true
         })
       })
+      if (toPersist.length) {
+        setPersistedKeys(prev => {
+          const seen = new Set(prev.map(x => JSON.stringify(x)))
+          const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
+          if (!hasNew) return prev // If there are no new paths, do not update the state
+          
+          const merged = [...prev]
+          toPersist.forEach(p => {
+            const k = JSON.stringify(p)
+            if (!seen.has(k)) {
+              seen.add(k)
+              merged.push(p)
+            }
+          })
+          return merged
+        })
+      }
       return p2
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -580,6 +625,32 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     console.log('newObject', newObject)
     console.log('newProperties', newProperties)
     setProperties(newProperties)
+
+    // 1) Initialize the value under the added field
+    const fullPath = [...arrPath, name] as TFormName
+    const currentValue = form.getFieldValue(fullPath)
+    if (currentValue === undefined) {
+      if (type === 'string') {
+        form.setFieldValue(fullPath as any, '')
+      } else if (type === 'number' || type === 'integer') {
+        form.setFieldValue(fullPath as any, 0)
+      } else if (type === 'array') {
+        form.setFieldValue(fullPath as any, [])
+      } else {
+        // object / unknown -> make it an object
+        form.setFieldValue(fullPath as any, {})
+      }
+    }
+
+    // 2) Auto-mark for persist
+    setPersistedKeys(prev => {
+      const seen = new Set(prev.map(x => JSON.stringify(x)))
+      const k = JSON.stringify(fullPath)
+      if (seen.has(k)) return prev
+      return [...prev, fullPath]
+    })
+
+    // 3) YAML preview will update automatically through onValuesChange in Form
   }
 
   const removeField = ({ path }: { path: TFormName }) => {
@@ -622,7 +693,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         }
       }
     }
-    setPersistedKeys([...persistedKeys, value])
+    setPersistedKeys(prev => {
+      const keyStr = JSON.stringify(value)
+      const alreadyExists = prev.some(p => JSON.stringify(p) === keyStr)
+      if (alreadyExists) return prev
+      return [...prev, value]
+    })
   }
 
   const onPersistUnmark = (value: TFormName) => {
