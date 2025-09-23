@@ -26,6 +26,7 @@ import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
 import { handleSubmitError, handleValidationError } from './utilsErrorHandler'
 import { Styled } from './styled'
+const pathKey = (p: (string|number)[]) => JSON.stringify(p)
 import {
   DesignNewLayoutProvider,
   HiddenPathsProvider,
@@ -102,6 +103,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   const [expandedKeys, setExpandedKeys] = useState<TFormName[]>(expandedPaths || [])
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
+  const blockedPathsRef = useRef<Set<string>>(new Set())
 
   const overflowRef = useRef<HTMLDivElement | null>(null)
   const valuesToYamlReqId = useRef(0)
@@ -325,6 +327,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           schemaNode.properties = schemaNode.properties || {}
           toExpand.push([...path])
           Object.keys(vo).forEach(k => {
+            const current = pathKey([...path, k])
+            if (blockedPathsRef.current.has(current)) return
+            
             if (!schemaNode.properties![k]) {
               schemaNode.properties![k] = makeChildFromAP(ap)
             } else if ((schemaNode.properties![k] as any).isAdditionalProperties && ap?.properties) {
@@ -377,10 +382,10 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           const prevAll = form.getFieldsValue(true)
           const prevPaths = getAllPathsFromObj(prevAll)
           const nextPaths = getAllPathsFromObj(data as Record<string, unknown>)
-          const nextSet = new Set(nextPaths.map(p => JSON.stringify(p)))
+          const nextSet = new Set(nextPaths.map(p => pathKey(p)))
 
           prevPaths.forEach(p => {
-            const k = JSON.stringify(p)
+            const k = pathKey(p)
             if (!nextSet.has(k)) {
               form.setFieldValue(p as any, undefined)
             }
@@ -388,11 +393,18 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
           form.setFieldsValue(data)
 
+          // Unblock paths which reappeared in data
+          const dataPathSet = new Set(
+            getAllPathsFromObj(data as Record<string, unknown>).map(p => pathKey(p))
+          )
+          blockedPathsRef.current.forEach(k => {
+            if (dataPathSet.has(k)) blockedPathsRef.current.delete(k)
+          })
+
           setProperties(prevProps => {
             const pruned = pruneAdditionalForValues(prevProps, data as Record<string, unknown>)
             const { props: materialized, toExpand } = materializeAdditionalFromValues(
-              pruned,
-              data as Record<string, unknown>,
+              pruned, data as Record<string, unknown>
             )
             setExpandedKeys(prevEk => {
               const seen = new Set<string>()
@@ -576,7 +588,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     const modifiedProperties = _.cloneDeep(properties)
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     const result = _.unset(modifiedProperties, pathWithProperties)
+
+    blockedPathsRef.current.add(pathKey(arrPath))
+    form.setFieldValue(arrPath as any, undefined)
+
     setProperties(modifiedProperties)
+    onValuesChangeCallback()
   }
 
   const onExpandOpen = (value: TFormName) => {
