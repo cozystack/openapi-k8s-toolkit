@@ -70,6 +70,8 @@ const CompoundItem = styled.div`
 `
 
 const LeftSideSelect = styled(Select)`
+  /* stylelint-disable declaration-no-important */
+
   .ant-select-selector {
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
