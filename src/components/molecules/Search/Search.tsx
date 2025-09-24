@@ -1,7 +1,8 @@
 /* eslint-disable max-lines-per-function */
 import React, { FC, useState, useEffect } from 'react'
-import { theme as antdtheme, Form, Select, SelectProps, Button } from 'antd'
+import { theme as antdtheme, Form, Select, SelectProps, Button, Checkbox, Flex } from 'antd'
 import type { CustomTagProps } from 'rc-select/lib/BaseSelect'
+import { BaseOptionType } from 'antd/es/select'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { getKinds } from 'api/bff/search/getKinds'
 import { getSortedKinds } from 'utils/getSortedKinds'
@@ -182,26 +183,31 @@ export const Search: FC<TSearchProps> = ({ cluster, theme, updateCurrentSearch }
   }, [watchedTypedSelector])
 
   const options: SelectProps['options'] =
-    kindWithVersion?.map(({ kind, group, version }) => ({
-      // kindWithVersion?.map(({ kind, notUnique, group, version }) => ({
-      // label: notUnique ? (
-      //   <div>
-      //     {kind}
-      //     <br />
-      //     {version.groupVersion}
-      //   </div>
-      // ) : (
-      //   kind
-      // ),
-      label: (
-        <div>
-          {kind}
-          <br />
-          {version.groupVersion}
-        </div>
-      ),
-      value: `${group}~${version.version}~${version.resource}`,
-    })) || []
+    kindWithVersion?.map(({ kind, group, version }) => {
+      const abbr = getUppercase(kind)
+      const bgColor = kind && kind.length ? hslFromString(abbr, theme) : ''
+      return {
+        // kindWithVersion?.map(({ kind, notUnique, group, version }) => ({
+        // label: notUnique ? (
+        //   <div>
+        //     {kind}
+        //     <br />
+        //     {version.groupVersion}
+        //   </div>
+        // ) : (
+        //   kind
+        // ),
+        label: (
+          <div>
+            {bgColor.length && <Styled.Abbr $bgColor={bgColor}>{abbr}</Styled.Abbr>}
+            {kind}
+            <br />
+            {version.groupVersion}
+          </div>
+        ),
+        value: `${group}~${version.version}~${version.resource}`,
+      }
+    }) || []
 
   const tagRender = ({ label, closable, onClose }: CustomTagProps) => (
     <Styled.SelectTag
@@ -249,6 +255,18 @@ export const Search: FC<TSearchProps> = ({ cluster, theme, updateCurrentSearch }
     form.setFieldsValue({ [FIELD_NAME_FIELDS]: cur.filter(v => v !== field) })
   }
 
+  const kindOptionRender = (option: BaseOptionType) => {
+    const selectedList: string[] = form.getFieldValue(FIELD_NAME) || []
+    const checked = selectedList.includes(option.value as string)
+
+    return (
+      <Flex gap={8}>
+        <Checkbox checked={checked} />
+        <div>{option.label as React.ReactNode}</div>
+      </Flex>
+    )
+  }
+
   return (
     <Styled.BackgroundContainer $colorBorder={token.colorBorder} $colorBgLayout={token.colorBgLayout}>
       <Form form={form} layout="vertical">
@@ -268,6 +286,9 @@ export const Search: FC<TSearchProps> = ({ cluster, theme, updateCurrentSearch }
               maxTagCount={0}
               maxTagPlaceholder={maxTagPlaceholder}
               tagRender={maxTagTagRender}
+              // Render each option row with a checkbox that reflects selection
+              menuItemSelectedIcon={null}
+              optionRender={kindOptionRender}
             />
           </Styled.ResetedFormItem>
           <Styled.CompoundItem>

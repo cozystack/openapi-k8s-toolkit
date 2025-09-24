@@ -116,7 +116,7 @@ type TAbbrProps = {
 const Abbr = styled.span<TAbbrProps>`
   background-color: ${({ $bgColor }) => $bgColor};
   border-radius: 13px;
-  padding: 3px 5px;
+  padding: 2px 5px;
   margin-right: 10px;
 `
 
