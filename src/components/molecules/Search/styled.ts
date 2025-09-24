@@ -96,6 +96,25 @@ const RightSideSelect = styled(Select)`
   }
 `
 
+const BottomTagsHolder = styled.div`
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+`
+
+const CustomTag = styled(Tag)`
+  font-size: 14px;
+  height: 22px;
+  margin-inline-end: 0 !important;
+`
+
+const ClearButtonHolder = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+`
+
 export const Styled = {
   SelectTag,
   SelectTagSpan,
@@ -109,4 +128,7 @@ export const Styled = {
   LeftSideSelect,
   RightSideInput,
   RightSideSelect,
+  BottomTagsHolder,
+  CustomTag,
+  ClearButtonHolder,
 }

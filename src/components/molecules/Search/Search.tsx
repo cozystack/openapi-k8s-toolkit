@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import React, { FC, useState, useEffect } from 'react'
-import { theme, Form, Select, SelectProps, Button, Tag } from 'antd'
+import { theme, Form, Select, SelectProps, Button } from 'antd'
 import type { CustomTagProps } from 'rc-select/lib/BaseSelect'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { getKinds } from 'api/bff/search/getKinds'
@@ -227,6 +227,25 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
 
   const getKindByGvr = kindByGvr(kindWithVersion || [])
 
+  const removeKind = (value: string) => {
+    const cur: string[] = form.getFieldValue(FIELD_NAME) || []
+    form.setFieldsValue({ [FIELD_NAME]: cur.filter(v => v !== value) })
+  }
+
+  const clearName = () => {
+    form.setFieldsValue({ [FIELD_NAME_STRING]: '' })
+  }
+
+  const removeLabel = (label: string) => {
+    const cur: string[] = form.getFieldValue(FIELD_NAME_LABELS) || []
+    form.setFieldsValue({ [FIELD_NAME_LABELS]: cur.filter(v => v !== label) })
+  }
+
+  const removeField = (field: string) => {
+    const cur: string[] = form.getFieldValue(FIELD_NAME_FIELDS) || []
+    form.setFieldsValue({ [FIELD_NAME_FIELDS]: cur.filter(v => v !== field) })
+  }
+
   return (
     <Styled.BackgroundContainer $colorBorder={token.colorBorder} $colorBgLayout={token.colorBgLayout}>
       <Form form={form} layout="vertical">
@@ -360,12 +379,79 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
           </Styled.ResetedFormItem>
         </Styled.FormContainer>
       </Form>
-      <div>
-        {watchedKinds && watchedKinds.map(fullKindName => <Tag key={fullKindName}>{getKindByGvr(fullKindName)}</Tag>)}
-        {watchedName && <Tag>{watchedName}</Tag>}
-        {watchedLabels && watchedLabels.map(label => <Tag key={label}>{label}</Tag>)}
-        {watchedFields && watchedFields.map(field => <Tag key={field}>{field}</Tag>)}
-      </div>
+      <Styled.BottomTagsHolder>
+        {watchedKinds &&
+          watchedKinds.map(fullKindName => (
+            <Styled.CustomTag
+              key={fullKindName}
+              onClose={e => {
+                e.preventDefault()
+                removeKind(fullKindName)
+              }}
+              closable
+            >
+              {getKindByGvr(fullKindName)}
+            </Styled.CustomTag>
+          ))}
+        {watchedName && (
+          <Styled.CustomTag
+            onClose={e => {
+              e.preventDefault()
+              clearName()
+            }}
+            closable
+          >
+            {watchedName}
+          </Styled.CustomTag>
+        )}
+        {watchedLabels &&
+          watchedLabels.map(label => (
+            <Styled.CustomTag
+              key={label}
+              onClose={e => {
+                e.preventDefault()
+                removeLabel(label)
+              }}
+              closable
+            >
+              {label}
+            </Styled.CustomTag>
+          ))}
+        {watchedFields &&
+          watchedFields.map(field => (
+            <Styled.CustomTag
+              key={field}
+              onClose={e => {
+                e.preventDefault()
+                removeField(field)
+              }}
+              closable
+            >
+              {field}
+            </Styled.CustomTag>
+          ))}
+      </Styled.BottomTagsHolder>
+      {(watchedKinds && watchedKinds.length) ||
+      (watchedName && watchedName.length) ||
+      (watchedLabels && watchedLabels.length) ||
+      (watchedFields && watchedFields.length) ? (
+        <Styled.ClearButtonHolder>
+          <Button
+            type="primary"
+            onClick={() => {
+              form.setFieldsValue({
+                [FIELD_NAME]: [],
+                [FIELD_NAME_STRING]: '',
+                [FIELD_NAME_LABELS]: [],
+                [FIELD_NAME_FIELDS]: [],
+                [TYPE_SELECTOR]: 'name', // reset selector to default
+              })
+            }}
+          >
+            Clear
+          </Button>
+        </Styled.ClearButtonHolder>
+      ) : undefined}
     </Styled.BackgroundContainer>
   )
 }
