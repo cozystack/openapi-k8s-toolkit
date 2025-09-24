@@ -109,6 +109,17 @@ const CustomTag = styled(Tag)`
   margin-inline-end: 0 !important;
 `
 
+type TAbbrProps = {
+  $bgColor: string
+}
+
+const Abbr = styled.span<TAbbrProps>`
+  background-color: ${({ $bgColor }) => $bgColor};
+  border-radius: 13px;
+  padding: 3px 5px;
+  margin-right: 10px;
+`
+
 const ClearButtonHolder = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -130,5 +141,6 @@ export const Styled = {
   RightSideSelect,
   BottomTagsHolder,
   CustomTag,
+  Abbr,
   ClearButtonHolder,
 }

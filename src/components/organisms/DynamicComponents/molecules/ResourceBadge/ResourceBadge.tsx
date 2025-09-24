@@ -1,12 +1,13 @@
 /* eslint-disable no-console */
 /* eslint-disable react/no-array-index-key */
 import React, { FC } from 'react'
+import { hslFromString } from 'utils/hslFromString'
+import { getUppercase } from 'utils/getUppercase'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
 import { parseAll } from '../utils'
-import { hslFromString, getUppercase } from './utils'
 import { Styled } from './styled'
 
 export const ResourceBadge: FC<{ data: TDynamicComponentsAppTypeMap['ResourceBadge'] }> = ({ data }) => {

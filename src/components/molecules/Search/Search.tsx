@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import React, { FC, useState, useEffect } from 'react'
-import { theme, Form, Select, SelectProps, Button } from 'antd'
+import { theme as antdtheme, Form, Select, SelectProps, Button } from 'antd'
 import type { CustomTagProps } from 'rc-select/lib/BaseSelect'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { getKinds } from 'api/bff/search/getKinds'
@@ -8,11 +8,14 @@ import { getSortedKinds } from 'utils/getSortedKinds'
 import { TKindIndex } from 'localTypes/bff/search'
 import { TKindWithVersion } from 'localTypes/search'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
+import { hslFromString } from 'utils/hslFromString'
+import { getUppercase } from 'utils/getUppercase'
 import { useDebouncedCallback, getArrayParam, setArrayParam, getStringParam, setStringParam, kindByGvr } from './utils'
 import { Styled } from './styled'
 
 type TSearchProps = {
   cluster: string
+  theme: 'light' | 'dark'
   updateCurrentSearch: ({
     resources,
     name,
@@ -26,11 +29,11 @@ type TSearchProps = {
   }) => void
 }
 
-export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
+export const Search: FC<TSearchProps> = ({ cluster, theme, updateCurrentSearch }) => {
   const [form] = Form.useForm()
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
-  const { token } = theme.useToken()
+  const { token } = antdtheme.useToken()
 
   const FIELD_NAME = 'kinds'
   const FIELD_NAME_STRING = 'name'
@@ -381,18 +384,24 @@ export const Search: FC<TSearchProps> = ({ cluster, updateCurrentSearch }) => {
       </Form>
       <Styled.BottomTagsHolder>
         {watchedKinds &&
-          watchedKinds.map(fullKindName => (
-            <Styled.CustomTag
-              key={fullKindName}
-              onClose={e => {
-                e.preventDefault()
-                removeKind(fullKindName)
-              }}
-              closable
-            >
-              {getKindByGvr(fullKindName)}
-            </Styled.CustomTag>
-          ))}
+          watchedKinds.map(fullKindName => {
+            const kind = getKindByGvr(fullKindName)
+            const abbr = getUppercase(kind && kind.length ? kind : 'Loading')
+            const bgColor = kind && kind.length ? hslFromString(abbr, theme) : ''
+            return (
+              <Styled.CustomTag
+                key={fullKindName}
+                onClose={e => {
+                  e.preventDefault()
+                  removeKind(fullKindName)
+                }}
+                closable
+              >
+                {kind && kind.length && bgColor.length && <Styled.Abbr $bgColor={bgColor}>{abbr}</Styled.Abbr>}
+                {kind}
+              </Styled.CustomTag>
+            )
+          })}
         {watchedName && (
           <Styled.CustomTag
             onClose={e => {
