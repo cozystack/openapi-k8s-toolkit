@@ -339,9 +339,14 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
             }
             toExpand.push([...path, k])
 
-            // If the value under additionalProperties is an empty object {}, mark it for persist
+            // Mark for persist if it's a new field created from additionalProperties
             const v = vo[k]
+            // Mark empty objects for persist
             if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v as object).length === 0) {
+              toPersist.push([...path, k])
+            }
+            // Mark other new fields for persist (strings, numbers, arrays)
+            else if (v === '' || v === 0 || (Array.isArray(v) && v.length === 0)) {
               toPersist.push([...path, k])
             }
           })
@@ -416,16 +421,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
             const { props: materialized, toExpand, toPersist } = materializeAdditionalFromValues(
               pruned, data as Record<string, unknown>
             )
-            setExpandedKeys(prevEk => {
-              const seen = new Set<string>()
-              return [...(prevEk || []), ...toExpand].filter(p => {
-                const key = JSON.stringify(p)
-                if (seen.has(key)) return false
-                seen.add(key)
-                return true
-              })
-            })
-            // Add persist for empty {} under additionalProperties
+            // DO NOT auto-expand any paths to preserve user's manual collapse state
+            // Only update persisted keys for empty objects under additionalProperties
             if (toPersist.length) {
               setPersistedKeys(prev => {
                 const seen = new Set(prev.map(x => JSON.stringify(x)))
@@ -544,15 +541,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     if (!initialValues) return
     setProperties(prev => {
       const { props: p2, toExpand, toPersist } = materializeAdditionalFromValues(prev, initialValues as Record<string, unknown>)
-      setExpandedKeys(prevEk => {
-        const seen = new Set<string>()
-        return [...(prevEk || []), ...toExpand].filter(p => {
-          const k = JSON.stringify(p)
-          if (seen.has(k)) return false
-          seen.add(k)
-          return true
-        })
-      })
+      // DO NOT auto-expand paths from initial values to preserve user's collapse state
+      // Only update persisted keys for empty objects under additionalProperties
       if (toPersist.length) {
         setPersistedKeys(prev => {
           const seen = new Set(prev.map(x => JSON.stringify(x)))
@@ -650,7 +640,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       return [...prev, fullPath]
     })
 
-    // 3) YAML preview will update automatically through onValuesChange in Form
+    // 3) Trigger YAML update to ensure new field is properly handled
+    onValuesChangeCallback()
   }
 
   const removeField = ({ path }: { path: TFormName }) => {
