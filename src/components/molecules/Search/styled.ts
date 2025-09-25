@@ -48,7 +48,7 @@ const BackgroundContainer = styled.div<TBackgroundContainerProps>`
 
 const FormContainer = styled.div`
   display: grid;
-  grid-template-columns: 2fr 10fr 75px;
+  grid-template-columns: 2fr 10fr;
   gap: 8px;
 `
 
