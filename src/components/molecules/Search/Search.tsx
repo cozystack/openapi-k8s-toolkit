@@ -51,12 +51,13 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
         //   kind
         // ),
         label: (
-          <div>
+          <Flex gap={8} align="center">
             {bgColor.length && <Styled.Abbr $bgColor={bgColor}>{abbr}</Styled.Abbr>}
-            {kind}
-            <br />
-            {version.groupVersion}
-          </div>
+            <Flex gap={2} vertical>
+              <Styled.OptionLabelKind>{kind}</Styled.OptionLabelKind>
+              <Styled.OptionLabelVersion>{version.groupVersion}</Styled.OptionLabelVersion>
+            </Flex>
+          </Flex>
         ),
         value: `${group}~${version.version}~${version.resource}`,
       }
@@ -113,8 +114,10 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
     const checked = selectedList.includes(option.value as string)
 
     return (
-      <Flex gap={8}>
-        <Checkbox checked={checked} />
+      <Flex gap={8} align="center">
+        <div>
+          <Checkbox checked={checked} />
+        </div>
         <div>{option.label as React.ReactNode}</div>
       </Flex>
     )

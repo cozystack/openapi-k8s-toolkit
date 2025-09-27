@@ -32,6 +32,20 @@ const MaxTagPlacheolderLength = styled.span<TMaxTagPlaceholderLengthProps>`
   border-radius: 20px;
 `
 
+const OptionLabelKind = styled.div`
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+`
+
+const OptionLabelVersion = styled.div`
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 14px; /* 140% */
+`
+
 type TBackgroundContainerProps = {
   $colorBorder: string
   $colorBgLayout: string
@@ -48,7 +62,7 @@ const BackgroundContainer = styled.div<TBackgroundContainerProps>`
 
 const FormContainer = styled.div`
   display: grid;
-  grid-template-columns: 2fr 10fr;
+  grid-template-columns: 3fr 9fr;
   gap: 8px;
 `
 
@@ -119,7 +133,7 @@ const Abbr = styled.span<TAbbrProps>`
   background-color: ${({ $bgColor }) => $bgColor};
   border-radius: 13px;
   padding: 2px 5px;
-  margin-right: 10px;
+  height: min-content;
 `
 
 const ClearButtonHolder = styled.div`
@@ -133,6 +147,8 @@ export const Styled = {
   SelectTagSpan,
   MaxTagPlacheolder,
   MaxTagPlacheolderLength,
+  OptionLabelKind,
+  OptionLabelVersion,
   BackgroundContainer,
   FormContainer,
   ResetedFormItem,
