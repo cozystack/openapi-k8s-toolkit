@@ -18,7 +18,7 @@ import { TInternalDataForControls } from './types'
 export const getCellRender = ({
   value,
   record,
-  possibleTrimLength,
+  possibleTrimLength = 64,
   possibleUndefinedValue,
   possibleCustomTypeWithProps,
   theme,
