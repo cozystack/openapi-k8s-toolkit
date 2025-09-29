@@ -193,6 +193,7 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
                   suffixIcon={null}
                   filterOption={filterSelectOptions}
                   tagRender={tagRender}
+                  maxTagCount="responsive"
                   disabled={!watchedKinds || !watchedKinds.length}
                 />
               </Styled.ResetedFormItem>
@@ -230,6 +231,7 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
                   suffixIcon={null}
                   filterOption={filterSelectOptions}
                   tagRender={tagRender}
+                  maxTagCount="responsive"
                   disabled={!watchedKinds || !watchedKinds.length}
                 />
               </Styled.ResetedFormItem>
