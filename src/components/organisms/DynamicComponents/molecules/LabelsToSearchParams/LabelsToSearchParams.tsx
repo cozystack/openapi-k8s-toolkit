@@ -84,7 +84,7 @@ export const LabelsToSearchParams: FC<{
     .join(',')
   const labelsEncoded = encodeURIComponent(labels)
 
-  const hrefPrepared = `${linkPrefixPrepared}?${labelsEncoded}`
+  const hrefPrepared = `${linkPrefixPrepared}${labelsEncoded}`
   return (
     <Typography.Link href={hrefPrepared} {...linkProps}>
       {labels}
