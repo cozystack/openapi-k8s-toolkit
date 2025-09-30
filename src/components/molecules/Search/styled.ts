@@ -8,7 +8,6 @@ const SelectTag = styled(Tag)`
   align-items: center;
   white-space: normal;
   line-height: 1.1;
-  max-width: 240px;
 `
 
 const SelectTagSpan = styled.span`

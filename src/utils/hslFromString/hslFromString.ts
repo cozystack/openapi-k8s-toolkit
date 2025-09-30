@@ -28,10 +28,10 @@ const pickInRange = (u32: number, min: number, max: number): number => min + (u3
 export const hslFromString: (value: string, theme: Theme) => string = (value, theme) => {
   const hash = fnv1a32(value)
 
-  const hue = hash % 360
+  const hue = hash % 345
 
-  const [sMin, sMax] = theme === 'light' ? [5, 10] : [5, 15]
-  const [lMin, lMax] = theme === 'light' ? [88, 94] : [18, 25]
+  const [sMin, sMax] = theme === 'light' ? [90, 100] : [80, 100]
+  const [lMin, lMax] = theme === 'light' ? [78, 80] : [35, 50]
 
   const s = pickInRange(hash >>> 8, sMin, sMax) // use different hash bits for S
   const l = pickInRange(hash >>> 16, lMin, lMax) // and for L

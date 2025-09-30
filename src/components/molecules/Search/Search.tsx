@@ -36,32 +36,24 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
   const watchedTypedSelector = Form.useWatch<string | undefined>(TYPE_SELECTOR, form)
 
   const options: SelectProps['options'] =
-    kindsWithVersion?.map(({ kind, group, version }) => {
-      const abbr = getUppercase(kind)
-      const bgColor = kind && kind.length ? hslFromString(abbr, theme) : ''
-      return {
-        // kindWithVersion?.map(({ kind, notUnique, group, version }) => ({
-        // label: notUnique ? (
-        //   <div>
-        //     {kind}
-        //     <br />
-        //     {version.groupVersion}
-        //   </div>
-        // ) : (
-        //   kind
-        // ),
-        label: (
-          <Flex gap={8} align="center">
-            {bgColor.length && <Styled.Abbr $bgColor={bgColor}>{abbr}</Styled.Abbr>}
-            <Flex gap={2} vertical>
-              <Styled.OptionLabelKind>{kind}</Styled.OptionLabelKind>
-              <Styled.OptionLabelVersion>{version.groupVersion}</Styled.OptionLabelVersion>
+    kindsWithVersion
+      .filter(({ version }) => version.verbs && version.verbs.includes('list'))
+      .map(({ kind, group, version }) => {
+        const abbr = getUppercase(kind)
+        const bgColor = kind && kind.length ? hslFromString(abbr, theme) : ''
+        return {
+          label: (
+            <Flex gap={8} align="center">
+              {bgColor.length && <Styled.Abbr $bgColor={bgColor}>{abbr}</Styled.Abbr>}
+              <Flex gap={2} vertical>
+                <Styled.OptionLabelKind>{kind}</Styled.OptionLabelKind>
+                <Styled.OptionLabelVersion>{version.groupVersion}</Styled.OptionLabelVersion>
+              </Flex>
             </Flex>
-          </Flex>
-        ),
-        value: `${group}~${version.version}~${version.resource}`,
-      }
-    }) || []
+          ),
+          value: `${group}~${version.version}~${version.resource}`,
+        }
+      }) || []
 
   const tagRender = ({ label, closable, onClose }: CustomTagProps) => (
     <Styled.SelectTag
@@ -88,7 +80,7 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
 
   const maxTagTagRender = ({ label }: CustomTagProps) => <Styled.MaxTagPlacheolder>{label}</Styled.MaxTagPlacheolder>
 
-  const getKindByGvr = kindByGvr(kindsWithVersion || [])
+  const getKindByGvr = kindByGvr(kindsWithVersion)
 
   const removeKind = (value: string) => {
     const cur: string[] = form.getFieldValue(FIELD_NAME) || []
@@ -201,6 +193,7 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
                   suffixIcon={null}
                   filterOption={filterSelectOptions}
                   tagRender={tagRender}
+                  maxTagCount="responsive"
                   disabled={!watchedKinds || !watchedKinds.length}
                 />
               </Styled.ResetedFormItem>
@@ -238,6 +231,7 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
                   suffixIcon={null}
                   filterOption={filterSelectOptions}
                   tagRender={tagRender}
+                  maxTagCount="responsive"
                   disabled={!watchedKinds || !watchedKinds.length}
                 />
               </Styled.ResetedFormItem>
