@@ -44,7 +44,7 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
       .filter(({ version }) => version.verbs && version.verbs.includes('list'))
       .map(({ kind, group, version }) => {
         const abbr = getUppercase(kind)
-        const bgColor = kind && kind.length ? hslFromString(abbr, theme) : ''
+        const bgColor = kind && kind.length ? hslFromString(kind, theme) : ''
         return {
           label: (
             <Flex gap={8} align="center">
@@ -261,7 +261,7 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
                   {watchedKinds.map(fullKindName => {
                     const kind = getKindByGvr(fullKindName)
                     const abbr = getUppercase(kind && kind.length ? kind : 'Loading')
-                    const bgColor = kind && kind.length ? hslFromString(abbr, theme) : ''
+                    const bgColor = kind && kind.length ? hslFromString(kind, theme) : ''
                     return (
                       <Styled.CustomTag
                         key={fullKindName}
