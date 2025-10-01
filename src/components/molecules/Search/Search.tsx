@@ -1,8 +1,10 @@
 /* eslint-disable max-lines-per-function */
 import React, { FC } from 'react'
-import { theme as antdtheme, Form, Select, SelectProps, Button, Checkbox, Flex, FormInstance } from 'antd'
+import { theme as antdtheme, Form, Select, Input, SelectProps, Button, Checkbox, Flex, FormInstance } from 'antd'
+import { useSearchParams } from 'react-router-dom'
 import type { CustomTagProps } from 'rc-select/lib/BaseSelect'
 import { BaseOptionType } from 'antd/es/select'
+import { ClearOutlined } from '@ant-design/icons'
 import { TKindWithVersion } from 'localTypes/search'
 import { filterSelectOptions } from 'utils/filterSelectOptions'
 import { hslFromString } from 'utils/hslFromString'
@@ -26,6 +28,8 @@ type TSearchProps = {
 
 export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVersion }) => {
   const { token } = antdtheme.useToken()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [sp, setSearchParams] = useSearchParams()
 
   const { FIELD_NAME, FIELD_NAME_STRING, FIELD_NAME_LABELS, FIELD_NAME_FIELDS, TYPE_SELECTOR } = constants
 
@@ -116,13 +120,22 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
   }
 
   return (
-    <Styled.BackgroundContainer $colorBorder={token.colorBorder} $colorBgLayout={token.colorBgLayout}>
+    <Styled.BackgroundContainer
+      $colorBorder={token.colorBorder}
+      $colorBgLayout={token.colorBgLayout}
+      $visibleBackground={Boolean(
+        (watchedKinds && watchedKinds.length) ||
+          (watchedName && watchedName.length) ||
+          (watchedLabels && watchedLabels.length) ||
+          (watchedFields && watchedFields.length),
+      )}
+    >
       <Form form={form} layout="vertical">
         <Styled.FormContainer>
           <Styled.ResetedFormItem name={FIELD_NAME}>
             <Select
               mode="multiple"
-              placeholder="Select"
+              placeholder="Select kinds"
               options={options}
               filterOption={(input, option) =>
                 (option?.value || '').toString().toLowerCase().includes(input.toLowerCase())
@@ -139,173 +152,199 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
               optionRender={kindOptionRender}
             />
           </Styled.ResetedFormItem>
-          <Styled.CompoundItem>
-            <Styled.ResetedFormItem name={TYPE_SELECTOR}>
-              <Styled.LeftSideSelect
-                placeholder="Select"
-                options={[
-                  { label: 'Name', value: 'name' },
-                  { label: 'Labels', value: 'labels' },
-                  { label: 'Fields', value: 'fields' },
-                ]}
-                defaultValue="name"
+          {/* <Styled.CompoundItem> */}
+          <Styled.ResetedFormItem name={TYPE_SELECTOR}>
+            <Select
+              placeholder="Select"
+              options={[
+                { label: 'Name', value: 'name' },
+                { label: 'Labels', value: 'labels' },
+                { label: 'Fields', value: 'fields' },
+              ]}
+              defaultValue="name"
+              filterOption={filterSelectOptions}
+              showSearch
+            />
+          </Styled.ResetedFormItem>
+          <Styled.HideableContainer $isHidden={watchedTypedSelector === 'labels' || watchedTypedSelector === 'fields'}>
+            <Styled.ResetedFormItem name={FIELD_NAME_STRING}>
+              <Input allowClear placeholder="Name" disabled={!watchedKinds || !watchedKinds.length} />
+            </Styled.ResetedFormItem>
+          </Styled.HideableContainer>
+          <Styled.HideableContainer
+            $isHidden={
+              watchedTypedSelector === 'name' || watchedTypedSelector === 'fields' || watchedTypedSelector === undefined
+            }
+          >
+            <Styled.ResetedFormItem
+              name={FIELD_NAME_LABELS}
+              validateTrigger="onBlur"
+              rules={[
+                () => ({
+                  validator(_, value) {
+                    if (
+                      Array.isArray(value) &&
+                      value.every(str => typeof str === 'string' && str.includes('=') && !str.startsWith('='))
+                    ) {
+                      return Promise.resolve()
+                    }
+                    return Promise.reject(new Error('Please enter key=value style'))
+                  },
+                }),
+              ]}
+            >
+              <Select
+                mode="tags"
+                allowClear
+                placeholder="Key=Value"
+                // dropdownStyle={{ display: 'none' }}
+                tokenSeparators={[',', ' ', '	']}
+                suffixIcon={null}
                 filterOption={filterSelectOptions}
-                showSearch
+                tagRender={tagRender}
+                maxTagCount="responsive"
+                disabled={!watchedKinds || !watchedKinds.length}
               />
             </Styled.ResetedFormItem>
-            <Styled.HideableContainer
-              $isHidden={watchedTypedSelector === 'labels' || watchedTypedSelector === 'fields'}
+          </Styled.HideableContainer>
+          <Styled.HideableContainer
+            $isHidden={
+              watchedTypedSelector === 'name' || watchedTypedSelector === 'labels' || watchedTypedSelector === undefined
+            }
+          >
+            <Styled.ResetedFormItem
+              name={FIELD_NAME_FIELDS}
+              validateTrigger="onBlur"
+              rules={[
+                () => ({
+                  validator(_, value) {
+                    if (
+                      Array.isArray(value) &&
+                      value.every(str => typeof str === 'string' && str.includes('=') && !str.startsWith('='))
+                    ) {
+                      return Promise.resolve()
+                    }
+                    return Promise.reject(new Error('Please enter key=value style'))
+                  },
+                }),
+              ]}
             >
-              <Styled.ResetedFormItem name={FIELD_NAME_STRING}>
-                <Styled.RightSideInput allowClear placeholder="Name" disabled={!watchedKinds || !watchedKinds.length} />
-              </Styled.ResetedFormItem>
-            </Styled.HideableContainer>
-            <Styled.HideableContainer
-              $isHidden={
-                watchedTypedSelector === 'name' ||
-                watchedTypedSelector === 'fields' ||
-                watchedTypedSelector === undefined
-              }
-            >
-              <Styled.ResetedFormItem
-                name={FIELD_NAME_LABELS}
-                validateTrigger="onBlur"
-                rules={[
-                  () => ({
-                    validator(_, value) {
-                      if (
-                        Array.isArray(value) &&
-                        value.every(str => typeof str === 'string' && str.includes('=') && !str.startsWith('='))
-                      ) {
-                        return Promise.resolve()
-                      }
-                      return Promise.reject(new Error('Please enter key=value style'))
-                    },
-                  }),
-                ]}
-              >
-                <Styled.RightSideSelect
-                  mode="tags"
-                  allowClear
-                  placeholder="Key=Value"
-                  // dropdownStyle={{ display: 'none' }}
-                  tokenSeparators={[',', ' ', '	']}
-                  suffixIcon={null}
-                  filterOption={filterSelectOptions}
-                  tagRender={tagRender}
-                  maxTagCount="responsive"
-                  disabled={!watchedKinds || !watchedKinds.length}
-                />
-              </Styled.ResetedFormItem>
-            </Styled.HideableContainer>
-            <Styled.HideableContainer
-              $isHidden={
-                watchedTypedSelector === 'name' ||
-                watchedTypedSelector === 'labels' ||
-                watchedTypedSelector === undefined
-              }
-            >
-              <Styled.ResetedFormItem
-                name={FIELD_NAME_FIELDS}
-                validateTrigger="onBlur"
-                rules={[
-                  () => ({
-                    validator(_, value) {
-                      if (
-                        Array.isArray(value) &&
-                        value.every(str => typeof str === 'string' && str.includes('=') && !str.startsWith('='))
-                      ) {
-                        return Promise.resolve()
-                      }
-                      return Promise.reject(new Error('Please enter key=value style'))
-                    },
-                  }),
-                ]}
-              >
-                <Styled.RightSideSelect
-                  mode="tags"
-                  allowClear
-                  placeholder="Key=Value"
-                  // dropdownStyle={{ display: 'none' }}
-                  tokenSeparators={[',', ' ', '	']}
-                  suffixIcon={null}
-                  filterOption={filterSelectOptions}
-                  tagRender={tagRender}
-                  maxTagCount="responsive"
-                  disabled={!watchedKinds || !watchedKinds.length}
-                />
-              </Styled.ResetedFormItem>
-            </Styled.HideableContainer>
-          </Styled.CompoundItem>
+              <Select
+                mode="tags"
+                allowClear
+                placeholder="Key=Value"
+                // dropdownStyle={{ display: 'none' }}
+                tokenSeparators={[',', ' ', '	']}
+                suffixIcon={null}
+                filterOption={filterSelectOptions}
+                tagRender={tagRender}
+                maxTagCount="responsive"
+                disabled={!watchedKinds || !watchedKinds.length}
+              />
+            </Styled.ResetedFormItem>
+          </Styled.HideableContainer>
+          {/* </Styled.CompoundItem> */}
         </Styled.FormContainer>
       </Form>
       {(watchedKinds && watchedKinds.length) ||
       (watchedName && watchedName.length) ||
       (watchedLabels && watchedLabels.length) ||
       (watchedFields && watchedFields.length) ? (
-        <>
-          <Styled.BottomTagsHolder>
-            {watchedKinds &&
-              watchedKinds.map(fullKindName => {
-                const kind = getKindByGvr(fullKindName)
-                const abbr = getUppercase(kind && kind.length ? kind : 'Loading')
-                const bgColor = kind && kind.length ? hslFromString(abbr, theme) : ''
-                return (
+        <Styled.BottomTagsContainer>
+          <Styled.OptionsFlex>
+            {watchedKinds && watchedKinds.length > 0 && (
+              <Styled.BottomTagsRow>
+                <Styled.BottomTagsRowText $colorDescription={token.colorTextDescription}>
+                  Kinds:
+                </Styled.BottomTagsRowText>
+                <Styled.BottomTagsHolder>
+                  {watchedKinds.map(fullKindName => {
+                    const kind = getKindByGvr(fullKindName)
+                    const abbr = getUppercase(kind && kind.length ? kind : 'Loading')
+                    const bgColor = kind && kind.length ? hslFromString(abbr, theme) : ''
+                    return (
+                      <Styled.CustomTag
+                        key={fullKindName}
+                        onClose={e => {
+                          e.preventDefault()
+                          removeKind(fullKindName)
+                        }}
+                        closable
+                      >
+                        {kind && kind.length && bgColor.length && <Styled.Abbr $bgColor={bgColor}>{abbr}</Styled.Abbr>}
+                        {kind}
+                      </Styled.CustomTag>
+                    )
+                  })}
+                </Styled.BottomTagsHolder>
+              </Styled.BottomTagsRow>
+            )}
+            {watchedName && watchedName.length > 0 && (
+              <Styled.BottomTagsRow>
+                <Styled.BottomTagsRowText $colorDescription={token.colorTextDescription}>
+                  Name:
+                </Styled.BottomTagsRowText>
+                <Styled.BottomTagsHolder>
                   <Styled.CustomTag
-                    key={fullKindName}
                     onClose={e => {
                       e.preventDefault()
-                      removeKind(fullKindName)
+                      clearName()
                     }}
                     closable
                   >
-                    {kind && kind.length && bgColor.length && <Styled.Abbr $bgColor={bgColor}>{abbr}</Styled.Abbr>}
-                    {kind}
+                    {watchedName}
                   </Styled.CustomTag>
-                )
-              })}
-            {watchedName && (
-              <Styled.CustomTag
-                onClose={e => {
-                  e.preventDefault()
-                  clearName()
-                }}
-                closable
-              >
-                {watchedName}
-              </Styled.CustomTag>
+                </Styled.BottomTagsHolder>
+              </Styled.BottomTagsRow>
             )}
-            {watchedLabels &&
-              watchedLabels.map(label => (
-                <Styled.CustomTag
-                  key={label}
-                  onClose={e => {
-                    e.preventDefault()
-                    removeLabel(label)
-                  }}
-                  closable
-                >
-                  {label}
-                </Styled.CustomTag>
-              ))}
-            {watchedFields &&
-              watchedFields.map(field => (
-                <Styled.CustomTag
-                  key={field}
-                  onClose={e => {
-                    e.preventDefault()
-                    removeField(field)
-                  }}
-                  closable
-                >
-                  {field}
-                </Styled.CustomTag>
-              ))}
-          </Styled.BottomTagsHolder>
+            {watchedLabels && watchedLabels.length > 0 && (
+              <Styled.BottomTagsRow>
+                <Styled.BottomTagsRowText $colorDescription={token.colorTextDescription}>
+                  Labels:
+                </Styled.BottomTagsRowText>
+                <Styled.BottomTagsHolder>
+                  {watchedLabels.map(label => (
+                    <Styled.CustomTag
+                      key={label}
+                      onClose={e => {
+                        e.preventDefault()
+                        removeLabel(label)
+                      }}
+                      closable
+                    >
+                      {label}
+                    </Styled.CustomTag>
+                  ))}
+                </Styled.BottomTagsHolder>
+              </Styled.BottomTagsRow>
+            )}
+            {watchedFields && watchedFields.length > 0 && (
+              <Styled.BottomTagsRow>
+                <Styled.BottomTagsRowText $colorDescription={token.colorTextDescription}>
+                  Fields:
+                </Styled.BottomTagsRowText>
+                <Styled.BottomTagsHolder>
+                  {watchedFields.map(field => (
+                    <Styled.CustomTag
+                      key={field}
+                      onClose={e => {
+                        e.preventDefault()
+                        removeField(field)
+                      }}
+                      closable
+                    >
+                      {field}
+                    </Styled.CustomTag>
+                  ))}
+                </Styled.BottomTagsHolder>
+              </Styled.BottomTagsRow>
+            )}
+          </Styled.OptionsFlex>
           <Styled.ClearButtonHolder>
             <Button
               type="primary"
               onClick={() => {
+                setSearchParams(new URLSearchParams())
                 form.setFieldsValue({
                   [FIELD_NAME]: [],
                   [FIELD_NAME_STRING]: '',
@@ -315,10 +354,10 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
                 })
               }}
             >
-              Clear
+              <ClearOutlined />
             </Button>
           </Styled.ClearButtonHolder>
-        </>
+        </Styled.BottomTagsContainer>
       ) : undefined}
     </Styled.BackgroundContainer>
   )
