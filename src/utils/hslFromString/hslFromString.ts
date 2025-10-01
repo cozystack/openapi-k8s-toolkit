@@ -30,8 +30,8 @@ export const hslFromString: (value: string, theme: Theme) => string = (value, th
 
   const hue = hash % 345
 
-  const [sMin, sMax] = theme === 'light' ? [90, 100] : [80, 100]
-  const [lMin, lMax] = theme === 'light' ? [78, 80] : [35, 50]
+  const [sMin, sMax] = theme === 'light' ? [90, 100] : [78, 80]
+  const [lMin, lMax] = theme === 'light' ? [78, 80] : [35, 40]
 
   const s = pickInRange(hash >>> 8, sMin, sMax) // use different hash bits for S
   const l = pickInRange(hash >>> 16, lMin, lMax) // and for L
