@@ -3,6 +3,7 @@
 /* eslint-disable react/no-array-index-key */
 import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
+import { useNavigate } from 'react-router-dom'
 import { Popover, notification, Flex, Button } from 'antd'
 import { UncontrolledSelect, CursorPointerTag, EditIcon } from 'components/atoms'
 import { TDynamicComponentsAppTypeMap } from '../../types'
@@ -18,6 +19,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     id,
     reqIndex,
     jsonPathToLabels,
+    linkPrefix,
     selectProps,
     readOnly,
     notificationSuccessMessage,
@@ -37,6 +39,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
   } = data
 
   const [api, contextHolder] = notification.useNotification()
+  const navigate = useNavigate()
   const [open, setOpen] = useState<boolean>(false)
 
   const { maxTagTextLength, ...restSelectProps } = selectProps || { maxTagTextLength: undefined }
@@ -97,6 +100,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
   const pathToValuePrepared = pathToValue
     ? parseAll({ text: pathToValue, replaceValues, multiQueryData })
     : 'no-pathToValue-provided'
+  const linkPrefixPrepared = linkPrefix ? parseAll({ text: linkPrefix, replaceValues, multiQueryData }) : undefined
 
   const openNotificationSuccess = () => {
     api.success({
@@ -198,6 +202,9 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
           <Popover content={label}>
             <CursorPointerTag
               onClick={e => {
+                if (typeof label === 'string' && linkPrefix) {
+                  navigate(`${linkPrefixPrepared}${encodeURIComponent(label)}`)
+                }
                 e.stopPropagation()
               }}
             >

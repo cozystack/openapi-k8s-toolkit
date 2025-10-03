@@ -152,6 +152,7 @@ export type TDynamicComponentsAppTypeMap = {
     id: number | string
     reqIndex: string
     jsonPathToLabels: string
+    linkPrefix?: string
     selectProps?: SelectProps
     readOnly?: true
     notificationSuccessMessage?: string
