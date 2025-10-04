@@ -17,3 +17,11 @@ export const parseArrayOfAny = (value: any[]): { data?: Record<string, string | 
 
   return { error: 'Value on jsonPath is not a record array' }
 }
+
+export const truncate = (text: string, max?: number): string => {
+  if (!max) {
+    return text
+  }
+
+  return text.length > max ? text.slice(0, max) + '...' : text
+}

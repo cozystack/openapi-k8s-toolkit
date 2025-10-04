@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-array-index-key */
@@ -5,7 +6,7 @@ import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
 import { useNavigate } from 'react-router-dom'
 import { Popover, notification, Flex, Button } from 'antd'
-import { UncontrolledSelect, CursorPointerTag, EditIcon } from 'components/atoms'
+import { UncontrolledSelect, CursorPointerTag, CursorPointerTagMinContent, EditIcon } from 'components/atoms'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
@@ -21,6 +22,12 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
     jsonPathToLabels,
     linkPrefix,
     selectProps,
+    maxTagKeyLength,
+    maxTagValueLength,
+    verticalViewList,
+    verticalViewListFlexProps,
+    emptyListMessage,
+    emptyListMessageStyle,
     readOnly,
     notificationSuccessMessage,
     notificationSuccessMessageDescription,
@@ -125,19 +132,23 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
           />
         </Flex>
       )}
-      <UncontrolledSelect
-        mode="multiple"
-        {...restSelectProps}
-        value={[]}
-        options={[]}
-        open={false}
-        showSearch={false}
-        removeIcon={() => {
-          return null
-        }}
-        suffixIcon={null}
-        isCursorPointer
-      />
+      {verticalViewList ? (
+        <div style={emptyListMessageStyle}>{emptyListMessage}</div>
+      ) : (
+        <UncontrolledSelect
+          mode="multiple"
+          {...restSelectProps}
+          value={[]}
+          options={[]}
+          open={false}
+          showSearch={false}
+          removeIcon={() => {
+            return null
+          }}
+          suffixIcon={null}
+          isCursorPointer
+        />
+      )}
       {children}
       {contextHolder}
       <EditModal
@@ -186,34 +197,87 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
           />
         </Flex>
       )}
-      <UncontrolledSelect
-        mode="multiple"
-        // maxTagCount="responsive"
-        {...restSelectProps}
-        value={labels.map(el => ({ label: el, value: el }))}
-        options={labels.map(el => ({ label: el, value: el }))}
-        open={false}
-        showSearch={false}
-        removeIcon={() => {
-          return null
-        }}
-        suffixIcon={null}
-        tagRender={({ label }) => (
-          <Popover content={label}>
-            <CursorPointerTag
-              onClick={e => {
-                if (typeof label === 'string' && linkPrefix) {
-                  navigate(`${linkPrefixPrepared}${encodeURIComponent(label)}`)
+      {verticalViewList ? (
+        <Flex vertical gap={8} {...verticalViewListFlexProps}>
+          {labels.map(label => {
+            let labelToRender: string = 'Not a string value'
+            if (typeof label === 'string') {
+              if (maxTagKeyLength || maxTagValueLength) {
+                const splittedLabel = label.split('=')
+                if (splittedLabel[0] && splittedLabel[0].length > 0) {
+                  labelToRender = maxTagKeyLength ? truncate(splittedLabel[0], maxTagKeyLength) : splittedLabel[0]
                 }
-                e.stopPropagation()
-              }}
-            >
-              {typeof label === 'string' ? truncate(label, maxTagTextLength) : 'Not a string value'}
-            </CursorPointerTag>
-          </Popover>
-        )}
-        // isCursorPointer
-      />
+                labelToRender += '='
+                if (splittedLabel[1] && splittedLabel[1].length > 0) {
+                  labelToRender += maxTagValueLength ? truncate(splittedLabel[1], maxTagValueLength) : splittedLabel[1]
+                }
+              } else {
+                labelToRender = truncate(label, maxTagTextLength)
+              }
+            }
+            return (
+              <Popover content={label} key={label}>
+                <CursorPointerTagMinContent
+                  onClick={e => {
+                    if (typeof label === 'string' && linkPrefix) {
+                      navigate(`${linkPrefixPrepared}${encodeURIComponent(label)}`)
+                    }
+                    e.stopPropagation()
+                  }}
+                >
+                  {labelToRender}
+                </CursorPointerTagMinContent>
+              </Popover>
+            )
+          })}
+        </Flex>
+      ) : (
+        <UncontrolledSelect
+          mode="multiple"
+          // maxTagCount="responsive"
+          {...restSelectProps}
+          value={labels.map(el => ({ label: el, value: el }))}
+          options={labels.map(el => ({ label: el, value: el }))}
+          open={false}
+          showSearch={false}
+          removeIcon={() => {
+            return null
+          }}
+          suffixIcon={null}
+          tagRender={({ label }) => {
+            let labelToRender: string = 'Not a string value'
+            if (typeof label === 'string') {
+              if (maxTagKeyLength || maxTagValueLength) {
+                const splittedLabel = label.split('=')
+                if (splittedLabel[0] && splittedLabel[0].length > 0) {
+                  labelToRender = maxTagKeyLength ? truncate(splittedLabel[0], maxTagKeyLength) : splittedLabel[0]
+                }
+                labelToRender += '='
+                if (splittedLabel[1] && splittedLabel[1].length > 0) {
+                  labelToRender += maxTagValueLength ? truncate(splittedLabel[1], maxTagValueLength) : splittedLabel[1]
+                }
+              } else {
+                labelToRender = truncate(label, maxTagTextLength)
+              }
+            }
+            return (
+              <Popover content={label}>
+                <CursorPointerTag
+                  onClick={e => {
+                    if (typeof label === 'string' && linkPrefix) {
+                      navigate(`${linkPrefixPrepared}${encodeURIComponent(label)}`)
+                    }
+                    e.stopPropagation()
+                  }}
+                >
+                  {labelToRender}
+                </CursorPointerTag>
+              </Popover>
+            )
+          }}
+          // isCursorPointer
+        />
+      )}
       {children}
       {contextHolder}
       <EditModal
