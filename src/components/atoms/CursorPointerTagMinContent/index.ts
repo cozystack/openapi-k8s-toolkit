@@ -1,1 +1,1 @@
-export * from './CursorPointerTag'
+export * from './CursorPointerTagMinContent'
