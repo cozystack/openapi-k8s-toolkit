@@ -6,12 +6,10 @@ type TRoundSpanProps = {
 
 const RoundSpan = styled.span<TRoundSpanProps>`
   background-color: ${({ $bgColor }) => $bgColor || 'none'};
-
-  /* border-radius: 50%; */
-  border-radius: 10px;
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0.28rem;
+  border-radius: 13px;
+  padding: 1px 5px;
+  font-size: 13px;
+  height: min-content;
   display: inline-flex;
   align-items: center;
   justify-content: center;

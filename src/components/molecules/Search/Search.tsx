@@ -197,13 +197,19 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
                 mode="tags"
                 allowClear
                 placeholder="Key=Value"
-                // dropdownStyle={{ display: 'none' }}
                 tokenSeparators={[',', ' ', '	']}
                 suffixIcon={null}
                 filterOption={filterSelectOptions}
                 tagRender={tagRender}
                 maxTagCount="responsive"
                 disabled={!watchedKinds || !watchedKinds.length}
+                styles={{
+                  popup: {
+                    root: {
+                      display: 'none',
+                    },
+                  },
+                }}
               />
             </Styled.ResetedFormItem>
           </Styled.HideableContainer>
@@ -233,13 +239,19 @@ export const Search: FC<TSearchProps> = ({ theme, form, constants, kindsWithVers
                 mode="tags"
                 allowClear
                 placeholder="Key=Value"
-                // dropdownStyle={{ display: 'none' }}
                 tokenSeparators={[',', ' ', '	']}
                 suffixIcon={null}
                 filterOption={filterSelectOptions}
                 tagRender={tagRender}
                 maxTagCount="responsive"
                 disabled={!watchedKinds || !watchedKinds.length}
+                styles={{
+                  popup: {
+                    root: {
+                      display: 'none',
+                    },
+                  },
+                }}
               />
             </Styled.ResetedFormItem>
           </Styled.HideableContainer>
