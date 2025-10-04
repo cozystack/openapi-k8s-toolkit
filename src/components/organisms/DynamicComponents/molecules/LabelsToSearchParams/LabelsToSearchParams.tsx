@@ -4,12 +4,12 @@
 /* eslint-disable no-console */
 import React, { FC } from 'react'
 import jp from 'jsonpath'
-import { Typography } from 'antd'
+import { Typography, Popover } from 'antd'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { parseAll } from '../utils'
-import { parseArrayOfAny } from './utils'
+import { parseArrayOfAny, truncate } from './utils'
 
 export const LabelsToSearchParams: FC<{
   data: TDynamicComponentsAppTypeMap['LabelsToSearchParams']
@@ -22,6 +22,7 @@ export const LabelsToSearchParams: FC<{
     jsonPathToLabels,
     linkPrefix,
     errorText,
+    maxTextLength,
     ...linkProps
   } = data
 
@@ -83,8 +84,21 @@ export const LabelsToSearchParams: FC<{
     .map(([key, value]) => `${key}=${value}`)
     .join(',')
   const labelsEncoded = encodeURIComponent(labels)
-
   const hrefPrepared = `${linkPrefixPrepared}${labelsEncoded}`
+
+  if (maxTextLength) {
+    const truncatedLabels = maxTextLength ? truncate(labels, maxTextLength) : labels
+
+    return (
+      <Popover content={labels}>
+        <Typography.Link href={hrefPrepared} {...linkProps}>
+          {truncatedLabels}
+          {children}
+        </Typography.Link>
+      </Popover>
+    )
+  }
+
   return (
     <Typography.Link href={hrefPrepared} {...linkProps}>
       {labels}

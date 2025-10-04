@@ -154,6 +154,12 @@ export type TDynamicComponentsAppTypeMap = {
     jsonPathToLabels: string
     linkPrefix?: string
     selectProps?: SelectProps
+    maxTagKeyLength?: number
+    maxTagValueLength?: number
+    verticalViewList?: boolean
+    verticalViewListFlexProps?: FlexProps
+    emptyListMessage?: string
+    emptyListMessageStyle?: CSSProperties
     readOnly?: true
     notificationSuccessMessage?: string
     notificationSuccessMessageDescription?: string
@@ -176,6 +182,7 @@ export type TDynamicComponentsAppTypeMap = {
     jsonPathToLabels: string
     linkPrefix: string
     errorText: string
+    maxTextLength?: number
   } & Omit<LinkProps, 'id' | 'children' | 'href'>
   Taints: {
     id: number | string
