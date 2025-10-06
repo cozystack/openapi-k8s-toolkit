@@ -16,7 +16,7 @@ export const ResourceBadge: FC<{ data: TDynamicComponentsAppTypeMap['ResourceBad
     id,
     value,
     abbreviation,
-    spanStyle,
+    style,
   } = data
 
   const { data: multiQueryData, isLoading, isError, errors } = useMultiQuery()
@@ -58,7 +58,7 @@ export const ResourceBadge: FC<{ data: TDynamicComponentsAppTypeMap['ResourceBad
   const bgColor = hslFromString(parsedValue, theme)
 
   return (
-    <Styled.RoundSpan $bgColor={bgColor} style={spanStyle}>
+    <Styled.RoundSpan $bgColor={bgColor} style={style}>
       {parsedAbbreviation}
     </Styled.RoundSpan>
   )

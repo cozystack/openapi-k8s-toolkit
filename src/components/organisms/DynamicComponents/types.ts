@@ -271,6 +271,6 @@ export type TDynamicComponentsAppTypeMap = {
     id: number | string
     value: string // to get color and maybe abbr
     abbreviation?: string
-    spanStyle?: CSSProperties
+    style?: CSSProperties
   }
 }
