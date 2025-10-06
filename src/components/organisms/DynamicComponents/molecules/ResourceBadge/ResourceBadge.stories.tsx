@@ -13,7 +13,7 @@ type ResourceBadgeInner = {
   id: number | string
   value: string // to get color and maybe abbr
   abbreviation?: string
-  spanStyle?: CSSProperties
+  style?: CSSProperties
 }
 
 type ProviderArgs = {
@@ -35,7 +35,7 @@ const meta: Meta<Args> = {
     id: { control: 'text', description: 'data.id' },
     value: { control: 'text', description: 'data.value' },
     abbreviation: { control: 'text', description: 'data.abbreviation' },
-    spanStyle: { control: 'object', description: 'data.spanStyle' },
+    style: { control: 'object', description: 'data.style' },
 
     // provider knobs
     isLoading: { control: 'boolean' },
@@ -65,7 +65,7 @@ const meta: Meta<Args> = {
                   id: args.id,
                   value: args.value,
                   abbreviation: args.abbreviation,
-                  spanStyle: args.spanStyle,
+                  style: args.style,
                 }}
               />
             </div>
@@ -82,7 +82,7 @@ const meta: Meta<Args> = {
             id: args.id,
             value: args.value,
             abbreviation: args.abbreviation,
-            spanStyle: args.spanStyle,
+            style: args.style,
           },
         })}
         theme={'vs-dark'}
@@ -151,7 +151,7 @@ export const AutoUppercaseLong: Story = {
   args: {
     ...Default.args,
     value: 'CustomColumnsOverrideCustomColumnsOverride',
-    spanStyle: {
+    style: {
       width: '4rem',
     },
   },
@@ -160,7 +160,7 @@ export const AutoUppercaseLong: Story = {
 export const CustomStyle: Story = {
   args: {
     ...Default.args,
-    spanStyle: {
+    style: {
       fontWeight: 'bold',
     },
   },
@@ -169,7 +169,7 @@ export const CustomStyle: Story = {
 export const CustomSize: Story = {
   args: {
     ...Default.args,
-    spanStyle: {
+    style: {
       width: '2.5rem',
       height: '2.5rem',
     },
