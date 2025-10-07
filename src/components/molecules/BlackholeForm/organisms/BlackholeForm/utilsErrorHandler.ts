@@ -9,8 +9,9 @@ export const handleSubmitError = ({
   error: AxiosError<any, any>
   expandedKeys: TFormName[]
 }): any[] => {
-  const invalidPart = error.response?.data.message.split('is invalid: ')[1]
-  const errorPath = invalidPart.split(':')[0].trim().split('.')
+  const invalidPart: string | undefined = error.response?.data.message?.split('is invalid: ')?.[1]
+  const errorPathUnsplit = invalidPart?.split(':')[0].trim()
+  const errorPath = typeof errorPathUnsplit === 'string' ? errorPathUnsplit.split('.') : []
   const keys = Array.from({ length: errorPath.length }, (_, i) => errorPath.slice(0, i + 1))
   const possibleNewKeys = [...expandedKeys, ...keys]
   const seen = new Set<TFormName>()
