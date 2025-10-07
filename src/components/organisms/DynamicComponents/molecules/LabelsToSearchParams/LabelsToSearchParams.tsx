@@ -4,7 +4,7 @@
 /* eslint-disable no-console */
 import React, { FC } from 'react'
 import jp from 'jsonpath'
-import { Typography, Popover } from 'antd'
+import { Typography, Popover, Flex } from 'antd'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
@@ -21,6 +21,7 @@ export const LabelsToSearchParams: FC<{
     reqIndex,
     jsonPathToLabels,
     linkPrefix,
+    textLink,
     errorText,
     maxTextLength,
     ...linkProps
@@ -86,11 +87,19 @@ export const LabelsToSearchParams: FC<{
   const labelsEncoded = encodeURIComponent(labels)
   const hrefPrepared = `${linkPrefixPrepared}${labelsEncoded}`
 
-  if (maxTextLength) {
+  if (maxTextLength && !textLink) {
     const truncatedLabels = maxTextLength ? truncate(labels, maxTextLength) : labels
 
     return (
-      <Popover content={labels}>
+      <Popover
+        content={
+          <Flex vertical gap={8}>
+            {Object.entries(labelsRaw).map(([key, value]) => (
+              <div key={key}>{`${key}=${value}`}</div>
+            ))}
+          </Flex>
+        }
+      >
         <Typography.Link href={hrefPrepared} {...linkProps}>
           {truncatedLabels}
           {children}
@@ -99,9 +108,30 @@ export const LabelsToSearchParams: FC<{
     )
   }
 
+  if (textLink) {
+    const truncatedTextLink = maxTextLength ? truncate(textLink, maxTextLength) : textLink
+
+    return (
+      <Popover
+        content={
+          <Flex vertical gap={8}>
+            {Object.entries(labelsRaw).map(([key, value]) => (
+              <div key={key}>{`${key}=${value}`}</div>
+            ))}
+          </Flex>
+        }
+      >
+        <Typography.Link href={hrefPrepared} {...linkProps}>
+          {truncatedTextLink}
+          {children}
+        </Typography.Link>
+      </Popover>
+    )
+  }
+
   return (
     <Typography.Link href={hrefPrepared} {...linkProps}>
-      {labels}
+      {textLink || labels}
       {children}
     </Typography.Link>
   )
