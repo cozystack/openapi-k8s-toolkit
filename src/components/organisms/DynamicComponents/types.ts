@@ -181,6 +181,7 @@ export type TDynamicComponentsAppTypeMap = {
     reqIndex: string
     jsonPathToLabels: string
     linkPrefix: string
+    textLink?: string
     errorText: string
     maxTextLength?: number
   } & Omit<LinkProps, 'id' | 'children' | 'href'>
