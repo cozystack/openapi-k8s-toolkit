@@ -49,6 +49,7 @@ export type TEnrichedTableProviderProps = {
     disablePagination?: boolean
   }
   withoutControls?: boolean
+  namespaceScopedWithoutNamespace?: boolean
 }
 
 export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
@@ -64,6 +65,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   selectData,
   tableProps,
   withoutControls,
+  namespaceScopedWithoutNamespace,
 }) => {
   const [preparedProps, setPreparedProps] = useState<TPrepareTableRes>()
   const [isLoading, setIsLoading] = useState(false)
@@ -75,6 +77,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       customizationId,
       tableMappingsReplaceValues,
       forceDefaultAdditionalPrinterColumns,
+      namespaceScopedWithoutNamespace,
     }
     axios
       .post<TPrepareTableRes>(`/api/clusters/${cluster}/openapi-bff/tables/tablePrepare/prepareTableProps`, payload)
@@ -88,7 +91,13 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       .finally(() => {
         setIsLoading(false)
       })
-  }, [cluster, customizationId, tableMappingsReplaceValues, forceDefaultAdditionalPrinterColumns])
+  }, [
+    cluster,
+    customizationId,
+    tableMappingsReplaceValues,
+    forceDefaultAdditionalPrinterColumns,
+    namespaceScopedWithoutNamespace,
+  ])
 
   if (!preparedProps && isLoading) {
     return (

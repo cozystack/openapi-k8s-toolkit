@@ -10,6 +10,7 @@ export type TPrepareTableReq = {
   customizationId?: string
   tableMappingsReplaceValues?: Record<string, string | undefined>
   forceDefaultAdditionalPrinterColumns?: TAdditionalPrinterColumns
+  namespaceScopedWithoutNamespace?: boolean
 }
 
 export type TPrepareTableRes = {
