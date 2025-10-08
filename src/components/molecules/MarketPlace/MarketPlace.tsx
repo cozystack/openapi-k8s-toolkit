@@ -61,27 +61,24 @@ export const MarketPlace: FC<TMarketPlaceProps> = ({
   })
 
   const createPermission = usePermissions({
-    apiGroup: baseApiGroup,
-    typeName: mpResourceName,
-    namespace: '',
+    group: baseApiGroup,
+    resource: mpResourceName,
     clusterName: clusterName || '',
     verb: 'create',
     refetchInterval: false,
   })
 
   const updatePermission = usePermissions({
-    apiGroup: baseApiGroup,
-    typeName: mpResourceName,
-    namespace: '',
+    group: baseApiGroup,
+    resource: mpResourceName,
     clusterName: clusterName || '',
     verb: 'update',
     refetchInterval: false,
   })
 
   const deletePermission = usePermissions({
-    apiGroup: baseApiGroup,
-    typeName: mpResourceName,
-    namespace: '',
+    group: baseApiGroup,
+    resource: mpResourceName,
     clusterName: clusterName || '',
     verb: 'delete',
     refetchInterval: false,

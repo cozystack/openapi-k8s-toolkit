@@ -93,18 +93,16 @@ export const ProjectInfoCard: FC<TProjectInfoCardProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false)
 
   const updatePermission = usePermissions({
-    apiGroup: baseProjectApiGroup,
-    typeName: projectResourceName,
-    namespace: '',
+    group: baseProjectApiGroup,
+    resource: projectResourceName,
     clusterName: clusterName || '',
     verb: 'update',
     refetchInterval: false,
   })
 
   const deletePermission = usePermissions({
-    apiGroup: baseProjectApiGroup,
-    typeName: projectResourceName,
-    namespace: '',
+    group: baseProjectApiGroup,
+    resource: projectResourceName,
     clusterName: clusterName || '',
     verb: 'delete',
     refetchInterval: false,
