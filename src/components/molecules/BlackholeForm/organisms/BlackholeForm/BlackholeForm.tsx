@@ -106,9 +106,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const overflowRef = useRef<HTMLDivElement | null>(null)
 
   const createPermission = usePermissions({
-    apiGroup: type === 'builtin' ? '' : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
-    typeName: urlParamsForPermissions.typeName || '',
-    namespace: isNameSpaced ? namespaceFromFormData : '',
+    group: type === 'builtin' ? undefined : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
+    resource: urlParamsForPermissions.typeName || '',
+    namespace: isNameSpaced ? namespaceFromFormData : undefined,
     clusterName: cluster,
     verb: 'create',
     refetchInterval: false,
@@ -116,9 +116,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   })
 
   const updatePermission = usePermissions({
-    apiGroup: type === 'builtin' ? '' : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
-    typeName: urlParamsForPermissions.typeName || '',
-    namespace: isNameSpaced ? namespaceFromFormData : '',
+    group: type === 'builtin' ? undefined : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
+    resource: urlParamsForPermissions.typeName || '',
+    namespace: isNameSpaced ? namespaceFromFormData : undefined,
     clusterName: cluster,
     verb: 'update',
     refetchInterval: false,
@@ -360,7 +360,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           label: name,
           value: name,
         })),
-        disabled: !!prefillValueNamespaceOnly,
+        // disabled: !!prefillValueNamespaceOnly,
+        disabled: !isCreate,
       }
     : undefined
 

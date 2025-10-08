@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
 import _ from 'lodash'
-import { Flex, Spin } from 'antd'
-import { EditIcon, DeleteIcon } from 'components/atoms'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Flex, Spin, Button } from 'antd'
+import { PlusOutlined, ClearOutlined, MinusOutlined } from '@ant-design/icons'
+import { EditIcon, DeleteIcon, PaddingContainer, DeleteModal, DeleteModalMany } from 'components/atoms'
 import { EnrichedTableProvider } from 'components/molecules'
+import { usePermissions } from 'hooks/usePermissions'
 import { useDirectUnknownResource } from 'hooks/useDirectUnknownResource'
+import { getLinkToForm } from 'utils/tableLocations'
 import { prepareTemplate } from 'utils/prepareTemplate'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
@@ -19,6 +23,17 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   children,
 }) => {
+  const location = useLocation()
+  const params = useParams()
+  const navigate = useNavigate()
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
+  const [selectedRowsData, setSelectedRowsData] = useState<{ name: string; endpoint: string }[]>([])
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<false | { name: string; endpoint: string }>(false)
+  const [isDeleteModalManyOpen, setIsDeleteModalManyOpen] = useState<false | { name: string; endpoint: string }[]>(
+    false,
+  )
+
   const { data: multiQueryData, isLoading: isMultiqueryLoading } = useMultiQuery()
 
   const {
@@ -30,6 +45,9 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     labelsSelector,
     labelsSelectorFull,
     fieldSelector,
+    namespace,
+    dataForControls,
+    baseprefix,
     ...props
   } = data
 
@@ -44,6 +62,29 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
   const clusterName = prepareTemplate({
     template: clusterNamePartOfUrl,
     replaceValues,
+  })
+
+  const dataForControlsPrepared = dataForControls
+    ? {
+        cluster: clusterName,
+        syntheticProject: dataForControls.syntheticProject
+          ? parseAll({ text: dataForControls.syntheticProject, replaceValues, multiQueryData })
+          : undefined,
+        resource: parseAll({ text: dataForControls.resource, replaceValues, multiQueryData }),
+        apiGroup: dataForControls.apiGroup
+          ? parseAll({ text: dataForControls.apiGroup, replaceValues, multiQueryData })
+          : undefined,
+        apiVersion: parseAll({ text: dataForControls.apiVersion, replaceValues, multiQueryData }),
+      }
+    : undefined
+
+  const createPermission = usePermissions({
+    group: dataForControlsPrepared?.apiGroup,
+    resource: dataForControlsPrepared?.resource || '',
+    namespace,
+    clusterName,
+    verb: 'create',
+    refetchInterval: false,
   })
 
   const fetchUrlPrepared = parseAll({ text: fetchUrl, replaceValues, multiQueryData })
@@ -121,11 +162,23 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     return <div>No data on this path {JSON.stringify(pathToItems)}</div>
   }
 
+  const clearSelected = () => {
+    setSelectedRowKeys([])
+    setSelectedRowsData([])
+  }
+
+  const onDeleteHandle = (name: string, endpoint: string) => {
+    setIsDeleteModalOpen({ name, endpoint })
+  }
+
+  const fullPath = `${location.pathname}${location.search}`
+
   return (
     <>
       <EnrichedTableProvider
         tableMappingsReplaceValues={replaceValues}
         cluster={clusterName}
+        namespace={namespace}
         theme={theme}
         dataItems={items}
         tableProps={{
@@ -136,9 +189,81 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
           deleteIcon: <DeleteIcon />,
           disablePagination: true,
         }}
+        selectData={
+          dataForControlsPrepared
+            ? {
+                selectedRowKeys,
+                onChange: (selectedRowKeys: React.Key[], selectedRowsData: { name: string; endpoint: string }[]) => {
+                  setSelectedRowKeys(selectedRowKeys)
+                  setSelectedRowsData(selectedRowsData)
+                },
+              }
+            : undefined
+        }
+        dataForControlsInternal={{ onDeleteHandle }}
+        dataForControls={dataForControlsPrepared}
+        withoutControls={!dataForControlsPrepared}
+        baseprefix={baseprefix}
         {...props}
-        withoutControls
       />
+      {dataForControlsPrepared && (
+        <PaddingContainer $padding="4px">
+          <Flex justify="space-between">
+            <Button
+              type="primary"
+              onClick={() => {
+                const url = getLinkToForm({
+                  cluster: clusterName,
+                  baseprefix,
+                  namespace,
+                  syntheticProject: params.syntheticProject,
+                  apiGroup: dataForControlsPrepared.apiGroup,
+                  apiVersion: dataForControlsPrepared.apiVersion,
+                  typeName: dataForControlsPrepared.resource,
+                  fullPath,
+                })
+                navigate(url)
+              }}
+              loading={createPermission.isPending}
+              disabled={!createPermission.data?.status.allowed}
+            >
+              <PlusOutlined />
+              Add
+            </Button>
+            {selectedRowKeys.length > 0 && (
+              <Flex gap={16}>
+                <Button type="primary" onClick={clearSelected}>
+                  <ClearOutlined />
+                  Clear
+                </Button>
+                <Button type="primary" onClick={() => setIsDeleteModalManyOpen(selectedRowsData)}>
+                  <MinusOutlined />
+                  Delete
+                </Button>
+              </Flex>
+            )}
+          </Flex>
+        </PaddingContainer>
+      )}
+      {isDeleteModalOpen && (
+        <DeleteModal
+          name={isDeleteModalOpen.name}
+          onClose={() => {
+            setIsDeleteModalOpen(false)
+            clearSelected()
+          }}
+          endpoint={isDeleteModalOpen.endpoint}
+        />
+      )}
+      {isDeleteModalManyOpen !== false && (
+        <DeleteModalMany
+          data={isDeleteModalManyOpen}
+          onClose={() => {
+            setIsDeleteModalManyOpen(false)
+            clearSelected()
+          }}
+        />
+      )}
       {children}
     </>
   )

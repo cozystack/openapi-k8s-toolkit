@@ -4,30 +4,32 @@ import { checkPermission } from 'api/permissions'
 export const usePermissions = ({
   clusterName,
   namespace,
-  apiGroup,
-  typeName,
+  group,
+  resource,
   verb,
+  name,
   refetchInterval,
   enabler,
 }: {
   clusterName: string
-  apiGroup: string
-  typeName: string
-  namespace: string
+  group?: string
+  resource: string
+  namespace?: string
+  name?: string
   verb: 'create' | 'delete' | 'patch' | 'update'
   refetchInterval?: number | false
   enabler?: boolean
 }) => {
   return useQuery({
-    queryKey: ['usePermissions', clusterName, namespace, apiGroup, typeName, verb],
+    queryKey: ['usePermissions', clusterName, namespace, group, resource, verb, name],
     queryFn: async () =>
       (
         await checkPermission({
           clusterName,
           body: {
             namespace,
-            group: apiGroup,
-            resource: typeName,
+            group,
+            resource,
             verb,
           },
         })

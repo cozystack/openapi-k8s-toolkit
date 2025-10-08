@@ -6,10 +6,11 @@ export const checkPermission = async ({
 }: {
   clusterName: string
   body: {
-    group: string
+    group?: string
     resource: string
-    verb: 'create' | 'delete' | 'patch' | 'update'
-    namespace: string
+    verb: 'get' | 'list' | 'watch' | 'create' | 'delete' | 'patch' | 'update'
+    namespace?: string
+    name?: string
   }
 }): Promise<
   AxiosResponse<{
@@ -23,7 +24,11 @@ export const checkPermission = async ({
     kind: 'SelfSubjectAccessReview',
     spec: {
       resourceAttributes: {
-        ...body,
+        ...(body.group ? { group: body.group } : {}),
+        resource: body.resource,
+        verb: body.verb,
+        ...(body.namespace ? { namespace: body.namespace } : {}),
+        ...(body.name ? { name: body.name } : {}),
       },
     },
   })

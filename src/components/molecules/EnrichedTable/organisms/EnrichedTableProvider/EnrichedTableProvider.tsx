@@ -1,32 +1,34 @@
 import React, { FC, useState, useEffect, ReactNode } from 'react'
 import axios, { AxiosError } from 'axios'
+import { useLocation } from 'react-router-dom'
 import { Flex, Spin, Alert, TablePaginationConfig } from 'antd'
 import { TJSON } from 'localTypes/JSON'
 import { TPrepareTableReq, TPrepareTableRes } from 'localTypes/bff/table'
 import { TAdditionalPrinterColumns } from 'localTypes/richTable'
+import { usePermissions } from 'hooks/usePermissions'
 import { EnrichedTable } from '../EnrichedTable'
 import { prepare } from './utils'
 
 export type TEnrichedTableProviderProps = {
   cluster: string
+  namespace?: string
   theme: 'light' | 'dark'
   baseprefix?: string
 
   dataItems: TJSON[]
   resourceSchema?: TJSON
+
+  isNamespaced?: boolean
+
   dataForControls?: {
     cluster: string
     syntheticProject?: string
-    pathPrefix: string
+    resource: string
+    apiGroup?: string
     apiVersion: string
-    typeName: string
-    backlink: string
-    deletePathPrefix: string
+  }
+  dataForControlsInternal: {
     onDeleteHandle: (name: string, endpoint: string) => void
-    permissions: {
-      canUpdate?: boolean
-      canDelete?: boolean
-    }
   }
 
   customizationId?: string
@@ -49,27 +51,48 @@ export type TEnrichedTableProviderProps = {
     disablePagination?: boolean
   }
   withoutControls?: boolean
-  namespaceScopedWithoutNamespace?: boolean
 }
 
 export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   cluster,
+  namespace,
   theme,
   baseprefix,
   dataItems,
   resourceSchema,
+  isNamespaced,
   dataForControls,
+  dataForControlsInternal,
   customizationId,
   tableMappingsReplaceValues,
   forceDefaultAdditionalPrinterColumns,
   selectData,
   tableProps,
   withoutControls,
-  namespaceScopedWithoutNamespace,
 }) => {
+  const location = useLocation()
+
   const [preparedProps, setPreparedProps] = useState<TPrepareTableRes>()
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState<false | string | ReactNode>(false)
+
+  const updatePermission = usePermissions({
+    group: dataForControls?.apiGroup,
+    resource: dataForControls?.resource || '',
+    namespace,
+    clusterName: cluster,
+    verb: 'update',
+    refetchInterval: false,
+  })
+
+  const deletePermission = usePermissions({
+    group: dataForControls?.apiGroup,
+    resource: dataForControls?.resource || '',
+    namespace,
+    clusterName: cluster,
+    verb: 'delete',
+    refetchInterval: false,
+  })
 
   useEffect(() => {
     setIsError(undefined)
@@ -77,7 +100,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       customizationId,
       tableMappingsReplaceValues,
       forceDefaultAdditionalPrinterColumns,
-      namespaceScopedWithoutNamespace,
+      namespaceScopedWithoutNamespace: isNamespaced && !namespace,
     }
     axios
       .post<TPrepareTableRes>(`/api/clusters/${cluster}/openapi-bff/tables/tablePrepare/prepareTableProps`, payload)
@@ -96,7 +119,8 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
     customizationId,
     tableMappingsReplaceValues,
     forceDefaultAdditionalPrinterColumns,
-    namespaceScopedWithoutNamespace,
+    isNamespaced,
+    namespace,
   ])
 
   if (!preparedProps && isLoading) {
@@ -119,10 +143,35 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
     )
   }
 
+  const fullPath = `${location.pathname}${location.search}`
+
   const { dataSource, columns } = prepare({
     dataItems,
     resourceSchema,
-    dataForControls,
+    dataForControls: dataForControls
+      ? {
+          ...dataForControls,
+          cluster: dataForControls.cluster,
+          syntheticProject: dataForControls.syntheticProject,
+          pathPrefix:
+            !dataForControls.apiGroup || dataForControls.apiGroup.length === 0 ? 'forms/builtin' : 'forms/apis',
+          typeName: dataForControls.resource,
+          apiVersion:
+            !dataForControls.apiGroup || dataForControls.apiGroup.length === 0
+              ? dataForControls.apiVersion
+              : `${dataForControls.apiGroup}/${dataForControls.apiVersion}`,
+          backlink: encodeURIComponent(fullPath),
+          onDeleteHandle: dataForControlsInternal.onDeleteHandle,
+          deletePathPrefix:
+            !dataForControls.apiGroup || dataForControls.apiGroup.length === 0
+              ? `/api/clusters/${cluster}/k8s/api`
+              : `/api/clusters/${cluster}/k8s/apis`,
+          permissions: {
+            canUpdate: updatePermission.data?.status.allowed,
+            canDelete: deletePermission.data?.status.allowed,
+          },
+        }
+      : undefined,
     additionalPrinterColumns: preparedProps.additionalPrinterColumns,
   })
 
