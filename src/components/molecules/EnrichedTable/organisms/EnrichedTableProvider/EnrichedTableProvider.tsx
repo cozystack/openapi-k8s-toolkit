@@ -51,7 +51,6 @@ export type TEnrichedTableProviderProps = {
     disablePagination?: boolean
   }
   withoutControls?: boolean
-  namespaceScopedWithoutNamespace?: boolean
 }
 
 export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({

@@ -360,7 +360,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           label: name,
           value: name,
         })),
-        disabled: !!prefillValueNamespaceOnly,
+        // disabled: !!prefillValueNamespaceOnly,
+        disabled: !isCreate,
       }
     : undefined
 
