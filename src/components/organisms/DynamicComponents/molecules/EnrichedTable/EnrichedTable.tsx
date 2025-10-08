@@ -64,9 +64,23 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     replaceValues,
   })
 
+  const dataForControlsPrepared = dataForControls
+    ? {
+        cluster: parseAll({ text: dataForControls.cluster, replaceValues, multiQueryData }),
+        syntheticProject: dataForControls.syntheticProject
+          ? parseAll({ text: dataForControls.syntheticProject, replaceValues, multiQueryData })
+          : undefined,
+        resource: parseAll({ text: dataForControls.resource, replaceValues, multiQueryData }),
+        apiGroup: dataForControls.apiGroup
+          ? parseAll({ text: dataForControls.apiGroup, replaceValues, multiQueryData })
+          : undefined,
+        apiVersion: parseAll({ text: dataForControls.apiVersion, replaceValues, multiQueryData }),
+      }
+    : undefined
+
   const createPermission = usePermissions({
-    group: dataForControls?.apiGroup,
-    resource: dataForControls?.resource || '',
+    group: dataForControlsPrepared?.apiGroup,
+    resource: dataForControlsPrepared?.resource || '',
     namespace,
     clusterName,
     verb: 'create',
@@ -176,12 +190,12 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
           disablePagination: true,
         }}
         dataForControlsInternal={{ onDeleteHandle }}
-        dataForControls={dataForControls}
-        withoutControls={!dataForControls}
+        dataForControls={dataForControlsPrepared}
+        withoutControls={!dataForControlsPrepared}
         baseprefix={baseprefix}
         {...props}
       />
-      {dataForControls && (
+      {dataForControlsPrepared && (
         <PaddingContainer $padding="4px">
           <Flex justify="space-between">
             <Button
@@ -192,9 +206,9 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
                   baseprefix,
                   namespace,
                   syntheticProject: params.syntheticProject,
-                  apiGroup: dataForControls?.apiGroup,
-                  apiVersion: dataForControls?.apiVersion,
-                  typeName: dataForControls?.resource,
+                  apiGroup: dataForControlsPrepared.apiGroup,
+                  apiVersion: dataForControlsPrepared.apiVersion,
+                  typeName: dataForControlsPrepared.resource,
                   fullPath,
                 })
                 navigate(url)
