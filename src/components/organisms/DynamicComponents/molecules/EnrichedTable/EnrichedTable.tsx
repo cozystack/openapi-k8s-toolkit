@@ -66,7 +66,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
 
   const dataForControlsPrepared = dataForControls
     ? {
-        cluster: parseAll({ text: dataForControls.cluster, replaceValues, multiQueryData }),
+        cluster: clusterName,
         syntheticProject: dataForControls.syntheticProject
           ? parseAll({ text: dataForControls.syntheticProject, replaceValues, multiQueryData })
           : undefined,
@@ -189,6 +189,17 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
           deleteIcon: <DeleteIcon />,
           disablePagination: true,
         }}
+        selectData={
+          dataForControlsPrepared
+            ? {
+                selectedRowKeys,
+                onChange: (selectedRowKeys: React.Key[], selectedRowsData: { name: string; endpoint: string }[]) => {
+                  setSelectedRowKeys(selectedRowKeys)
+                  setSelectedRowsData(selectedRowsData)
+                },
+              }
+            : undefined
+        }
         dataForControlsInternal={{ onDeleteHandle }}
         dataForControls={dataForControlsPrepared}
         withoutControls={!dataForControlsPrepared}
