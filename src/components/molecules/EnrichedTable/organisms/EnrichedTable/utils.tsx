@@ -1,7 +1,14 @@
 import { ReactNode } from 'react'
 import { NavigateFunction } from 'react-router-dom'
-import { TableProps } from 'antd'
-import { CheckOutlined, CloseOutlined, SearchOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { TableProps, Dropdown } from 'antd'
+import {
+  CheckOutlined,
+  CloseOutlined,
+  SearchOutlined,
+  // EditOutlined,
+  // DeleteOutlined,
+  MoreOutlined,
+} from '@ant-design/icons'
 import { get } from 'lodash'
 import {
   TAdditionalPrinterColumnsColWidths,
@@ -224,7 +231,9 @@ export const getEnrichedColumnsWithControls = ({
   enrichedColumns,
   navigate,
   baseprefix,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   editIcon,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   deleteIcon,
 }: {
   enrichedColumns: TableProps['columns']
@@ -244,11 +253,63 @@ export const getEnrichedColumnsWithControls = ({
       dataIndex: 'internalDataForControls',
       key: 'controls',
       className: 'controls',
-      width: 120,
+      width: 60,
       render: (value: TInternalDataForControls) => {
         return (
-          <TextAlignContainer $align="right" className="hideable">
-            <TinyButton
+          // <TextAlignContainer $align="right" className="hideable">
+          <TextAlignContainer $align="center">
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    label: 'Edit',
+                    key: 'edit',
+                    // icon: editIcon || <EditOutlined size={12} />,
+                    disabled: value.permissions && value.permissions.canUpdate ? !value.permissions?.canUpdate : false,
+                  },
+                  {
+                    label: 'Delete',
+                    key: 'delete',
+                    // icon: deleteIcon || <DeleteOutlined size={12} />,
+                    disabled: value.permissions && value.permissions.canDelete ? !value.permissions?.canDelete : false,
+                  },
+                ],
+                onClick: ({ key, domEvent }) => {
+                  domEvent.stopPropagation()
+                  domEvent.preventDefault()
+                  if (key === 'edit') {
+                    navigate(
+                      `${baseprefix}/${value.cluster}${value.namespace ? `/${value.namespace}` : ''}${
+                        value.syntheticProject ? `/${value.syntheticProject}` : ''
+                      }/${value.pathPrefix}/${value.apiGroupAndVersion}/${value.typeName}/${value.entryName}?backlink=${
+                        value.backlink
+                      }`,
+                    )
+                  }
+                  if (key === 'delete') {
+                    value.onDeleteHandle(
+                      value.entryName,
+                      `${value.deletePathPrefix}/${value.apiGroupAndVersion}${
+                        value.namespace ? `/namespaces/${value.namespace}` : ''
+                      }/${value.typeName}/${value.entryName}`,
+                    )
+                  }
+                },
+              }}
+              trigger={['click']}
+              placement="bottomRight"
+            >
+              <TinyButton
+                type="text"
+                size="large"
+                onClick={e => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                }}
+                icon={<MoreOutlined size={16} />}
+              />
+            </Dropdown>
+            {/* <TinyButton
               type="text"
               size="small"
               onClick={e => {
@@ -278,7 +339,7 @@ export const getEnrichedColumnsWithControls = ({
               }}
               icon={deleteIcon || <DeleteOutlined size={14} />}
               disabled={value.permissions && value.permissions.canDelete ? !value.permissions?.canDelete : false}
-            />
+            /> */}
           </TextAlignContainer>
         )
       },

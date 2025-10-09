@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
@@ -64,6 +65,8 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     replaceValues,
   })
 
+  const namespacePrepared = namespace ? parseAll({ text: namespace, replaceValues, multiQueryData }) : undefined
+
   const dataForControlsPrepared = dataForControls
     ? {
         cluster: clusterName,
@@ -81,7 +84,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
   const createPermission = usePermissions({
     group: dataForControlsPrepared?.apiGroup,
     resource: dataForControlsPrepared?.resource || '',
-    namespace,
+    namespace: namespacePrepared,
     clusterName,
     verb: 'create',
     refetchInterval: false,
@@ -178,7 +181,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
       <EnrichedTableProvider
         tableMappingsReplaceValues={replaceValues}
         cluster={clusterName}
-        namespace={namespace}
+        namespace={namespacePrepared}
         theme={theme}
         dataItems={items}
         tableProps={{
@@ -215,7 +218,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
                 const url = getLinkToForm({
                   cluster: clusterName,
                   baseprefix,
-                  namespace,
+                  namespace: namespacePrepared,
                   syntheticProject: params.syntheticProject,
                   apiGroup: dataForControlsPrepared.apiGroup,
                   apiVersion: dataForControlsPrepared.apiVersion,
