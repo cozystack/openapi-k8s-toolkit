@@ -109,6 +109,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const valuesToYamlReqId = useRef(0)
   const yamlToValuesReqId = useRef(0)
   const skipFirstPersistedKeysEffect = useRef(true)
+  const valuesToYamlAbortRef = useRef<AbortController | null>(null)
+  const yamlToValuesAbortRef = useRef<AbortController | null>(null)
+  const isAnyFieldFocusedRef = useRef<boolean>(false)
 
   const createPermission = usePermissions({
     apiGroup: type === 'builtin' ? '' : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
@@ -234,6 +237,29 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       })
   }
 
+  const debouncedPostValuesToYaml = useDebounceCallback(
+    (payload: TYamlByValuesReq, myId: number) => {
+      try {
+        // Abort previous in-flight request
+        valuesToYamlAbortRef.current?.abort()
+      } catch {}
+      const controller = new AbortController()
+      valuesToYamlAbortRef.current = controller
+      axios
+        .post<TYamlByValuesRes>(
+          `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
+          payload,
+          { signal: controller.signal },
+        )
+        .then(({ data }) => {
+          if (myId !== valuesToYamlReqId.current) return
+          debouncedSetYamlValues(data)
+        })
+        .catch(() => {})
+    },
+    300,
+  )
+
   const onValuesChangeCallback = useCallback(
     (values?: any) => {
       const v = values ?? form.getFieldsValue(true)
@@ -242,21 +268,10 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         persistedKeys,
         properties,
       }
-
       const myId = ++valuesToYamlReqId.current
-
-      axios
-        .post<TYamlByValuesRes>(
-          `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
-          payload,
-        )
-        .then(({ data }) => {
-          if (myId !== valuesToYamlReqId.current) return
-          debouncedSetYamlValues(data)
-        })
-        .catch(() => {})
+      debouncedPostValuesToYaml(payload, myId)
     },
-    [form, debouncedSetYamlValues, properties, persistedKeys, cluster],
+    [form, properties, persistedKeys, debouncedPostValuesToYaml],
   )
 
   const pruneAdditionalForValues = (
@@ -378,15 +393,18 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     return { props: next, toExpand, toPersist }
   }
 
-  const onYamlChangeCallback = useCallback(
-    (values: Record<string, unknown>) => {
-      const payload: TValuesByYamlReq = { values, properties }
-      const myId = ++yamlToValuesReqId.current
-
+  const debouncedPostYamlToValues = useDebounceCallback(
+    (payload: TValuesByYamlReq, myId: number) => {
+      try {
+        yamlToValuesAbortRef.current?.abort()
+      } catch {}
+      const controller = new AbortController()
+      yamlToValuesAbortRef.current = controller
       axios
         .post<TValuesByYamlRes>(
           `/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`,
           payload,
+          { signal: controller.signal },
         )
         .then(({ data }) => {
           if (myId !== yamlToValuesReqId.current) return
@@ -421,14 +439,11 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
             const { props: materialized, toExpand, toPersist } = materializeAdditionalFromValues(
               pruned, data as Record<string, unknown>
             )
-            // DO NOT auto-expand any paths to preserve user's manual collapse state
-            // Only update persisted keys for empty objects under additionalProperties
             if (toPersist.length) {
               setPersistedKeys(prev => {
                 const seen = new Set(prev.map(x => JSON.stringify(x)))
                 const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
-                if (!hasNew) return prev // If there are no new paths, do not update the state
-                
+                if (!hasNew) return prev
                 const merged = [...prev]
                 toPersist.forEach(p => {
                   const k = JSON.stringify(p)
@@ -445,7 +460,16 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         })
         .catch(() => {})
     },
-    [form, properties, cluster],
+    300,
+  )
+
+  const onYamlChangeCallback = useCallback(
+    (values: Record<string, unknown>) => {
+      const payload: TValuesByYamlReq = { values, properties }
+      const myId = ++yamlToValuesReqId.current
+      debouncedPostYamlToValues(payload, myId)
+    },
+    [properties, debouncedPostYamlToValues],
   )
 
   const initialValues = useMemo(() => {
@@ -491,6 +515,25 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const prevInitialValues = useRef<Record<string, any>>()
 
+  useEffect(() => {
+    const root = overflowRef.current
+    if (!root) return
+    const onFocusIn = () => { isAnyFieldFocusedRef.current = true }
+    const onFocusOut = () => {
+      const active = document.activeElement
+      if (!active || !root.contains(active)) {
+        isAnyFieldFocusedRef.current = false
+        // After blur, re-sync to apply any queued YAML changes
+        onValuesChangeCallback()
+      }
+    }
+    root.addEventListener('focusin', onFocusIn)
+    root.addEventListener('focusout', onFocusOut)
+    return () => {
+      root.removeEventListener('focusin', onFocusIn)
+      root.removeEventListener('focusout', onFocusOut)
+    }
+  }, [onValuesChangeCallback])
   useEffect(() => {
     const prev = prevInitialValues.current
     if (!_.isEqual(prev, initialValues)) {
@@ -704,7 +747,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           <Form
             form={form}
             initialValues={initialValues}
-            onValuesChange={(_: any, allValues: any) => onValuesChangeCallback(allValues)}
+            onValuesChange={() => onValuesChangeCallback()}
           >
             <DesignNewLayoutProvider value={designNewLayout}>
               <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
