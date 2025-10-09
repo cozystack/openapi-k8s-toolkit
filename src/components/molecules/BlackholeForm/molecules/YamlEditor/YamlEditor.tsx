@@ -16,9 +16,16 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange 
   const [yamlData, setYamlData] = useState<string>('')
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<typeof monaco | null>(null)
+  const isFocusedRef = useRef<boolean>(false)
+  const pendingExternalYamlRef = useRef<string | null>(null)
 
   useEffect(() => {
     const next = yaml.stringify(currentValues)
+    if (isFocusedRef.current) {
+      // Defer applying external updates to avoid cursor jumps while typing
+      pendingExternalYamlRef.current = next ?? ''
+      return
+    }
     setYamlData(next ?? '')
   }, [currentValues])
 
@@ -27,6 +34,7 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange 
     const ed = editorRef.current
     const m = monacoRef.current
     if (ed && m) {
+      if (isFocusedRef.current) return
       const uri = m.Uri.parse('inmemory://openapi-ui/form.yaml')
       let model = ed.getModel() || m.editor.getModel(uri)
       if (!model) {
@@ -54,6 +62,23 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange 
         onMount={(editor: monaco.editor.IStandaloneCodeEditor, m: typeof monaco) => {
           editorRef.current = editor
           monacoRef.current = m
+          // initialize focus state and listeners to control external updates while typing
+          try {
+            isFocusedRef.current = !!editor.hasTextFocus?.()
+          } catch {
+            isFocusedRef.current = false
+          }
+          editor.onDidFocusEditorText(() => {
+            isFocusedRef.current = true
+          })
+          editor.onDidBlurEditorText(() => {
+            isFocusedRef.current = false
+            // Apply any deferred external update after blur
+            if (pendingExternalYamlRef.current !== null) {
+              setYamlData(pendingExternalYamlRef.current)
+              pendingExternalYamlRef.current = null
+            }
+          })
           const uri = m.Uri.parse('inmemory://openapi-ui/form.yaml')
           let model = editor.getModel() || m.editor.getModel(uri)
           if (!model) {
