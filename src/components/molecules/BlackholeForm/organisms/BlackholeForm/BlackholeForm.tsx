@@ -465,6 +465,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   const onYamlChangeCallback = useCallback(
     (values: Record<string, unknown>) => {
+      // If a form field is focused, ignore YAML-driven updates to avoid overwriting user's typing
+      if (isAnyFieldFocusedRef.current) return
       const payload: TValuesByYamlReq = { values, properties }
       const myId = ++yamlToValuesReqId.current
       debouncedPostYamlToValues(payload, myId)

@@ -1028,7 +1028,7 @@ const InlineYamlEditor: React.FC<{ path: TFormName; persistedControls: TPersiste
     if (isFocusedRef.current) return
     const value = watchedValue
     const isEmptyObj = value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0
-    const next = isEmptyObj ? '' : yaml.stringify(value ?? {}) ?? ''
+    const next = (value == null || isEmptyObj) ? '' : yaml.stringify(value) ?? ''
     setYamlText(prev => (prev === next ? prev : next))
   }, [watchedValue])
 
@@ -1038,7 +1038,7 @@ const InlineYamlEditor: React.FC<{ path: TFormName; persistedControls: TPersiste
     if (isFocusedRef.current) return
     const value = externalValue
     const isEmptyObj = value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0
-    const next = isEmptyObj ? '' : yaml.stringify(value ?? {}) ?? ''
+    const next = (value == null || isEmptyObj) ? '' : yaml.stringify(value) ?? ''
     setYamlText(prev => (prev === next ? prev : next))
   }, [externalValue])
 
@@ -1133,12 +1133,18 @@ const InlineYamlEditor: React.FC<{ path: TFormName; persistedControls: TPersiste
           setYamlText(nextText)
           try {
             const parsed = yaml.parse(nextText || '')
-            // Treat empty/undefined as clearing value completely
-            if (parsed && typeof parsed === 'object' && Object.keys(parsed).length === 0) {
-              form.setFieldValue(path as any, undefined)
+            // Normalize empty content/null/empty object to an empty object value
+            let nextValue: any
+            if (!nextText.trim()) {
+              nextValue = {}
+            } else if (parsed === null) {
+              nextValue = {}
+            } else if (typeof parsed === 'object' && !Array.isArray(parsed) && Object.keys(parsed).length === 0) {
+              nextValue = {}
             } else {
-              form.setFieldValue(path as any, parsed)
+              nextValue = parsed
             }
+            form.setFieldValue(path as any, nextValue)
             // Mark persisted to prevent cleanup from removing empty object branch
             if (!persistedControls.persistedKeys.some(k => JSON.stringify(k) === JSON.stringify(path))) {
               persistedControls.onPersistMark(path, 'obj')

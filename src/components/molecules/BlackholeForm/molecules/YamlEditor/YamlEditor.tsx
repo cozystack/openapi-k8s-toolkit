@@ -18,6 +18,7 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange 
   const monacoRef = useRef<typeof monaco | null>(null)
   const isFocusedRef = useRef<boolean>(false)
   const pendingExternalYamlRef = useRef<string | null>(null)
+  const isApplyingExternalUpdateRef = useRef<boolean>(false)
 
   useEffect(() => {
     const next = yaml.stringify(currentValues)
@@ -44,6 +45,8 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange 
         m.editor.setModelLanguage(model, 'yaml')
         const current = model.getValue()
         if ((yamlData ?? '') !== current) {
+          // Mark that we are applying an external update so onChange is ignored once
+          isApplyingExternalUpdateRef.current = true
           model.setValue(yamlData ?? '')
         }
       }
@@ -89,6 +92,12 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange 
           }
         }}
         onChange={value => {
+          // Ignore changes that come from our own programmatic model.setValue
+          if (isApplyingExternalUpdateRef.current) {
+            isApplyingExternalUpdateRef.current = false
+            setYamlData(value || '')
+            return
+          }
           try {
             onChange(yaml.parse(value || ''))
           } catch {
