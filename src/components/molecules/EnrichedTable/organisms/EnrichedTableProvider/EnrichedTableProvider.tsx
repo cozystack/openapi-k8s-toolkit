@@ -19,6 +19,7 @@ export type TEnrichedTableProviderProps = {
   resourceSchema?: TJSON
 
   isNamespaced?: boolean
+  isNamespacedLoading?: boolean
 
   dataForControls?: {
     cluster: string
@@ -61,6 +62,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   dataItems,
   resourceSchema,
   isNamespaced,
+  isNamespacedLoading,
   dataForControls,
   dataForControlsInternal,
   customizationId,
@@ -96,6 +98,7 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
 
   useEffect(() => {
     setIsError(undefined)
+    setIsLoading(true)
     const payload: TPrepareTableReq = {
       customizationId,
       tableMappingsReplaceValues,
@@ -122,6 +125,14 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
     isNamespaced,
     namespace,
   ])
+
+  if (isNamespacedLoading) {
+    return (
+      <Flex justify="center">
+        <Spin />
+      </Flex>
+    )
+  }
 
   if (!preparedProps && isLoading) {
     return (

@@ -6,7 +6,7 @@ import React, { FC, useState } from 'react'
 import jp from 'jsonpath'
 import { useNavigate } from 'react-router-dom'
 import { Popover, notification, Flex, Button } from 'antd'
-import { UncontrolledSelect, CursorPointerTag, CursorPointerTagMinContent, EditIcon } from 'components/atoms'
+import { UncontrolledSelect, CursorPointerTag, CursorPointerTagMinContent, EditIcon, Spacer } from 'components/atoms'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
@@ -119,7 +119,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
 
   const EmptySelect = (
     <div style={containerStyle}>
-      {!readOnly && (
+      {!readOnly && !verticalViewList && (
         <Flex justify="flex-end">
           <Button
             type="text"
@@ -148,6 +148,25 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
           suffixIcon={null}
           isCursorPointer
         />
+      )}
+      {!readOnly && verticalViewList && (
+        <>
+          <Spacer $space={8} $samespace />
+          <Flex justify="flex-start">
+            <Button
+              type="text"
+              size="small"
+              onClick={e => {
+                e.stopPropagation()
+                setOpen(true)
+              }}
+              icon={<EditIcon />}
+              iconPosition="end"
+            >
+              Edit
+            </Button>
+          </Flex>
+        </>
       )}
       {children}
       {contextHolder}
@@ -184,7 +203,7 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
 
   return (
     <div style={containerStyle}>
-      {!readOnly && (
+      {!readOnly && !verticalViewList && (
         <Flex justify="flex-end">
           <Button
             type="text"
@@ -277,6 +296,25 @@ export const Labels: FC<{ data: TDynamicComponentsAppTypeMap['Labels']; children
           }}
           // isCursorPointer
         />
+      )}
+      {!readOnly && verticalViewList && (
+        <>
+          <Spacer $space={8} $samespace />
+          <Flex justify="flex-start">
+            <Button
+              type="text"
+              size="small"
+              onClick={e => {
+                e.stopPropagation()
+                setOpen(true)
+              }}
+              icon={<EditIcon />}
+              iconPosition="end"
+            >
+              Edit
+            </Button>
+          </Flex>
+        </>
       )}
       {children}
       {contextHolder}
