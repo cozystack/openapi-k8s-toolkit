@@ -35,9 +35,12 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
   const socketRef = useRef<WebSocket | null>(null)
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
 
+  const [editorReady, setEditorReady] = useState<boolean>(false)
+
   // Handle editor mount
   const handleEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor
+    setEditorReady(true)
   }
 
   // Append content to editor
@@ -56,6 +59,10 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
   }
 
   useEffect(() => {
+    if (!editorReady) {
+      return undefined
+    }
+
     const socket = new WebSocket(endpoint)
     socketRef.current = socket
 
@@ -96,7 +103,7 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
         socket.close()
       }
     }
-  }, [endpoint, namespace, podName, container, previous])
+  }, [endpoint, namespace, podName, container, previous, editorReady])
 
   return (
     <>
@@ -133,7 +140,7 @@ export const MonacoEditor: FC<TMonacoEditorProps> = ({
             defaultLanguage="plaintext"
             language="plaintext"
             width="100%"
-            height={`calc(100vh - ${substractHeight}px`}
+            height={`calc(100vh - ${substractHeight}px)`}
             theme={theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs'}
             options={{
               theme: theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs',
