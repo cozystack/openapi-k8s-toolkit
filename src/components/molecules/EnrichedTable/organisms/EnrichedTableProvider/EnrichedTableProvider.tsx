@@ -18,8 +18,13 @@ export type TEnrichedTableProviderProps = {
   dataItems: TJSON[]
   resourceSchema?: TJSON
 
-  isNamespaced?: boolean
-  isNamespacedLoading?: boolean
+  k8sResource?: {
+    resource: string
+    apiGroup?: string
+    apiVersion: string
+  }
+  // isNamespaced?: boolean
+  // isNamespacedLoading?: boolean
 
   dataForControls?: {
     cluster: string
@@ -61,8 +66,9 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
   baseprefix,
   dataItems,
   resourceSchema,
-  isNamespaced,
-  isNamespacedLoading,
+  k8sResource,
+  // isNamespaced,
+  // isNamespacedLoading,
   dataForControls,
   dataForControlsInternal,
   customizationId,
@@ -103,7 +109,9 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
       customizationId,
       tableMappingsReplaceValues,
       forceDefaultAdditionalPrinterColumns,
-      namespaceScopedWithoutNamespace: isNamespaced && !namespace,
+      namespace,
+      k8sResource,
+      // namespaceScopedWithoutNamespace: isNamespaced && !namespace,
     }
     axios
       .post<TPrepareTableRes>(`/api/clusters/${cluster}/openapi-bff/tables/tablePrepare/prepareTableProps`, payload)
@@ -122,17 +130,18 @@ export const EnrichedTableProvider: FC<TEnrichedTableProviderProps> = ({
     customizationId,
     tableMappingsReplaceValues,
     forceDefaultAdditionalPrinterColumns,
-    isNamespaced,
     namespace,
+    k8sResource,
+    // isNamespaced,
   ])
 
-  if (isNamespacedLoading) {
-    return (
-      <Flex justify="center">
-        <Spin />
-      </Flex>
-    )
-  }
+  // if (isNamespacedLoading) {
+  //   return (
+  //     <Flex justify="center">
+  //       <Spin />
+  //     </Flex>
+  //   )
+  // }
 
   if (!preparedProps && isLoading) {
     return (
