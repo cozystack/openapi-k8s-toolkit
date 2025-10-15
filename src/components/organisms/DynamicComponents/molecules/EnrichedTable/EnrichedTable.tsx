@@ -47,6 +47,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     labelsSelectorFull,
     fieldSelector,
     namespace,
+    k8sResource,
     dataForControls,
     baseprefix,
     ...props
@@ -66,6 +67,21 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
   })
 
   const namespacePrepared = namespace ? parseAll({ text: namespace, replaceValues, multiQueryData }) : undefined
+
+  const k8sResourcePrePrepared = k8sResource
+    ? {
+        apiGroup: k8sResource.apiGroup
+          ? parseAll({ text: k8sResource.apiGroup, replaceValues, multiQueryData })
+          : undefined,
+        apiVersion: parseAll({ text: k8sResource.apiVersion, replaceValues, multiQueryData }),
+        resource: parseAll({ text: k8sResource.resource, replaceValues, multiQueryData }),
+      }
+    : undefined
+
+  const k8sResourcePrepared =
+    k8sResourcePrePrepared?.apiGroup === '-'
+      ? { apiVersion: k8sResourcePrePrepared.apiVersion, resource: k8sResourcePrePrepared.resource }
+      : k8sResourcePrePrepared
 
   const dataForControlsPrepared = dataForControls
     ? {
@@ -203,6 +219,7 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
               }
             : undefined
         }
+        k8sResource={k8sResourcePrepared}
         dataForControlsInternal={{ onDeleteHandle }}
         dataForControls={dataForControlsPrepared}
         withoutControls={!dataForControlsPrepared}
