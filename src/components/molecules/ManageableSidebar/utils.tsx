@@ -132,6 +132,11 @@ export const prepareDataForManageableSidebar = ({
     return undefined
   }
 
+  const preparedCurrentTags =
+    currentTags && currentTags.length > 0
+      ? currentTags.map(el => prepareTemplate({ template: el, replaceValues }))
+      : undefined
+
   const result = {
     menuItems: mapLinksFromRaw({
       rawLinks: foundData.menuItems,
@@ -144,7 +149,7 @@ export const prepareDataForManageableSidebar = ({
     ? findMatchingItems({
         items: result?.menuItems,
         pathname,
-        tags: { keysAndTags: foundData.keysAndTags, currentTags },
+        tags: { keysAndTags: foundData.keysAndTags, currentTags: preparedCurrentTags },
       })
     : []
   const stringedOpenedKeys = openedKeys.map(el => (typeof el === 'string' ? el : String(el)))

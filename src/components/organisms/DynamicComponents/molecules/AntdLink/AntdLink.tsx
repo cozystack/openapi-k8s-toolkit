@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC } from 'react'
 import { Typography } from 'antd'
+import { useNavigate } from 'react-router-dom'
 import { TDynamicComponentsAppTypeMap } from '../../types'
 import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryProvider'
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
@@ -12,6 +13,8 @@ export const AntdLink: FC<{ data: TDynamicComponentsAppTypeMap['antdLink']; chil
 }) => {
   const { data: multiQueryData, isLoading: isMultiqueryLoading } = useMultiQuery()
   const partsOfUrl = usePartsOfUrl()
+
+  const navigate = useNavigate()
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, text, href, ...linkProps } = data
@@ -30,7 +33,14 @@ export const AntdLink: FC<{ data: TDynamicComponentsAppTypeMap['antdLink']; chil
   }
 
   return (
-    <Typography.Link href={hrefPrepared} {...linkProps}>
+    <Typography.Link
+      href={hrefPrepared}
+      onClick={e => {
+        e.preventDefault()
+        navigate(hrefPrepared)
+      }}
+      {...linkProps}
+    >
       {textPrepared}
       {children}
     </Typography.Link>
