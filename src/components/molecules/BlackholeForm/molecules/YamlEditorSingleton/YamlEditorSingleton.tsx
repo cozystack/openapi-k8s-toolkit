@@ -110,7 +110,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
   return (
     <>
       {contextHolder}
-      <Styled.BorderRadiusContainer $designNewLayoutHeight={designNewLayoutHeight}>
+      <Styled.BorderRadiusContainer $designNewLayoutHeight={designNewLayoutHeight} $colorBorder={token.colorBorder}>
         <Editor
           defaultLanguage="yaml"
           width="100%"

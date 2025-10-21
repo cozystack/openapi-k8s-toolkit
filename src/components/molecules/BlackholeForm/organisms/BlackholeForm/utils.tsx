@@ -638,6 +638,37 @@ export const getObjectFormItemsDraft = ({
   return (
     <HiddenContainer name={name} key={`${arrKey}-${JSON.stringify(name)}`}>
       {Object.keys(properties).map((el: keyof typeof properties) => {
+        // if (properties[el].type === 'object' && properties[el]['x-kubernetes-preserve-unknown-fields']) {
+        if (properties[el]['x-kubernetes-preserve-unknown-fields']) {
+          // return <Alert key={String(el)} message="x-kubernetes-preserve-unknown-fields" banner />
+          const path = Array.isArray(name) ? [...name, String(el)] : [name, String(el)]
+          return (
+            <FormObjectFromSwagger
+              name={name}
+              persistName={persistName}
+              hiddenFormName={path}
+              description={properties[el].description}
+              removeField={removeField}
+              expandedControls={expandedControls}
+              persistedControls={persistedControls}
+              collapseTitle={el}
+              collapseFormName={path}
+              data={
+                <Form.Item noStyle shouldUpdate>
+                  {f => (
+                    <FormInlineYamlEditor
+                      path={path}
+                      persistedControls={persistedControls}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      externalValue={f.getFieldValue(path as any)}
+                    />
+                  )}
+                </Form.Item>
+              }
+              key={Array.isArray(name) ? [...name, String(el)].join('-') : [name, String(el)].join('-')}
+            />
+          )
+        }
         if (properties[el].type === 'string' && properties[el].enum) {
           return getEnumStringFormItemFromSwagger({
             name: Array.isArray(name) ? [...name, String(el)] : [name, String(el)],
@@ -866,37 +897,6 @@ export const getObjectFormItemsDraft = ({
             persistedControls,
             urlParams,
           })
-        }
-        // if (properties[el].type === 'object' && properties[el]['x-kubernetes-preserve-unknown-fields']) {
-        if (properties[el]['x-kubernetes-preserve-unknown-fields']) {
-          // return <Alert key={String(el)} message="x-kubernetes-preserve-unknown-fields" banner />
-          const path = Array.isArray(name) ? [...name, String(el)] : [name, String(el)]
-          return (
-            <FormObjectFromSwagger
-              name={name}
-              persistName={persistName}
-              hiddenFormName={path}
-              description={properties[el].description}
-              removeField={removeField}
-              expandedControls={expandedControls}
-              persistedControls={persistedControls}
-              collapseTitle={el}
-              collapseFormName={path}
-              data={
-                <Form.Item noStyle shouldUpdate>
-                  {f => (
-                    <FormInlineYamlEditor
-                      path={path}
-                      persistedControls={persistedControls}
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      externalValue={f.getFieldValue(path as any)}
-                    />
-                  )}
-                </Form.Item>
-              }
-              key={Array.isArray(name) ? [...name, String(el)].join('-') : [name, String(el)].join('-')}
-            />
-          )
         }
         return null
       })}

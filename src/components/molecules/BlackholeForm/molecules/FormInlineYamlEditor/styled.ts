@@ -1,11 +1,11 @@
 import styled from 'styled-components'
 
-type TBorderRadiusContainerProps = {
+type TContainerProps = {
   $colorBorder: string
 }
 
-const BorderRadiusContainer = styled.div<TBorderRadiusContainerProps>`
-  height: 100%;
+const Container = styled.div<TContainerProps>`
+  height: 140px;
   border: 1px solid ${({ $colorBorder }) => $colorBorder};
   border-radius: 8px;
   padding: 2px;
@@ -17,5 +17,5 @@ const BorderRadiusContainer = styled.div<TBorderRadiusContainerProps>`
 `
 
 export const Styled = {
-  BorderRadiusContainer,
+  Container,
 }

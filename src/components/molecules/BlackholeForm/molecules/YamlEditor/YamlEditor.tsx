@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-nested-ternary */
 import React, { FC, useEffect, useRef, useState } from 'react'
+import { theme as antdtheme } from 'antd'
 import Editor from '@monaco-editor/react'
 import type * as monaco from 'monaco-editor'
 import * as yaml from 'yaml'
@@ -10,9 +11,11 @@ type TYamlEditProps = {
   theme: 'light' | 'dark'
   currentValues: Record<any, unknown>
   onChange: (values: Record<string, unknown>) => void
+  editorUri: string
 }
 
-export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange }) => {
+export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange, editorUri }) => {
+  const { token } = antdtheme.useToken()
   const [yamlData, setYamlData] = useState<string>('')
 
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
@@ -37,7 +40,7 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange 
     const monaco = monacoRef.current
     if (editor && monaco) {
       if (isFocusedRef.current) return
-      const uri = monaco.Uri.parse('inmemory://openapi-ui/form.yaml')
+      const uri = monaco.Uri.parse(editorUri)
       let model = editor.getModel() || monaco.editor.getModel(uri)
 
       if (!model) {
@@ -55,13 +58,13 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange 
         }
       }
     }
-  }, [yamlData])
+  }, [yamlData, editorUri])
 
   return (
-    <Styled.BorderRadiusContainer>
+    <Styled.BorderRadiusContainer $colorBorder={token.colorBorder}>
       <Editor
         language="yaml"
-        path="inmemory://openapi-ui/form.yaml"
+        path={editorUri}
         keepCurrentModel
         width="100%"
         height="100%"

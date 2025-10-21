@@ -1,18 +1,20 @@
 /* eslint-disable no-empty */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
-import { Form } from 'antd'
+import { Form, theme as antdtheme } from 'antd'
 import Editor from '@monaco-editor/react'
 import type * as monaco from 'monaco-editor'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import * as yaml from 'yaml'
 import { useOnValuesChangeCallback } from '../../organisms/BlackholeForm/context'
+import { Styled } from './styled'
 
 export const FormInlineYamlEditor: FC<{
   path: TFormName
   persistedControls: TPersistedControls
   externalValue?: unknown
 }> = ({ path, persistedControls, externalValue }) => {
+  const { token } = antdtheme.useToken()
   const form = Form.useFormInstance()
   const onValuesChange = useOnValuesChangeCallback()
 
@@ -73,7 +75,7 @@ export const FormInlineYamlEditor: FC<{
   }, [yamlText, modelUri])
 
   return (
-    <div style={{ height: 140 }}>
+    <Styled.Container $colorBorder={token.colorBorder}>
       <Editor
         language="yaml"
         path={modelUri}
@@ -181,6 +183,6 @@ export const FormInlineYamlEditor: FC<{
           wordWrap: 'on',
         }}
       />
-    </div>
+    </Styled.Container>
   )
 }

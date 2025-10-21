@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-continue */
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MutableRefObject } from 'react'

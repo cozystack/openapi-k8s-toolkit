@@ -115,6 +115,39 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const yamlToValuesAbortRef = useRef<AbortController | null>(null)
   const isAnyFieldFocusedRef = useRef<boolean>(false)
 
+  // A unique identifier for the YAML model of the currently selected resource
+  const editorUri = useMemo(
+    () =>
+      `inmemory://openapi-ui/${cluster}/${apiGroupApiVersion}/${type}/${typeName}/${kindName}${
+        isCreate ? '/create' : '/edit'
+      }.yaml`,
+    [cluster, apiGroupApiVersion, type, typeName, kindName, isCreate],
+  )
+
+  // When the resource changes, cancel any in-flight requests and clear YAML to avoid bleed-through
+  useEffect(() => {
+    // bump req ids so late responses are ignored
+    valuesToYamlReqId.current++
+    yamlToValuesReqId.current++
+
+    // cancel in-flight calls
+    try {
+      valuesToYamlAbortRef.current?.abort()
+    } catch (err) {
+      console.error(err)
+    }
+    try {
+      yamlToValuesAbortRef.current?.abort()
+    } catch (err) {
+      console.error(err)
+    }
+
+    // clear current YAML shown in the editor; it will be repopulated by onValuesChangeCallback
+    setYamlValues(undefined)
+    // also clear any pending external update flags inside the YAML editor by forcing a remount
+    // (done by passing key={editorUri} below)
+  }, [editorUri])
+
   const createPermission = usePermissions({
     group: type === 'builtin' ? undefined : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
     resource: urlParamsForPermissions.typeName || '',
@@ -180,13 +213,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 .catch(error => {
                   console.log('Form submit error', error)
                   setIsLoading(false)
-                  // if (overflowRef.current) {
-                  //   const { scrollHeight, clientHeight } = overflowRef.current
-                  //   overflowRef.current.scrollTo({
-                  //     top: scrollHeight - clientHeight,
-                  //     behavior: 'smooth',
-                  //   })
-                  // }
                   if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
                     const keys = handleSubmitError({ error, expandedKeys })
                     setExpandedKeys([...keys])
@@ -204,13 +230,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 .catch(error => {
                   console.log('Form submit error', error)
                   setIsLoading(false)
-                  // if (overflowRef.current) {
-                  //   const { scrollHeight, clientHeight } = overflowRef.current
-                  //   overflowRef.current.scrollTo({
-                  //     top: scrollHeight - clientHeight,
-                  //     behavior: 'smooth',
-                  //   })
-                  // }
                   if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
                     const keys = handleSubmitError({ error, expandedKeys })
                     setExpandedKeys([...keys])
@@ -369,12 +388,15 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
             blockedPathsRef,
           )
 
+          // ✅ Guard against no-op updates to break feedback loops
+          if (_.isEqual(prevProps, materialized)) {
+            return prevProps
+          }
+
           // Ensure new/empty fields discovered during materialization are tracked for persistence
           if (toPersist.length) {
             setPersistedKeys(prev => {
               const seen = new Set(prev.map(x => JSON.stringify(x)))
-              const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
-              if (!hasNew) return prev
               const merged = [...prev]
               toPersist.forEach(p => {
                 const k = JSON.stringify(p)
@@ -414,49 +436,45 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
    This gathers defaults from multiple sources (create-mode defaults, form-specific
    prefills, namespace-only prefill, and a schema-driven prefill), merges them into
    a single nested object, and returns a shallowly sorted object for stable key order.
+
+   + FIX: decouple from `properties`. We precompute a normalized prefill using `staticProperties`,
+   then keep `initialValues` independent of `properties` to avoid feedback loops.
   */
+
+  // Precompute normalized prefill once based on staticProperties (stable), not on `properties`
+  const normalizedPrefill = useMemo(() => {
+    if (!prefillValuesSchema) return undefined
+    return normalizeValuesForQuotasToNumber(prefillValuesSchema, staticProperties)
+  }, [prefillValuesSchema, staticProperties])
+
   const initialValues = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allValues: Record<string, any> = {}
 
     if (isCreate) {
-      // form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
       _.set(allValues, ['apiVersion'], apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion)
       _.set(allValues, ['kind'], kindName)
     }
 
     if (formsPrefills) {
       formsPrefills.spec.values.forEach(({ path, value }) => {
-        // form.setFieldValue(path, value)
         _.set(allValues, path, value)
       })
     }
 
     if (prefillValueNamespaceOnly) {
-      // form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
       _.set(allValues, ['metadata', 'namespace'], prefillValueNamespaceOnly)
     }
 
-    if (prefillValuesSchema) {
-      const quotasPrefillValuesSchema = normalizeValuesForQuotasToNumber(prefillValuesSchema, properties)
-      // form.setFieldsValue(quotasPrefillValuesSchema)
-      Object.entries(quotasPrefillValuesSchema).forEach(([flatKey, v]) => {
+    if (normalizedPrefill) {
+      Object.entries(normalizedPrefill).forEach(([flatKey, v]) => {
         _.set(allValues, flatKey.split('.'), v)
       })
     }
 
     const sorted = Object.fromEntries(Object.entries(allValues).sort(([a], [b]) => a.localeCompare(b)))
-
     return sorted
-  }, [
-    formsPrefills,
-    prefillValueNamespaceOnly,
-    isCreate,
-    apiGroupApiVersion,
-    kindName,
-    prefillValuesSchema,
-    properties,
-  ])
+  }, [formsPrefills, prefillValueNamespaceOnly, isCreate, apiGroupApiVersion, kindName, normalizedPrefill])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const prevInitialValues = useRef<Record<string, any>>()
@@ -485,7 +503,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     }
   }, [onValuesChangeCallback])
 
-  /* 
+  /*
     Whenever the computed `initialValues` change, trigger a form update if the new
     values differ from the previous ones. This ensures the form syncs properly with
     refreshed or recalculated defaults (e.g., after switching resource kind or schema).
@@ -541,6 +559,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
    to include any fields derived from `additionalProperties` that appear in the
    initial data. This ensures that all dynamic fields are represented in the schema
    before rendering or editing begins.
+
+   + FIX: guard against no-op updates to `properties`.
   */
   useEffect(() => {
     // Skip if there are no initial values yet
@@ -557,22 +577,16 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         blockedPathsRef,
       )
 
+      // ✅ Guard: do not update if nothing changed
+      if (_.isEqual(prev, p2)) return prev
+
       // 🧠 NOTE:
       // We intentionally do *not* auto-expand paths from initial values here.
       // This preserves the user's UI collapse/expand state (e.g., in a form tree view).
-
-      // If there are any new persistable paths (e.g., empty objects from additionalProperties)
       if (toPersist.length) {
-        setPersistedKeys(prev => {
-          // Convert each path array to a JSON string for easy comparison
-          const seen = new Set(prev.map(x => JSON.stringify(x)))
-
-          // Only update if new persistable paths exist
-          const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
-          if (!hasNew) return prev // If there are no new paths, do not update the state
-
-          // Merge in new persistable paths while avoiding duplicates
-          const merged = [...prev]
+        setPersistedKeys(prevPk => {
+          const seen = new Set(prevPk.map(x => JSON.stringify(x)))
+          const merged = [...prevPk]
           toPersist.forEach(p => {
             const k = JSON.stringify(p)
             if (!seen.has(k)) {
@@ -775,7 +789,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           </Form>
         </Styled.OverflowContainer>
         <div>
-          <YamlEditor theme={theme} currentValues={yamlValues || {}} onChange={onYamlChangeCallback} />
+          <YamlEditor
+            key={editorUri} // force a fresh editor when resource changes
+            editorUri={editorUri} // tell the editor which Monaco model to use
+            theme={theme}
+            currentValues={yamlValues || {}}
+            onChange={onYamlChangeCallback}
+          />
         </div>
       </Styled.Container>
       <FlexGrow />
