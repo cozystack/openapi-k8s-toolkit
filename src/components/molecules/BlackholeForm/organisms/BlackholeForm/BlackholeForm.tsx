@@ -104,6 +104,11 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
 
   const overflowRef = useRef<HTMLDivElement | null>(null)
+  const isAnyFieldFocusedRef = useRef<boolean>(false)
+  const valuesToYamlReqId = useRef(0)
+  const yamlToValuesReqId = useRef(0)
+  const valuesToYamlAbortRef = useRef<AbortController | null>(null)
+  const yamlToValuesAbortRef = useRef<AbortController | null>(null)
 
   const createPermission = usePermissions({
     group: type === 'builtin' ? undefined : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
@@ -229,41 +234,83 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       })
   }
 
+  const debouncedPostValuesToYaml = useDebounceCallback((payload: TYamlByValuesReq, myId: number) => {
+    try {
+      // Abort previous in-flight request
+      valuesToYamlAbortRef.current?.abort()
+    } catch (err) {
+      console.error(err)
+    }
+    const controller = new AbortController()
+    valuesToYamlAbortRef.current = controller
+    axios
+      .post<TYamlByValuesRes>(
+        `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
+        payload,
+        { signal: controller.signal },
+      )
+      .then(({ data }) => {
+        if (myId !== valuesToYamlReqId.current) {
+          return
+        }
+        debouncedSetYamlValues(data)
+      })
+      .catch(() => {})
+  }, 300)
+
   const onValuesChangeCallback = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (values?: any) => {
-      const v = values || form.getFieldsValue()
-
+      const v = values ?? form.getFieldsValue(true)
       const payload: TYamlByValuesReq = {
         values: v,
         persistedKeys,
         properties,
       }
-      axios
-        .post<TYamlByValuesRes>(
-          `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
-          payload,
-        )
-        .then(({ data }) => debouncedSetYamlValues(data))
+      // eslint-disable-next-line no-plusplus
+      const myId = ++valuesToYamlReqId.current
+      debouncedPostValuesToYaml(payload, myId)
     },
-    [form, debouncedSetYamlValues, properties, persistedKeys, cluster],
+    [form, properties, persistedKeys, debouncedPostValuesToYaml],
   )
+
+  const debouncedPostYamlToValues = useDebounceCallback((payload: TValuesByYamlReq, myId: number) => {
+    try {
+      yamlToValuesAbortRef.current?.abort()
+    } catch (err) {
+      console.log(err)
+    }
+    const controller = new AbortController()
+    yamlToValuesAbortRef.current = controller
+    axios
+      .post<TValuesByYamlRes>(`/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`, payload, {
+        signal: controller.signal,
+      })
+      .then(({ data }) => {
+        if (myId !== yamlToValuesReqId.current) {
+          return
+        }
+        if (!data) {
+          return
+        }
+
+        form.setFieldsValue(data)
+      })
+      .catch(() => {})
+  }, 300)
 
   const onYamlChangeCallback = useCallback(
     (values: Record<string, unknown>) => {
-      const payload: TValuesByYamlReq = {
-        values,
-        properties,
+      // If a form field is focused, ignore YAML-driven updates to avoid overwriting user's typing
+      if (isAnyFieldFocusedRef.current) {
+        return
       }
-      axios
-        .post<TValuesByYamlRes>(`/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`, payload)
-        .then(({ data }) => {
-          if (data) {
-            form.setFieldsValue(data)
-          }
-        })
+      const payload: TValuesByYamlReq = { values, properties }
+      // eslint-disable-next-line no-plusplus
+      const myId = ++yamlToValuesReqId.current
+      debouncedPostYamlToValues(payload, myId)
     },
-    [form, properties, cluster],
+    [properties, debouncedPostYamlToValues],
   )
 
   const initialValues = useMemo(() => {
@@ -308,6 +355,35 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const prevInitialValues = useRef<Record<string, any>>()
+
+  useEffect(() => {
+    const root = overflowRef.current
+
+    if (!root) {
+      return undefined
+    }
+
+    const onFocusIn = () => {
+      isAnyFieldFocusedRef.current = true
+    }
+
+    const onFocusOut = () => {
+      const active = document.activeElement
+      if (!active || !root.contains(active)) {
+        isAnyFieldFocusedRef.current = false
+        // After blur, re-sync to apply any queued YAML changes
+        onValuesChangeCallback()
+      }
+    }
+
+    root.addEventListener('focusin', onFocusIn)
+    root.addEventListener('focusout', onFocusOut)
+
+    return () => {
+      root.removeEventListener('focusin', onFocusIn)
+      root.removeEventListener('focusout', onFocusOut)
+    }
+  }, [onValuesChangeCallback])
 
   useEffect(() => {
     const prev = prevInitialValues.current
