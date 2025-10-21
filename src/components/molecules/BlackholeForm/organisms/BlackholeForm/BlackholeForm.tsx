@@ -1,3 +1,6 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable no-console */
@@ -32,6 +35,8 @@ import {
   OnValuesChangeCallbackProvider,
   IsTouchedPersistedProvider,
 } from './context'
+
+const pathKey = (p: (string | number)[]) => JSON.stringify(p)
 
 type TBlackholeFormCreateProps = {
   cluster: string
@@ -103,12 +108,14 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const [expandedKeys, setExpandedKeys] = useState<TFormName[]>(expandedPaths || [])
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
 
+  const blockedPathsRef = useRef<Set<string>>(new Set())
   const overflowRef = useRef<HTMLDivElement | null>(null)
-  const isAnyFieldFocusedRef = useRef<boolean>(false)
   const valuesToYamlReqId = useRef(0)
   const yamlToValuesReqId = useRef(0)
+  // const skipFirstPersistedKeysEffect = useRef(true)
   const valuesToYamlAbortRef = useRef<AbortController | null>(null)
   const yamlToValuesAbortRef = useRef<AbortController | null>(null)
+  const isAnyFieldFocusedRef = useRef<boolean>(false)
 
   const createPermission = usePermissions({
     group: type === 'builtin' ? undefined : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
@@ -250,16 +257,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         { signal: controller.signal },
       )
       .then(({ data }) => {
-        if (myId !== valuesToYamlReqId.current) {
-          return
-        }
+        if (myId !== valuesToYamlReqId.current) return
         debouncedSetYamlValues(data)
       })
       .catch(() => {})
   }, 300)
 
   const onValuesChangeCallback = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (values?: any) => {
       const v = values ?? form.getFieldsValue(true)
       const payload: TYamlByValuesReq = {
@@ -267,18 +271,134 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         persistedKeys,
         properties,
       }
-      // eslint-disable-next-line no-plusplus
       const myId = ++valuesToYamlReqId.current
       debouncedPostValuesToYaml(payload, myId)
     },
     [form, properties, persistedKeys, debouncedPostValuesToYaml],
   )
 
+  const pruneAdditionalForValues = (
+    props: OpenAPIV2.SchemaObject['properties'],
+    values: Record<string, unknown>,
+  ): OpenAPIV2.SchemaObject['properties'] => {
+    const next = _.cloneDeep(props) || {}
+
+    const walk = (schemaNode: any, valueNode: any, path: (string | number)[] = []) => {
+      if (!schemaNode) return
+      if (schemaNode.type === 'object') {
+        const vo = valueNode && typeof valueNode === 'object' && !Array.isArray(valueNode) ? valueNode : {}
+        if (schemaNode.properties) {
+          Object.keys(schemaNode.properties).forEach(k => {
+            const child = schemaNode.properties[k] as any
+            const currentPath = pathKey([...path, k])
+            if (child?.isAdditionalProperties && (!(k in vo) || blockedPathsRef.current.has(currentPath))) {
+              delete schemaNode.properties[k]
+              return
+            }
+            walk(child as OpenAPIV2.SchemaObject, vo?.[k], [...path, k])
+          })
+        }
+      }
+      if (schemaNode.type === 'array' && schemaNode.items && Array.isArray(valueNode)) {
+        valueNode.forEach((item, idx) => {
+          if ((schemaNode as any).properties?.[idx]) {
+            walk(schemaNode.items as OpenAPIV2.SchemaObject, item, [...path, idx])
+          }
+        })
+      }
+    }
+
+    Object.keys(next || {}).forEach(top => {
+      walk(next[top] as OpenAPIV2.SchemaObject, (values as any)?.[top], [top])
+    })
+
+    return next
+  }
+
+  const materializeAdditionalFromValues = (
+    props: OpenAPIV2.SchemaObject['properties'],
+    values: Record<string, unknown>,
+  ): { props: OpenAPIV2.SchemaObject['properties']; toExpand: TFormName[]; toPersist: TFormName[] } => {
+    const next = _.cloneDeep(props) || {}
+    const toExpand: TFormName[] = []
+    const toPersist: TFormName[] = []
+
+    const makeChildFromAP = (ap: any): OpenAPIV2.SchemaObject => {
+      const t = ap?.type ?? 'object'
+      const child: OpenAPIV2.SchemaObject = { type: t } as any
+      if (ap?.properties) (child as any).properties = _.cloneDeep(ap.properties)
+      if (ap?.items) (child as any).items = _.cloneDeep(ap.items)
+      if (ap?.required) (child as any).required = _.cloneDeep(ap.required)
+      ;(child as any).isAdditionalProperties = true
+      return child
+    }
+
+    const walk = (schemaNode: OpenAPIV2.SchemaObject | undefined, valueNode: unknown, path: (string | number)[]) => {
+      if (!schemaNode) return
+
+      if (schemaNode.type === 'object') {
+        const ap = schemaNode.additionalProperties as any
+        if (ap && valueNode && typeof valueNode === 'object' && !Array.isArray(valueNode)) {
+          const vo = valueNode as Record<string, unknown>
+          schemaNode.properties = schemaNode.properties || {}
+          toExpand.push([...path])
+          Object.keys(vo).forEach(k => {
+            const current = pathKey([...path, k])
+            if (blockedPathsRef.current.has(current)) return
+
+            if (!schemaNode.properties![k]) {
+              schemaNode.properties![k] = makeChildFromAP(ap)
+            } else if ((schemaNode.properties![k] as any).isAdditionalProperties && ap?.properties) {
+              ;(schemaNode.properties![k] as any).properties ??= _.cloneDeep(ap.properties)
+            }
+            toExpand.push([...path, k])
+
+            // Mark for persist if it's a new field created from additionalProperties
+            const v = vo[k]
+            // Mark empty objects for persist
+            if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v as object).length === 0) {
+              toPersist.push([...path, k])
+            }
+            // Mark other new fields for persist (strings, numbers, arrays)
+            else if (v === '' || v === 0 || (Array.isArray(v) && v.length === 0)) {
+              toPersist.push([...path, k])
+            }
+          })
+        }
+        if (schemaNode.properties && valueNode && typeof valueNode === 'object' && !Array.isArray(valueNode)) {
+          const vo = valueNode as Record<string, unknown>
+          Object.keys(schemaNode.properties).forEach(k => {
+            walk(schemaNode.properties![k] as OpenAPIV2.SchemaObject, vo?.[k], [...path, k])
+          })
+        }
+      }
+
+      if (schemaNode.type === 'array' && schemaNode.items) {
+        const arr = Array.isArray(valueNode) ? (valueNode as unknown[]) : []
+        if (arr.length) toExpand.push([...path])
+        arr.forEach((itemVal, idx) => {
+          if ((schemaNode as any).properties) {
+            ;(schemaNode as any).properties[idx as any] = (schemaNode as any).properties[idx as any] || {
+              properties: {},
+            }
+          }
+          walk(schemaNode.items as OpenAPIV2.SchemaObject, itemVal, [...path, idx])
+        })
+      }
+    }
+
+    Object.keys(next || {}).forEach(top => {
+      walk(next[top] as OpenAPIV2.SchemaObject, (values as any)?.[top], [top])
+    })
+
+    return { props: next, toExpand, toPersist }
+  }
+
   const debouncedPostYamlToValues = useDebounceCallback((payload: TValuesByYamlReq, myId: number) => {
     try {
       yamlToValuesAbortRef.current?.abort()
     } catch (err) {
-      console.log(err)
+      console.error(err)
     }
     const controller = new AbortController()
     yamlToValuesAbortRef.current = controller
@@ -287,14 +407,55 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         signal: controller.signal,
       })
       .then(({ data }) => {
-        if (myId !== yamlToValuesReqId.current) {
-          return
-        }
-        if (!data) {
-          return
-        }
+        if (myId !== yamlToValuesReqId.current) return
+        if (!data) return
+
+        const prevAll = form.getFieldsValue(true)
+        const prevPaths = getAllPathsFromObj(prevAll)
+        const nextPaths = getAllPathsFromObj(data as Record<string, unknown>)
+        const nextSet = new Set(nextPaths.map(p => pathKey(p)))
+
+        prevPaths.forEach(p => {
+          const k = pathKey(p)
+          if (!nextSet.has(k)) {
+            form.setFieldValue(p as any, undefined)
+            // Block the path that was removed from YAML
+            blockedPathsRef.current.add(k)
+          }
+        })
 
         form.setFieldsValue(data)
+
+        // Unblock paths which reappeared in data
+        const dataPathSet = new Set(getAllPathsFromObj(data as Record<string, unknown>).map(p => pathKey(p)))
+        blockedPathsRef.current.forEach(k => {
+          if (dataPathSet.has(k)) blockedPathsRef.current.delete(k)
+        })
+
+        setProperties(prevProps => {
+          const pruned = pruneAdditionalForValues(prevProps, data as Record<string, unknown>)
+          const { props: materialized, toPersist } = materializeAdditionalFromValues(
+            pruned,
+            data as Record<string, unknown>,
+          )
+          if (toPersist.length) {
+            setPersistedKeys(prev => {
+              const seen = new Set(prev.map(x => JSON.stringify(x)))
+              const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
+              if (!hasNew) return prev
+              const merged = [...prev]
+              toPersist.forEach(p => {
+                const k = JSON.stringify(p)
+                if (!seen.has(k)) {
+                  seen.add(k)
+                  merged.push(p)
+                }
+              })
+              return merged
+            })
+          }
+          return materialized
+        })
       })
       .catch(() => {})
   }, 300)
@@ -302,11 +463,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const onYamlChangeCallback = useCallback(
     (values: Record<string, unknown>) => {
       // If a form field is focused, ignore YAML-driven updates to avoid overwriting user's typing
-      if (isAnyFieldFocusedRef.current) {
-        return
-      }
+      if (isAnyFieldFocusedRef.current) return
       const payload: TValuesByYamlReq = { values, properties }
-      // eslint-disable-next-line no-plusplus
       const myId = ++yamlToValuesReqId.current
       debouncedPostYamlToValues(payload, myId)
     },
@@ -358,15 +516,10 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   useEffect(() => {
     const root = overflowRef.current
-
-    if (!root) {
-      return undefined
-    }
-
+    if (!root) return undefined
     const onFocusIn = () => {
       isAnyFieldFocusedRef.current = true
     }
-
     const onFocusOut = () => {
       const active = document.activeElement
       if (!active || !root.contains(active)) {
@@ -375,16 +528,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         onValuesChangeCallback()
       }
     }
-
     root.addEventListener('focusin', onFocusIn)
     root.addEventListener('focusout', onFocusOut)
-
     return () => {
       root.removeEventListener('focusin', onFocusIn)
       root.removeEventListener('focusout', onFocusOut)
     }
   }, [onValuesChangeCallback])
-
   useEffect(() => {
     const prev = prevInitialValues.current
     if (!_.isEqual(prev, initialValues)) {
@@ -397,8 +547,14 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   }, [onValuesChangeCallback, initialValues])
 
   useEffect(() => {
+    // if (skipFirstPersistedKeysEffect.current) {
+    //   skipFirstPersistedKeysEffect.current = false
+    //   return
+    // }
     onValuesChangeCallback()
-  }, [onValuesChangeCallback, persistedKeys])
+    // do not include the callback in deps to avoid re-run when its identity changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistedKeys])
 
   /* expanded initial */
   useEffect(() => {
@@ -424,6 +580,34 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     setExpandedKeys([...uniqueKeys])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiGroupApiVersion, formsPrefills, prefillValuesSchema, type, typeName])
+
+  useEffect(() => {
+    if (!initialValues) return
+    setProperties(prev => {
+      const { props: p2, toPersist } = materializeAdditionalFromValues(prev, initialValues as Record<string, unknown>)
+      // DO NOT auto-expand paths from initial values to preserve user's collapse state
+      // Only update persisted keys for empty objects under additionalProperties
+      if (toPersist.length) {
+        setPersistedKeys(prev => {
+          const seen = new Set(prev.map(x => JSON.stringify(x)))
+          const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
+          if (!hasNew) return prev // If there are no new paths, do not update the state
+
+          const merged = [...prev]
+          toPersist.forEach(p => {
+            const k = JSON.stringify(p)
+            if (!seen.has(k)) {
+              seen.add(k)
+              merged.push(p)
+            }
+          })
+          return merged
+        })
+      }
+      return p2
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues])
 
   if (!properties) {
     return null
@@ -476,6 +660,33 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     console.log('newObject', newObject)
     console.log('newProperties', newProperties)
     setProperties(newProperties)
+
+    // 1) Initialize the value under the added field
+    const fullPath = [...arrPath, name] as TFormName
+    const currentValue = form.getFieldValue(fullPath)
+    if (currentValue === undefined) {
+      if (type === 'string') {
+        form.setFieldValue(fullPath as any, '')
+      } else if (type === 'number' || type === 'integer') {
+        form.setFieldValue(fullPath as any, 0)
+      } else if (type === 'array') {
+        form.setFieldValue(fullPath as any, [])
+      } else {
+        // object / unknown -> make it an object
+        form.setFieldValue(fullPath as any, {})
+      }
+    }
+
+    // 2) Auto-mark for persist
+    setPersistedKeys(prev => {
+      const seen = new Set(prev.map(x => JSON.stringify(x)))
+      const k = JSON.stringify(fullPath)
+      if (seen.has(k)) return prev
+      return [...prev, fullPath]
+    })
+
+    // 3) Trigger YAML update to ensure new field is properly handled
+    onValuesChangeCallback()
   }
 
   const removeField = ({ path }: { path: TFormName }) => {
@@ -484,7 +695,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     const modifiedProperties = _.cloneDeep(properties)
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     const result = _.unset(modifiedProperties, pathWithProperties)
+
+    blockedPathsRef.current.add(pathKey(arrPath))
+    form.setFieldValue(arrPath as any, undefined)
+
     setProperties(modifiedProperties)
+    onValuesChangeCallback()
   }
 
   const onExpandOpen = (value: TFormName) => {
@@ -513,7 +729,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         }
       }
     }
-    setPersistedKeys([...persistedKeys, value])
+    setPersistedKeys(prev => {
+      const keyStr = JSON.stringify(value)
+      const alreadyExists = prev.some(p => JSON.stringify(p) === keyStr)
+      if (alreadyExists) return prev
+      return [...prev, value]
+    })
   }
 
   const onPersistUnmark = (value: TFormName) => {
@@ -525,11 +746,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     <>
       <Styled.Container $designNewLayout={designNewLayout} $designNewLayoutHeight={designNewLayoutHeight}>
         <Styled.OverflowContainer ref={overflowRef}>
-          <Form
-            form={form}
-            initialValues={initialValues}
-            onValuesChange={(_, allValues) => onValuesChangeCallback(allValues)}
-          >
+          <Form form={form} initialValues={initialValues} onValuesChange={() => onValuesChangeCallback()}>
             <DesignNewLayoutProvider value={designNewLayout}>
               <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
                 <IsTouchedPersistedProvider value={{}}>
