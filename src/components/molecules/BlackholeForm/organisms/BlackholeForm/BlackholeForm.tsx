@@ -1,3 +1,5 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable no-console */
@@ -24,6 +26,7 @@ import { deepMerge } from 'utils/deepMerge'
 import { FlexGrow, Spacer } from 'components/atoms'
 import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
+import { pathKey, pruneAdditionalForValues, materializeAdditionalFromValues } from './helpers'
 import { handleSubmitError, handleValidationError } from './utilsErrorHandler'
 import { Styled } from './styled'
 import {
@@ -103,7 +106,14 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const [expandedKeys, setExpandedKeys] = useState<TFormName[]>(expandedPaths || [])
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
 
+  const blockedPathsRef = useRef<Set<string>>(new Set())
   const overflowRef = useRef<HTMLDivElement | null>(null)
+  const valuesToYamlReqId = useRef(0)
+  const yamlToValuesReqId = useRef(0)
+  // const skipFirstPersistedKeysEffect = useRef(true)
+  const valuesToYamlAbortRef = useRef<AbortController | null>(null)
+  const yamlToValuesAbortRef = useRef<AbortController | null>(null)
+  const isAnyFieldFocusedRef = useRef<boolean>(false)
 
   const createPermission = usePermissions({
     group: type === 'builtin' ? undefined : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
@@ -229,43 +239,182 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       })
   }
 
-  const onValuesChangeCallback = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (values?: any) => {
-      const v = values || form.getFieldsValue()
+  /**
+   * Debounced function that synchronizes form values to YAML using a backend API.
+   * It cancels previous requests when new ones are triggered, ensuring only the latest state is processed.
+   *
+   * @param payload - Data to send to the API (form values + metadata)
+   * @param myId - Unique identifier for this particular request (to ignore stale responses)
+   */
+  const debouncedPostValuesToYaml = useDebounceCallback((payload: TYamlByValuesReq, myId: number) => {
+    try {
+      // Abort previous in-flight request
+      valuesToYamlAbortRef.current?.abort()
+    } catch (err) {
+      console.error(err)
+    }
 
+    // Create a new AbortController for this request
+    const controller = new AbortController()
+    valuesToYamlAbortRef.current = controller
+    axios
+      .post<TYamlByValuesRes>(
+        `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
+        payload,
+        { signal: controller.signal },
+      )
+      .then(({ data }) => {
+        // Ignore the response if it's from an outdated request
+        if (myId !== valuesToYamlReqId.current) return
+        debouncedSetYamlValues(data)
+      })
+      // Silent catch to ignore abort errors or user-triggered cancels
+      .catch(() => {})
+  }, 300)
+
+  /**
+   * Callback triggered whenever the form values change.
+   * Builds the payload and triggers the debounced sync-to-YAML call.
+   */
+  const onValuesChangeCallback = useCallback(
+    (values?: any) => {
+      // Get the most recent form values (or use the provided ones)
+      const v = values ?? form.getFieldsValue(true)
       const payload: TYamlByValuesReq = {
         values: v,
         persistedKeys,
         properties,
       }
-      axios
-        .post<TYamlByValuesRes>(
-          `/api/clusters/${cluster}/openapi-bff/forms/formSync/getYamlValuesByFromValues`,
-          payload,
-        )
-        .then(({ data }) => debouncedSetYamlValues(data))
+
+      // Increment the request ID to track the most recent sync call
+      const myId = ++valuesToYamlReqId.current
+      debouncedPostValuesToYaml(payload, myId)
     },
-    [form, debouncedSetYamlValues, properties, persistedKeys, cluster],
+    [form, properties, persistedKeys, debouncedPostValuesToYaml],
   )
 
-  const onYamlChangeCallback = useCallback(
-    (values: Record<string, unknown>) => {
-      const payload: TValuesByYamlReq = {
-        values,
-        properties,
-      }
-      axios
-        .post<TValuesByYamlRes>(`/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`, payload)
-        .then(({ data }) => {
-          if (data) {
-            form.setFieldsValue(data)
+  /**
+   * Debounced function that converts YAML → form values via the backend and
+   * carefully merges the result into the current form & schema state.
+   *
+   * - Cancels in-flight requests when new ones start.
+   * - Ignores stale responses using a monotonically increasing request id.
+   * - Diffs previous form paths vs. next data paths to clear removed fields and block them.
+   * - Updates the schema by pruning & materializing additionalProperties according to new data.
+   *
+   * @param payload - YAML payload and schema context for the API
+   * @param myId - A request-sequencing id to guard against stale responses
+   */
+  const debouncedPostYamlToValues = useDebounceCallback((payload: TValuesByYamlReq, myId: number) => {
+    try {
+      // Abort any previous YAML→values request still in flight
+      yamlToValuesAbortRef.current?.abort()
+    } catch (err) {
+      console.error(err)
+    }
+
+    // Create a fresh controller for this request
+    const controller = new AbortController()
+    yamlToValuesAbortRef.current = controller
+
+    axios
+      .post<TValuesByYamlRes>(`/api/clusters/${cluster}/openapi-bff/forms/formSync/getFormValuesByYaml`, payload, {
+        signal: controller.signal,
+      })
+      .then(({ data }) => {
+        // Discard if this is not the latest request
+        if (myId !== yamlToValuesReqId.current) return
+        // No data, nothing to merge
+        if (!data) return
+
+        // --- Compute paths present in previous form state vs. incoming data ---
+
+        // Get full snapshot of current form values (all fields)
+        const prevAll = form.getFieldsValue(true)
+        // Extract path arrays (e.g., ['spec','env',0,'name']) from objects
+        const prevPaths = getAllPathsFromObj(prevAll)
+        const nextPaths = getAllPathsFromObj(data as Record<string, unknown>)
+        const nextSet = new Set(nextPaths.map(p => pathKey(p)))
+
+        // For any path that existed before but not in new YAML data:
+        // - Clear the form value
+        // - Block the path so it won't be re-added by schema materialization
+        prevPaths.forEach(p => {
+          const k = pathKey(p)
+          if (!nextSet.has(k)) {
+            form.setFieldValue(p as any, undefined)
+            // Prevent re-creation of removed paths on the next materialization pass
+            blockedPathsRef.current.add(k)
           }
         })
+
+        // Merge the new YAML-derived values into the form
+        form.setFieldsValue(data)
+
+        // Unblock paths that reappeared in the new YAML-derived data
+        const dataPathSet = new Set(getAllPathsFromObj(data as Record<string, unknown>).map(p => pathKey(p)))
+        blockedPathsRef.current.forEach(k => {
+          if (dataPathSet.has(k)) blockedPathsRef.current.delete(k)
+        })
+
+        // --- Bring schema in sync: prune missing additional props, then materialize new ones ---
+        setProperties(prevProps => {
+          // Remove additionalProperties entries that are now absent or blocked
+          const pruned = pruneAdditionalForValues(prevProps, data as Record<string, unknown>, blockedPathsRef)
+
+          // Add schema nodes for any new values allowed by additionalProperties
+          const { props: materialized, toPersist } = materializeAdditionalFromValues(
+            pruned,
+            data as Record<string, unknown>,
+            blockedPathsRef,
+          )
+
+          // Ensure new/empty fields discovered during materialization are tracked for persistence
+          if (toPersist.length) {
+            setPersistedKeys(prev => {
+              const seen = new Set(prev.map(x => JSON.stringify(x)))
+              const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
+              if (!hasNew) return prev
+              const merged = [...prev]
+              toPersist.forEach(p => {
+                const k = JSON.stringify(p)
+                if (!seen.has(k)) {
+                  seen.add(k)
+                  merged.push(p)
+                }
+              })
+              return merged
+            })
+          }
+          return materialized
+        })
+      })
+      // Silent catch: ignore abort/cancel or transient errors here
+      .catch(() => {})
+  }, 300)
+
+  /**
+   * Handler for when the YAML editor changes.
+   * Skips applying YAML-driven updates while the user is actively typing in a form field
+   * (prevents clobbering in-progress input), then triggers the debounced YAML→values sync.
+   */
+  const onYamlChangeCallback = useCallback(
+    (values: Record<string, unknown>) => {
+      // If a form field is focused, ignore YAML-driven updates to avoid overwriting user's typing
+      if (isAnyFieldFocusedRef.current) return
+      const payload: TValuesByYamlReq = { values, properties }
+      const myId = ++yamlToValuesReqId.current
+      debouncedPostYamlToValues(payload, myId)
     },
-    [form, properties, cluster],
+    [properties, debouncedPostYamlToValues],
   )
 
+  /*
+   Compute the initial form values once per relevant dependency change.
+   This gathers defaults from multiple sources (create-mode defaults, form-specific
+   prefills, namespace-only prefill, and a schema-driven prefill), merges them into
+   a single nested object, and returns a shallowly sorted object for stable key order.
+  */
   const initialValues = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allValues: Record<string, any> = {}
@@ -275,16 +424,19 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       _.set(allValues, ['apiVersion'], apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion)
       _.set(allValues, ['kind'], kindName)
     }
+
     if (formsPrefills) {
       formsPrefills.spec.values.forEach(({ path, value }) => {
         // form.setFieldValue(path, value)
         _.set(allValues, path, value)
       })
     }
+
     if (prefillValueNamespaceOnly) {
       // form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
       _.set(allValues, ['metadata', 'namespace'], prefillValueNamespaceOnly)
     }
+
     if (prefillValuesSchema) {
       const quotasPrefillValuesSchema = normalizeValuesForQuotasToNumber(prefillValuesSchema, properties)
       // form.setFieldsValue(quotasPrefillValuesSchema)
@@ -310,6 +462,35 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const prevInitialValues = useRef<Record<string, any>>()
 
   useEffect(() => {
+    const root = overflowRef.current
+    if (!root) return undefined
+    const onFocusIn = () => {
+      isAnyFieldFocusedRef.current = true
+    }
+    const onFocusOut = () => {
+      const active = document.activeElement
+      if (!active || !root.contains(active)) {
+        isAnyFieldFocusedRef.current = false
+        // After blur, re-sync to apply any queued YAML changes
+        onValuesChangeCallback()
+      }
+    }
+
+    root.addEventListener('focusin', onFocusIn)
+    root.addEventListener('focusout', onFocusOut)
+
+    return () => {
+      root.removeEventListener('focusin', onFocusIn)
+      root.removeEventListener('focusout', onFocusOut)
+    }
+  }, [onValuesChangeCallback])
+
+  /* 
+    Whenever the computed `initialValues` change, trigger a form update if the new
+    values differ from the previous ones. This ensures the form syncs properly with
+    refreshed or recalculated defaults (e.g., after switching resource kind or schema).
+  */
+  useEffect(() => {
     const prev = prevInitialValues.current
     if (!_.isEqual(prev, initialValues)) {
       if (initialValues) {
@@ -320,9 +501,15 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     }
   }, [onValuesChangeCallback, initialValues])
 
+  /* watch persisted and trigger values change callback */
   useEffect(() => {
+    // if (skipFirstPersistedKeysEffect.current) {
+    //   skipFirstPersistedKeysEffect.current = false
+    //   return
+    // }
     onValuesChangeCallback()
-  }, [onValuesChangeCallback, persistedKeys])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistedKeys])
 
   /* expanded initial */
   useEffect(() => {
@@ -348,6 +535,60 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     setExpandedKeys([...uniqueKeys])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiGroupApiVersion, formsPrefills, prefillValuesSchema, type, typeName])
+
+  /*
+   When `initialValues` become available or change, update the schema (`properties`)
+   to include any fields derived from `additionalProperties` that appear in the
+   initial data. This ensures that all dynamic fields are represented in the schema
+   before rendering or editing begins.
+  */
+  useEffect(() => {
+    // Skip if there are no initial values yet
+    if (!initialValues) return
+
+    setProperties(prev => {
+      // Expand the schema based on any dynamic keys in initialValues that are allowed
+      // by `additionalProperties`. This process returns:
+      //  - `p2`: the updated schema with new child nodes added where needed
+      //  - `toPersist`: a list of new paths that should be persisted (usually empty objects)
+      const { props: p2, toPersist } = materializeAdditionalFromValues(
+        prev,
+        initialValues as Record<string, unknown>,
+        blockedPathsRef,
+      )
+
+      // 🧠 NOTE:
+      // We intentionally do *not* auto-expand paths from initial values here.
+      // This preserves the user's UI collapse/expand state (e.g., in a form tree view).
+
+      // If there are any new persistable paths (e.g., empty objects from additionalProperties)
+      if (toPersist.length) {
+        setPersistedKeys(prev => {
+          // Convert each path array to a JSON string for easy comparison
+          const seen = new Set(prev.map(x => JSON.stringify(x)))
+
+          // Only update if new persistable paths exist
+          const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
+          if (!hasNew) return prev // If there are no new paths, do not update the state
+
+          // Merge in new persistable paths while avoiding duplicates
+          const merged = [...prev]
+          toPersist.forEach(p => {
+            const k = JSON.stringify(p)
+            if (!seen.has(k)) {
+              seen.add(k)
+              merged.push(p)
+            }
+          })
+          return merged
+        })
+      }
+
+      // Return the updated schema to be stored in state
+      return p2
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues])
 
   if (!properties) {
     return null
@@ -394,21 +635,49 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       { [name]: { type, items, properties: nestedProperties, required, isAdditionalProperties: true } },
     )
     const oldProperties = _.cloneDeep(properties)
-    // const newProperties = _.merge(oldProperties, newObject)
     const newProperties = deepMerge(oldProperties, newObject)
-    console.log('oldProperties', oldProperties)
-    console.log('newObject', newObject)
-    console.log('newProperties', newProperties)
     setProperties(newProperties)
+
+    // 1) Initialize the value under the added field
+    const fullPath = [...arrPath, name] as TFormName
+    const currentValue = form.getFieldValue(fullPath)
+    if (currentValue === undefined) {
+      if (type === 'string') {
+        form.setFieldValue(fullPath as any, '')
+      } else if (type === 'number' || type === 'integer') {
+        form.setFieldValue(fullPath as any, 0)
+      } else if (type === 'array') {
+        form.setFieldValue(fullPath as any, [])
+      } else {
+        // object / unknown -> make it an object
+        form.setFieldValue(fullPath as any, {})
+      }
+    }
+
+    // 2) Auto-mark for persist
+    setPersistedKeys(prev => {
+      const seen = new Set(prev.map(x => JSON.stringify(x)))
+      const k = JSON.stringify(fullPath)
+      if (seen.has(k)) return prev
+      return [...prev, fullPath]
+    })
+
+    // 3) Trigger YAML update to ensure new field is properly handled
+    onValuesChangeCallback()
   }
 
   const removeField = ({ path }: { path: TFormName }) => {
     const arrPath = Array.isArray(path) ? path : [path]
-    const pathWithProperties = arrPath.flatMap(el => [el, 'properties']).slice(0, -1)
+    // const pathWithProperties = arrPath.flatMap(el => [el, 'properties']).slice(0, -1)
     const modifiedProperties = _.cloneDeep(properties)
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    const result = _.unset(modifiedProperties, pathWithProperties)
+    // /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    // const result = _.unset(modifiedProperties, pathWithProperties)
+
+    blockedPathsRef.current.add(pathKey(arrPath))
+    form.setFieldValue(arrPath as any, undefined)
+
     setProperties(modifiedProperties)
+    onValuesChangeCallback()
   }
 
   const onExpandOpen = (value: TFormName) => {
@@ -437,7 +706,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         }
       }
     }
-    setPersistedKeys([...persistedKeys, value])
+    setPersistedKeys(prev => {
+      const keyStr = JSON.stringify(value)
+      const alreadyExists = prev.some(p => JSON.stringify(p) === keyStr)
+      if (alreadyExists) return prev
+      return [...prev, value]
+    })
   }
 
   const onPersistUnmark = (value: TFormName) => {
@@ -449,11 +723,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     <>
       <Styled.Container $designNewLayout={designNewLayout} $designNewLayoutHeight={designNewLayoutHeight}>
         <Styled.OverflowContainer ref={overflowRef}>
-          <Form
-            form={form}
-            initialValues={initialValues}
-            onValuesChange={(_, allValues) => onValuesChangeCallback(allValues)}
-          >
+          <Form form={form} initialValues={initialValues} onValuesChange={() => onValuesChangeCallback()}>
             <DesignNewLayoutProvider value={designNewLayout}>
               <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
                 <IsTouchedPersistedProvider value={{}}>

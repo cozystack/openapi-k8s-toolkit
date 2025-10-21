@@ -3,7 +3,8 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable no-use-before-define */
 /* eslint-disable consistent-return */
-import { Form, Button, Alert } from 'antd'
+// import { Form, Button, Alert } from 'antd'
+import { Form, Button } from 'antd'
 import { OpenAPIV2 } from 'openapi-types'
 import { getStringByName } from 'utils/getStringByName'
 import { TListInputCustomProps, TRangeInputCustomProps } from 'localTypes/formExtensions'
@@ -21,6 +22,7 @@ import {
   FormBooleanInput,
   FormObjectFromSwagger,
   FormArrayHeader,
+  FormInlineYamlEditor,
 } from '../../molecules'
 import { Styled } from './styled'
 
@@ -865,8 +867,36 @@ export const getObjectFormItemsDraft = ({
             urlParams,
           })
         }
-        if (properties[el].type === 'object' && properties[el]['x-kubernetes-preserve-unknown-fields']) {
-          return <Alert key={String(el)} message="x-kubernetes-preserve-unknown-fields" banner />
+        // if (properties[el].type === 'object' && properties[el]['x-kubernetes-preserve-unknown-fields']) {
+        if (properties[el]['x-kubernetes-preserve-unknown-fields']) {
+          // return <Alert key={String(el)} message="x-kubernetes-preserve-unknown-fields" banner />
+          const path = Array.isArray(name) ? [...name, String(el)] : [name, String(el)]
+          return (
+            <FormObjectFromSwagger
+              name={name}
+              persistName={persistName}
+              hiddenFormName={path}
+              description={properties[el].description}
+              removeField={removeField}
+              expandedControls={expandedControls}
+              persistedControls={persistedControls}
+              collapseTitle={el}
+              collapseFormName={path}
+              data={
+                <Form.Item noStyle shouldUpdate>
+                  {f => (
+                    <FormInlineYamlEditor
+                      path={path}
+                      persistedControls={persistedControls}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      externalValue={f.getFieldValue(path as any)}
+                    />
+                  )}
+                </Form.Item>
+              }
+              key={Array.isArray(name) ? [...name, String(el)].join('-') : [name, String(el)].join('-')}
+            />
+          )
         }
         return null
       })}
