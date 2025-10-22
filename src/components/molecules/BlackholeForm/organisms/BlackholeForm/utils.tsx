@@ -568,7 +568,13 @@ export const getArrayFormItemFromSwagger = ({
                 )
               })}
               <ResetedFormItem>
-                <Button type="text" size="small" onClick={() => add()}>
+                <Button
+                  type="text"
+                  size="small"
+                  onClick={() => {
+                    add()
+                  }}
+                >
                   <PlusIcon />
                 </Button>
                 <Form.ErrorList errors={errors} />

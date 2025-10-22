@@ -26,6 +26,7 @@ export default defineConfig({
         '@tanstack/react-query-devtools',
         'antd',
         '@ant-design/icons',
+        'styled-components',
       ],
       output: {
         globals: {
@@ -36,6 +37,7 @@ export default defineConfig({
           '@tanstack/react-query-devtools': 'reactQuery-devtools',
           antd: 'antd',
           '@ant-design/icons': 'antdIcons',
+          'styled-components': 'styled',
         },
       },
     },
