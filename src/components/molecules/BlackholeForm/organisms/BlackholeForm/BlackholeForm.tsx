@@ -26,7 +26,16 @@ import { deepMerge } from 'utils/deepMerge'
 import { FlexGrow, Spacer } from 'components/atoms'
 import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
-import { pathKey, pruneAdditionalForValues, materializeAdditionalFromValues } from './helpers'
+import { pathKey, pruneAdditionalForValues, materializeAdditionalFromValues } from './helpers/casts'
+import {
+  TTemplate,
+  toWildcardPath,
+  collectArrayLengths,
+  templateMatchesArray,
+  buildConcretePathForNewItem,
+} from './helpers/prefills'
+import { DEBUG_PREFILLS, dbg, group, end, wdbg, wgroup, wend, prettyPath } from './helpers/debugs'
+import { sanitizeWildcardPath, expandWildcardTemplates, toStringPath } from './helpers/hiddenExpanded'
 import { handleSubmitError, handleValidationError } from './utilsErrorHandler'
 import { Styled } from './styled'
 import {
@@ -105,6 +114,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   const [expandedKeys, setExpandedKeys] = useState<TFormName[]>(expandedPaths || [])
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
+  const [resolvedHiddenPaths, setResolvedHiddenPaths] = useState<TFormName[]>([])
 
   const blockedPathsRef = useRef<Set<string>>(new Set())
   const overflowRef = useRef<HTMLDivElement | null>(null)
@@ -115,6 +125,41 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const yamlToValuesAbortRef = useRef<AbortController | null>(null)
   const isAnyFieldFocusedRef = useRef<boolean>(false)
 
+  // --- Feature: clear editor after resource change ---
+  // A unique identifier for the YAML model of the currently selected resource
+  const editorUri = useMemo(
+    () =>
+      `inmemory://openapi-ui/${cluster}/${apiGroupApiVersion}/${type}/${typeName}/${kindName}${
+        isCreate ? '/create' : '/edit'
+      }.yaml`,
+    [cluster, apiGroupApiVersion, type, typeName, kindName, isCreate],
+  )
+
+  // When the resource changes, cancel any in-flight requests and clear YAML to avoid bleed-through
+  useEffect(() => {
+    // bump req ids so late responses are ignored
+    valuesToYamlReqId.current++
+    yamlToValuesReqId.current++
+
+    // cancel in-flight calls
+    try {
+      valuesToYamlAbortRef.current?.abort()
+    } catch (err) {
+      console.error(err)
+    }
+    try {
+      yamlToValuesAbortRef.current?.abort()
+    } catch (err) {
+      console.error(err)
+    }
+
+    // clear current YAML shown in the editor; it will be repopulated by onValuesChangeCallback
+    setYamlValues(undefined)
+    // also clear any pending external update flags inside the YAML editor by forcing a remount
+    // (done by passing key={editorUri} below)
+  }, [editorUri])
+
+  // --- Feature: permissions ---
   const createPermission = usePermissions({
     group: type === 'builtin' ? undefined : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
     resource: urlParamsForPermissions.typeName || '',
@@ -135,6 +180,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     enabler: isCreate !== true,
   })
 
+  // --- Feature: submit handler ---
   const onSubmit = () => {
     if (overflowRef.current) {
       const { scrollHeight, clientHeight } = overflowRef.current
@@ -180,13 +226,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 .catch(error => {
                   console.log('Form submit error', error)
                   setIsLoading(false)
-                  // if (overflowRef.current) {
-                  //   const { scrollHeight, clientHeight } = overflowRef.current
-                  //   overflowRef.current.scrollTo({
-                  //     top: scrollHeight - clientHeight,
-                  //     behavior: 'smooth',
-                  //   })
-                  // }
                   if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
                     const keys = handleSubmitError({ error, expandedKeys })
                     setExpandedKeys([...keys])
@@ -204,13 +243,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
                 .catch(error => {
                   console.log('Form submit error', error)
                   setIsLoading(false)
-                  // if (overflowRef.current) {
-                  //   const { scrollHeight, clientHeight } = overflowRef.current
-                  //   overflowRef.current.scrollTo({
-                  //     top: scrollHeight - clientHeight,
-                  //     behavior: 'smooth',
-                  //   })
-                  // }
                   if (isAxiosError(error) && error.response?.data.message.includes('Required value')) {
                     const keys = handleSubmitError({ error, expandedKeys })
                     setExpandedKeys([...keys])
@@ -238,6 +270,177 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         setExpandedKeys([...keys])
       })
   }
+
+  // --- Feature: initial values ---
+  /*
+   Compute the initial form values once per relevant dependency change.
+   This gathers defaults from multiple sources (create-mode defaults, form-specific
+   prefills, namespace-only prefill, and a schema-driven prefill), merges them into
+   a single nested object, and returns a shallowly sorted object for stable key order.
+
+   + FIX: decouple from `properties`. We precompute a normalized prefill using `staticProperties`,
+   then keep `initialValues` independent of `properties` to avoid feedback loops.
+  */
+
+  // Precompute normalized prefill once based on staticProperties (stable), not on `properties`
+  const normalizedPrefill = useMemo(() => {
+    if (!prefillValuesSchema) return undefined
+    return normalizeValuesForQuotasToNumber(prefillValuesSchema, staticProperties)
+  }, [prefillValuesSchema, staticProperties])
+
+  const initialValues = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allValues: Record<string, any> = {}
+
+    if (isCreate) {
+      _.set(allValues, ['apiVersion'], apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion)
+      _.set(allValues, ['kind'], kindName)
+    }
+
+    if (formsPrefills) {
+      formsPrefills.spec.values.forEach(({ path, value }) => {
+        _.set(allValues, path, value)
+      })
+    }
+
+    if (prefillValueNamespaceOnly) {
+      _.set(allValues, ['metadata', 'namespace'], prefillValueNamespaceOnly)
+    }
+
+    if (normalizedPrefill) {
+      Object.entries(normalizedPrefill).forEach(([flatKey, v]) => {
+        _.set(allValues, flatKey.split('.'), v)
+      })
+    }
+
+    const sorted = Object.fromEntries(Object.entries(allValues).sort(([a], [b]) => a.localeCompare(b)))
+    return sorted
+  }, [formsPrefills, prefillValueNamespaceOnly, isCreate, apiGroupApiVersion, kindName, normalizedPrefill])
+
+  // --- Feature: wild card prefills ---
+  // Build wildcard-based prefill templates from both formsPrefills and normalizedPrefill
+  const prefillTemplates = useMemo<TTemplate[]>(() => {
+    const templates: TTemplate[] = []
+
+    // From formsPrefills (authoritative, uses path arrays already)
+    if (formsPrefills?.spec?.values?.length) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { path, value } of formsPrefills.spec.values) {
+        templates.push({ wildcardPath: toWildcardPath(path), value })
+      }
+    }
+
+    // From normalizedPrefill (flat dot-keys)
+    if (normalizedPrefill) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [flatKey, v] of Object.entries(normalizedPrefill)) {
+        const parts = flatKey.split('.').map(seg => (/^\d+$/.test(seg) ? Number(seg) : seg))
+        templates.push({ wildcardPath: toWildcardPath(parts), value: v })
+      }
+    }
+
+    // stable order: longer (more specific) templates first
+    return templates.sort((a, b) => b.wildcardPath.length - a.wildcardPath.length)
+  }, [formsPrefills, normalizedPrefill])
+
+  useEffect(() => {
+    if (!DEBUG_PREFILLS) return
+    dbg('templates (wildcards, ordered specific→generic):')
+    prefillTemplates.forEach((t, i) => dbg(`#${i}`, t.wildcardPath.join('.'), '=>', t.value))
+  }, [prefillTemplates])
+
+  // track previous array lengths (just under your other useRefs)
+  const prevArrayLengthsRef = useRef<Map<string, number>>(new Map())
+
+  const applyPrefillForNewArrayItem = useCallback(
+    (arrayPath: (string | number)[], newIndex: number) => {
+      group(`apply for ${JSON.stringify(arrayPath)}[${newIndex}]`)
+      // eslint-disable-next-line no-restricted-syntax
+      for (const tpl of prefillTemplates) {
+        const matches = templateMatchesArray(tpl, arrayPath)
+        dbg(matches ? '✅ match' : '❌ no match', tpl.wildcardPath.join('.'))
+        // eslint-disable-next-line no-continue
+        if (!matches) continue
+
+        const concretePath = buildConcretePathForNewItem(tpl, arrayPath, newIndex)
+        const current = form.getFieldValue(concretePath as any)
+        dbg('current value at path', concretePath, ':', current)
+
+        if (typeof current === 'undefined') {
+          const toSet = _.cloneDeep(tpl.value)
+          dbg('setting value', { path: concretePath, value: toSet })
+          form.setFieldValue(concretePath as any, toSet)
+        } else {
+          dbg('skipping set (already has value)')
+        }
+      }
+      end() // apply group
+    },
+    [form, prefillTemplates],
+  )
+
+  // --- Feature: wildcard hidden/expanded items ---
+  // Raw props: hiddenPaths?: string[][], expandedPaths: string[][]
+  // Normalize: strings/nums/objects → allow '*' wildcards
+  const hiddenWildcardTemplates = useMemo<(string | number)[][]>(() => {
+    const raw = hiddenPaths ?? []
+    wgroup('hidden raw templates')
+    raw.forEach((p, i) => wdbg(`#${i}`, p))
+    wend()
+    const sanitized = raw.map(p => sanitizeWildcardPath(p as (string | number | unknown)[]))
+    wgroup('hidden sanitized templates')
+    sanitized.forEach((p, i) => wdbg(`#${i}`, prettyPath(p)))
+    wend()
+    return sanitized
+  }, [hiddenPaths])
+
+  const expandedWildcardTemplates = useMemo<(string | number)[][]>(() => {
+    const raw = expandedPaths ?? []
+    wgroup('expanded raw templates')
+    raw.forEach((p, i) => wdbg(`#${i}`, p))
+    wend()
+    const sanitized = raw.map(p => sanitizeWildcardPath(p as (string | number | unknown)[]))
+    wgroup('expanded sanitized templates')
+    sanitized.forEach((p, i) => wdbg(`#${i}`, prettyPath(p)))
+    wend()
+    return sanitized
+  }, [expandedPaths])
+
+  useEffect(() => {
+    if (!initialValues) return
+    wgroup('initial resolve')
+
+    const hiddenResolved = expandWildcardTemplates(hiddenWildcardTemplates, initialValues as any)
+    wdbg('hidden resolved', hiddenResolved.map(prettyPath))
+    setResolvedHiddenPaths(hiddenResolved as TFormName[])
+
+    const expandedResolved = expandWildcardTemplates(expandedWildcardTemplates, initialValues as any)
+    wdbg('expanded resolved', expandedResolved.map(prettyPath))
+    setExpandedKeys(prev => {
+      const seen = new Set(prev.map(x => JSON.stringify(x)))
+      const merged = [...prev]
+      // eslint-disable-next-line no-restricted-syntax
+      for (const p of expandedResolved) {
+        const k = JSON.stringify(p as any)
+        if (!seen.has(k)) {
+          seen.add(k)
+          merged.push(p as any)
+        }
+      }
+      return merged
+    })
+
+    wend()
+  }, [initialValues, hiddenWildcardTemplates, expandedWildcardTemplates])
+
+  const resolvedHiddenStringPaths = useMemo<string[][]>(
+    () => resolvedHiddenPaths.map(toStringPath),
+    [resolvedHiddenPaths],
+  )
+
+  // --- Feature: form and yaml editor syncs ---
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prevInitialValues = useRef<Record<string, any>>()
 
   /**
    * Debounced function that synchronizes form values to YAML using a backend API.
@@ -280,6 +483,63 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     (values?: any) => {
       // Get the most recent form values (or use the provided ones)
       const v = values ?? form.getFieldsValue(true)
+
+      // resolve wildcard templates for hidden & expanded against current values ---
+      wgroup('values→resolve wildcards')
+      const hiddenResolved = expandWildcardTemplates(hiddenWildcardTemplates, v)
+      wdbg('hidden resolved', hiddenResolved.map(prettyPath))
+      setResolvedHiddenPaths(hiddenResolved as TFormName[])
+
+      const expandedResolved = expandWildcardTemplates(expandedWildcardTemplates, v)
+      wdbg('expanded resolved', expandedResolved.map(prettyPath))
+
+      // Merge auto-expanded with current expandedKeys (preserve user choices)
+      if (expandedResolved.length) {
+        setExpandedKeys(prev => {
+          const seen = new Set(prev.map(x => JSON.stringify(x)))
+          const merged = [...prev]
+          // eslint-disable-next-line no-restricted-syntax
+          for (const p of expandedResolved) {
+            const k = JSON.stringify(p as any)
+            if (!seen.has(k)) {
+              seen.add(k)
+              merged.push(p as any)
+            }
+          }
+          return merged
+        })
+      }
+      wend()
+
+      // show a snapshot of current values at a shallow level
+      group('values change')
+      dbg('values snapshot keys', Object.keys(v || {}))
+
+      const newLengths = collectArrayLengths(v)
+      const prevLengths = prevArrayLengthsRef.current
+
+      // dump lengths (readable)
+      dbg('array lengths (prev → new)')
+      const allKeys = new Set([...prevLengths.keys(), ...newLengths.keys()])
+      ;[...allKeys].forEach(k => dbg(k, ' : ', prevLengths.get(k), '→', newLengths.get(k)))
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [k, newLen] of newLengths.entries()) {
+        const prevLen = prevLengths.get(k) ?? 0
+        if (newLen > prevLen) {
+          const arrayPath = JSON.parse(k) as (string | number)[]
+          dbg('🟢 detected growth', { pathKey: k, arrayPath, prevLen, newLen })
+
+          for (let i = prevLen; i < newLen; i++) {
+            dbg('…prefilling new index', i, 'under', arrayPath)
+            applyPrefillForNewArrayItem(arrayPath, i)
+          }
+        }
+      }
+      prevArrayLengthsRef.current = newLengths
+
+      end() // values change
+
       const payload: TYamlByValuesReq = {
         values: v,
         persistedKeys,
@@ -290,7 +550,15 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       const myId = ++valuesToYamlReqId.current
       debouncedPostValuesToYaml(payload, myId)
     },
-    [form, properties, persistedKeys, debouncedPostValuesToYaml],
+    [
+      form,
+      properties,
+      persistedKeys,
+      debouncedPostValuesToYaml,
+      applyPrefillForNewArrayItem,
+      hiddenWildcardTemplates,
+      expandedWildcardTemplates,
+    ],
   )
 
   /**
@@ -369,12 +637,15 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
             blockedPathsRef,
           )
 
+          // ✅ Guard against no-op updates to break feedback loops
+          if (_.isEqual(prevProps, materialized)) {
+            return prevProps
+          }
+
           // Ensure new/empty fields discovered during materialization are tracked for persistence
           if (toPersist.length) {
             setPersistedKeys(prev => {
               const seen = new Set(prev.map(x => JSON.stringify(x)))
-              const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
-              if (!hasNew) return prev
               const merged = [...prev]
               toPersist.forEach(p => {
                 const k = JSON.stringify(p)
@@ -409,58 +680,6 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     [properties, debouncedPostYamlToValues],
   )
 
-  /*
-   Compute the initial form values once per relevant dependency change.
-   This gathers defaults from multiple sources (create-mode defaults, form-specific
-   prefills, namespace-only prefill, and a schema-driven prefill), merges them into
-   a single nested object, and returns a shallowly sorted object for stable key order.
-  */
-  const initialValues = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allValues: Record<string, any> = {}
-
-    if (isCreate) {
-      // form.setFieldsValue({ apiVersion: apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion, kind: kindName })
-      _.set(allValues, ['apiVersion'], apiGroupApiVersion === 'api/v1' ? 'v1' : apiGroupApiVersion)
-      _.set(allValues, ['kind'], kindName)
-    }
-
-    if (formsPrefills) {
-      formsPrefills.spec.values.forEach(({ path, value }) => {
-        // form.setFieldValue(path, value)
-        _.set(allValues, path, value)
-      })
-    }
-
-    if (prefillValueNamespaceOnly) {
-      // form.setFieldValue(['metadata', 'namespace'], prefillValueNamespaceOnly)
-      _.set(allValues, ['metadata', 'namespace'], prefillValueNamespaceOnly)
-    }
-
-    if (prefillValuesSchema) {
-      const quotasPrefillValuesSchema = normalizeValuesForQuotasToNumber(prefillValuesSchema, properties)
-      // form.setFieldsValue(quotasPrefillValuesSchema)
-      Object.entries(quotasPrefillValuesSchema).forEach(([flatKey, v]) => {
-        _.set(allValues, flatKey.split('.'), v)
-      })
-    }
-
-    const sorted = Object.fromEntries(Object.entries(allValues).sort(([a], [b]) => a.localeCompare(b)))
-
-    return sorted
-  }, [
-    formsPrefills,
-    prefillValueNamespaceOnly,
-    isCreate,
-    apiGroupApiVersion,
-    kindName,
-    prefillValuesSchema,
-    properties,
-  ])
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const prevInitialValues = useRef<Record<string, any>>()
-
   useEffect(() => {
     const root = overflowRef.current
     if (!root) return undefined
@@ -485,7 +704,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     }
   }, [onValuesChangeCallback])
 
-  /* 
+  /*
     Whenever the computed `initialValues` change, trigger a form update if the new
     values differ from the previous ones. This ensures the form syncs properly with
     refreshed or recalculated defaults (e.g., after switching resource kind or schema).
@@ -511,7 +730,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistedKeys])
 
-  /* expanded initial */
+  // --- Feature: expanded initial ---
   useEffect(() => {
     let allPaths: (string | number)[][] = []
     if (formsPrefills) {
@@ -536,11 +755,14 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiGroupApiVersion, formsPrefills, prefillValuesSchema, type, typeName])
 
+  // --- Feature: casting properties both sides ---
   /*
    When `initialValues` become available or change, update the schema (`properties`)
    to include any fields derived from `additionalProperties` that appear in the
    initial data. This ensures that all dynamic fields are represented in the schema
    before rendering or editing begins.
+
+   + FIX: guard against no-op updates to `properties`.
   */
   useEffect(() => {
     // Skip if there are no initial values yet
@@ -557,22 +779,16 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         blockedPathsRef,
       )
 
+      // ✅ Guard: do not update if nothing changed
+      if (_.isEqual(prev, p2)) return prev
+
       // 🧠 NOTE:
       // We intentionally do *not* auto-expand paths from initial values here.
       // This preserves the user's UI collapse/expand state (e.g., in a form tree view).
-
-      // If there are any new persistable paths (e.g., empty objects from additionalProperties)
       if (toPersist.length) {
-        setPersistedKeys(prev => {
-          // Convert each path array to a JSON string for easy comparison
-          const seen = new Set(prev.map(x => JSON.stringify(x)))
-
-          // Only update if new persistable paths exist
-          const hasNew = toPersist.some(p => !seen.has(JSON.stringify(p)))
-          if (!hasNew) return prev // If there are no new paths, do not update the state
-
-          // Merge in new persistable paths while avoiding duplicates
-          const merged = [...prev]
+        setPersistedKeys(prevPk => {
+          const seen = new Set(prevPk.map(x => JSON.stringify(x)))
+          const merged = [...prevPk]
           toPersist.forEach(p => {
             const k = JSON.stringify(p)
             if (!seen.has(k)) {
@@ -594,6 +810,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     return null
   }
 
+  // --- Feature: disable namespace edit ---
   const namespaceData = isNameSpaced
     ? {
         filterSelectOptions,
@@ -606,6 +823,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       }
     : undefined
 
+  // --- Feature: additional properties methods ---
   const makeValueUndefined = (path: TFormName) => {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     form.setFieldValue(path as any, undefined)
@@ -680,6 +898,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     onValuesChangeCallback()
   }
 
+  // --- Feature: expand/persist methods ---
   const onExpandOpen = (value: TFormName) => {
     setExpandedKeys([...expandedKeys, value])
   }
@@ -727,7 +946,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
             <DesignNewLayoutProvider value={designNewLayout}>
               <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
                 <IsTouchedPersistedProvider value={{}}>
-                  <HiddenPathsProvider value={hiddenPaths}>
+                  <HiddenPathsProvider value={resolvedHiddenStringPaths}>
                     {getObjectFormItemsDraft({
                       properties,
                       name: [],
@@ -775,7 +994,13 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           </Form>
         </Styled.OverflowContainer>
         <div>
-          <YamlEditor theme={theme} currentValues={yamlValues || {}} onChange={onYamlChangeCallback} />
+          <YamlEditor
+            key={editorUri} // force a fresh editor when resource changes
+            editorUri={editorUri} // tell the editor which Monaco model to use
+            theme={theme}
+            currentValues={yamlValues || {}}
+            onChange={onYamlChangeCallback}
+          />
         </div>
       </Styled.Container>
       <FlexGrow />
