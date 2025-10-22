@@ -63,7 +63,8 @@ export const getCellRender = ({
       return <ShortenedTextWithTooltip trimLength={possibleTrimLength} text={String(Number(value))} />
     }
     if (type === 'boolean') {
-      return <div>{Boolean(value)}</div>
+      // return <div>{Boolean(value)}</div>
+      return value ? <CheckOutlined style={{ color: 'green' }} /> : <CloseOutlined style={{ color: 'red' }} />
     }
     if (type === 'array') {
       let tags: string[] = []
