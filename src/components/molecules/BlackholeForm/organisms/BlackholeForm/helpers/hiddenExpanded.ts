@@ -92,13 +92,18 @@ const expandOneTemplate = (
 export const expandWildcardTemplates = (
   templates: (string | number)[][],
   values: Record<string, unknown>,
+  opts?: { includeMissingExact?: boolean }, // NEW (default undefined/false)
 ): (string | number)[][] => {
   wgroup('expand templates')
   templates.forEach((t, i) => wdbg(`#${i}`, prettyPath(t)))
+
   const acc: (string | number)[][] = []
   const seen = new Set<string>()
+
   for (const tpl of templates) {
     const hits = expandOneTemplate(tpl, values)
+
+    // push all normal matches first (old behavior)
     for (const p of hits) {
       const k = JSON.stringify(p)
       if (!seen.has(k)) {
@@ -106,7 +111,18 @@ export const expandWildcardTemplates = (
         acc.push(p)
       }
     }
+
+    // only for HIDDEN (when caller opts in):
+    if (!hits.length && opts?.includeMissingExact && !tpl.some(seg => seg === '*')) {
+      const k = JSON.stringify(tpl)
+      if (!seen.has(k)) {
+        wdbg('no hits; include exact (no "*") →', prettyPath(tpl))
+        seen.add(k)
+        acc.push(tpl)
+      }
+    }
   }
+
   wdbg('expanded →', acc.map(prettyPath))
   wend()
   return acc

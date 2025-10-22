@@ -33,6 +33,7 @@ import {
   collectArrayLengths,
   templateMatchesArray,
   buildConcretePathForNewItem,
+  scrubLiteralWildcardKeys,
 } from './helpers/prefills'
 import { DEBUG_PREFILLS, dbg, group, end, wdbg, wgroup, wend, prettyPath } from './helpers/debugs'
 import { sanitizeWildcardPath, expandWildcardTemplates, toStringPath } from './helpers/hiddenExpanded'
@@ -197,7 +198,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         const name = form.getFieldValue(['metadata', 'name'])
         const namespace = form.getFieldValue(['metadata', 'namespace'])
 
-        const values = form.getFieldsValue()
+        const valuesRaw = form.getFieldsValue()
+        const values = scrubLiteralWildcardKeys(valuesRaw)
         const payload: TYamlByValuesReq = {
           values,
           persistedKeys,
@@ -299,7 +301,11 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
     if (formsPrefills) {
       formsPrefills.spec.values.forEach(({ path, value }) => {
-        _.set(allValues, path, value)
+        const hasWildcard = path.some(seg => seg === '*')
+        if (!hasWildcard) {
+          _.set(allValues, path, value)
+        }
+        // Wildcard templates are handled later by prefillTemplates/applyPrefillForNewArrayItem
       })
     }
 
@@ -410,7 +416,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     if (!initialValues) return
     wgroup('initial resolve')
 
-    const hiddenResolved = expandWildcardTemplates(hiddenWildcardTemplates, initialValues as any)
+    const hiddenResolved = expandWildcardTemplates(hiddenWildcardTemplates, initialValues as any, {
+      includeMissingExact: true,
+    })
     wdbg('hidden resolved', hiddenResolved.map(prettyPath))
     setResolvedHiddenPaths(hiddenResolved as TFormName[])
 
@@ -482,15 +490,22 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const onValuesChangeCallback = useCallback(
     (values?: any) => {
       // Get the most recent form values (or use the provided ones)
-      const v = values ?? form.getFieldsValue(true)
+      const vRaw = values ?? form.getFieldsValue(true)
+      const v = scrubLiteralWildcardKeys(vRaw)
 
       // resolve wildcard templates for hidden & expanded against current values ---
       wgroup('values→resolve wildcards')
-      const hiddenResolved = expandWildcardTemplates(hiddenWildcardTemplates, v)
-      wdbg('hidden resolved', hiddenResolved.map(prettyPath))
+
+      const hiddenResolved = expandWildcardTemplates(
+        hiddenWildcardTemplates,
+        v,
+        { includeMissingExact: true }, // only hidden opts in
+      )
+      wdbg('hidden resolved', hiddenResolved.map(prettyPath)) // (typo? keep your original prettyPath)
+
       setResolvedHiddenPaths(hiddenResolved as TFormName[])
 
-      const expandedResolved = expandWildcardTemplates(expandedWildcardTemplates, v)
+      const expandedResolved = expandWildcardTemplates(expandedWildcardTemplates, v) // unchanged
       wdbg('expanded resolved', expandedResolved.map(prettyPath))
 
       // Merge auto-expanded with current expandedKeys (preserve user choices)
