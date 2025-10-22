@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export const DEBUG_PREFILLS = false
+export const DEBUG_PREFILLS = true
 
 export const dbg = (...args: any[]) => {
   if (DEBUG_PREFILLS) console.log('[prefill]', ...args)
@@ -8,7 +8,7 @@ export const dbg = (...args: any[]) => {
 export const group = (label: string) => DEBUG_PREFILLS && console.groupCollapsed('[prefill]', label)
 export const end = () => DEBUG_PREFILLS && console.groupEnd()
 
-const DEBUG_WILDCARDS = false
+const DEBUG_WILDCARDS = true
 
 export const wdbg = (...args: any[]) => {
   if (DEBUG_WILDCARDS) console.log('[wildcards]', ...args)

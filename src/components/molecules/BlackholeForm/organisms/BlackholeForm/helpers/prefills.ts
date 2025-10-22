@@ -60,3 +60,18 @@ export const buildConcretePathForNewItem = (tpl: TTemplate, arrayPath: (string |
   dbg('→ concrete path', { wildcard: w, arrayPath, newIndex, realizedPrefix, result })
   return result
 }
+
+// defensively remove literal "*" object keys before syncing/submit
+// Keeps your input type (object, array, whatever) without "unknown" noise
+export const scrubLiteralWildcardKeys = <T>(input: T): T => {
+  if (Array.isArray(input)) return input.map(scrubLiteralWildcardKeys) as T
+  if (_.isPlainObject(input)) {
+    const out: Record<string, unknown> = {}
+    Object.entries(input as Record<string, unknown>).forEach(([k, v]) => {
+      if (k === '*') return
+      out[k] = scrubLiteralWildcardKeys(v)
+    })
+    return out as T
+  }
+  return input
+}
