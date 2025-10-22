@@ -26,19 +26,16 @@ import { deepMerge } from 'utils/deepMerge'
 import { FlexGrow, Spacer } from 'components/atoms'
 import { YamlEditor } from '../../molecules'
 import { getObjectFormItemsDraft } from './utils'
+import { pathKey, pruneAdditionalForValues, materializeAdditionalFromValues } from './helpers/casts'
 import {
-  pathKey,
-  pruneAdditionalForValues,
-  materializeAdditionalFromValues,
   TTemplate,
   toWildcardPath,
   collectArrayLengths,
   templateMatchesArray,
   buildConcretePathForNewItem,
-  sanitizeWildcardPath,
-  expandWildcardTemplates,
-  toStringPath,
-} from './helpers'
+} from './helpers/prefills'
+import { DEBUG_PREFILLS, dbg, group, end, wdbg, wgroup, wend, prettyPath } from './helpers/debugs'
+import { sanitizeWildcardPath, expandWildcardTemplates, toStringPath } from './helpers/hiddenExpanded'
 import { handleSubmitError, handleValidationError } from './utilsErrorHandler'
 import { Styled } from './styled'
 import {
@@ -76,22 +73,6 @@ type TBlackholeFormCreateProps = {
 }
 
 const Editor = React.lazy(() => import('@monaco-editor/react'))
-
-const DEBUG_PREFILLS = true
-const dbg = (...args: any[]) => {
-  if (DEBUG_PREFILLS) console.log('[prefill]', ...args)
-}
-const group = (label: string) => DEBUG_PREFILLS && console.groupCollapsed('[prefill]', label)
-const end = () => DEBUG_PREFILLS && console.groupEnd()
-
-const DEBUG_WILDCARDS = true
-const wdbg = (...args: any[]) => {
-  if (DEBUG_WILDCARDS) console.log('[wildcards]', ...args)
-}
-const wgroup = (label: string) => DEBUG_WILDCARDS && console.groupCollapsed('[wildcards]', label)
-const wend = () => DEBUG_WILDCARDS && console.groupEnd()
-
-const prettyPath = (arr: (string | number)[]) => arr.map(s => (s === '*' ? '*' : String(s))).join('.')
 
 export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   cluster,
@@ -144,6 +125,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const yamlToValuesAbortRef = useRef<AbortController | null>(null)
   const isAnyFieldFocusedRef = useRef<boolean>(false)
 
+  // --- Feature: clear editor after resource change ---
   // A unique identifier for the YAML model of the currently selected resource
   const editorUri = useMemo(
     () =>
@@ -177,6 +159,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     // (done by passing key={editorUri} below)
   }, [editorUri])
 
+  // --- Feature: permissions ---
   const createPermission = usePermissions({
     group: type === 'builtin' ? undefined : urlParamsForPermissions.apiGroup ? urlParamsForPermissions.apiGroup : '',
     resource: urlParamsForPermissions.typeName || '',
@@ -197,6 +180,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     enabler: isCreate !== true,
   })
 
+  // --- Feature: submit handler ---
   const onSubmit = () => {
     if (overflowRef.current) {
       const { scrollHeight, clientHeight } = overflowRef.current
@@ -287,6 +271,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       })
   }
 
+  // --- Feature: initial values ---
   /*
    Compute the initial form values once per relevant dependency change.
    This gathers defaults from multiple sources (create-mode defaults, form-specific
@@ -332,6 +317,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     return sorted
   }, [formsPrefills, prefillValueNamespaceOnly, isCreate, apiGroupApiVersion, kindName, normalizedPrefill])
 
+  // --- Feature: wild card prefills ---
   // Build wildcard-based prefill templates from both formsPrefills and normalizedPrefill
   const prefillTemplates = useMemo<TTemplate[]>(() => {
     const templates: TTemplate[] = []
@@ -393,6 +379,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     [form, prefillTemplates],
   )
 
+  // --- Feature: wildcard hidden/expanded items ---
   // Raw props: hiddenPaths?: string[][], expandedPaths: string[][]
   // Normalize: strings/nums/objects → allow '*' wildcards
   const hiddenWildcardTemplates = useMemo<(string | number)[][]>(() => {
@@ -451,6 +438,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     [resolvedHiddenPaths],
   )
 
+  // --- Feature: form and yaml editor syncs ---
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const prevInitialValues = useRef<Record<string, any>>()
 
@@ -742,7 +730,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistedKeys])
 
-  /* expanded initial */
+  // --- Feature: expanded initial ---
   useEffect(() => {
     let allPaths: (string | number)[][] = []
     if (formsPrefills) {
@@ -767,6 +755,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiGroupApiVersion, formsPrefills, prefillValuesSchema, type, typeName])
 
+  // --- Feature: casting properties both sides ---
   /*
    When `initialValues` become available or change, update the schema (`properties`)
    to include any fields derived from `additionalProperties` that appear in the
@@ -821,6 +810,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     return null
   }
 
+  // --- Feature: disable namespace edit ---
   const namespaceData = isNameSpaced
     ? {
         filterSelectOptions,
@@ -833,6 +823,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       }
     : undefined
 
+  // --- Feature: additional properties methods ---
   const makeValueUndefined = (path: TFormName) => {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     form.setFieldValue(path as any, undefined)
@@ -907,6 +898,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     onValuesChangeCallback()
   }
 
+  // --- Feature: expand/persist methods ---
   const onExpandOpen = (value: TFormName) => {
     setExpandedKeys([...expandedKeys, value])
   }
