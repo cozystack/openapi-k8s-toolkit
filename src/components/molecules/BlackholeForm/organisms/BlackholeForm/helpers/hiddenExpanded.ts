@@ -1,3 +1,4 @@
+/* eslint-disable default-param-last */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-console */
 /* eslint-disable no-restricted-syntax */
@@ -10,9 +11,11 @@ import { wdbg, wgroup, wend, prettyPath } from './debugs'
 // --- expanded and hidden paths wildcards
 
 // Turn weird segments (numbers, numeric strings, objects) into '*' wildcards
+// --- expanded and hidden paths wildcards
+
 export const sanitizeWildcardPath = (p: (string | number | unknown)[]) => {
   const out = p.map(seg => {
-    if (seg === '*') return '*' // keep explicit wildcard as-is
+    if (seg === '*') return '*'
     if (typeof seg === 'number') return '*'
     if (typeof seg === 'string') return /^\d+$/.test(seg) ? '*' : seg
     return '*'
@@ -20,17 +23,24 @@ export const sanitizeWildcardPath = (p: (string | number | unknown)[]) => {
   wdbg('sanitize →', p, '=>', out)
   return out
 }
+
 const isPlainObj = (v: unknown): v is Record<string, unknown> =>
   v !== null && typeof v === 'object' && !Array.isArray(v)
 
-// Expand a single wildcard template against a subtree of values
+type ExpandOpts = {
+  includeMissingFinalForWildcard?: boolean
+}
+
 const expandOneTemplate = (
   tpl: (string | number)[],
   node: unknown,
   base: (string | number)[] = [],
   out: (string | number)[][] = [],
+  opts?: ExpandOpts,
 ) => {
   wgroup(`expand tpl=${prettyPath(tpl)} from base=${prettyPath(base)}`)
+
+  const tplHasWildcard = tpl.some(seg => seg === '*')
 
   const step = (i: number, curr: unknown, path: (string | number)[]) => {
     wdbg('step', {
@@ -51,6 +61,7 @@ const expandOneTemplate = (
       out.push(path)
       return
     }
+
     const seg = tpl[i]
 
     if (seg === '*') {
@@ -71,13 +82,19 @@ const expandOneTemplate = (
       return
     }
 
-    // concrete key
+    // concrete seg
+    const isLast = i === tpl.length - 1
+
     if (isPlainObj(curr) && seg in (curr as any)) {
       wdbg('  descend object key', seg)
       step(i + 1, (curr as any)[seg as any], [...path, seg])
     } else if (Array.isArray(curr) && typeof seg === 'number' && curr[seg] !== undefined) {
       wdbg('  descend array index', seg)
       step(i + 1, curr[seg], [...path, seg])
+    } else if (isLast && opts?.includeMissingFinalForWildcard && tplHasWildcard) {
+      // NEW: allow missing final segment for wildcard-driven templates
+      wdbg('  missing final seg but including due to opt', seg)
+      out.push([...path, seg])
     } else {
       wdbg('  dead-end at concrete seg', seg)
     }
@@ -88,11 +105,10 @@ const expandOneTemplate = (
   return out
 }
 
-// Expand many templates, ensure uniqueness (by JSON stringified key)
 export const expandWildcardTemplates = (
   templates: (string | number)[][],
   values: Record<string, unknown>,
-  opts?: { includeMissingExact?: boolean }, // NEW (default undefined/false)
+  opts?: { includeMissingExact?: boolean; includeMissingFinalForWildcard?: boolean },
 ): (string | number)[][] => {
   wgroup('expand templates')
   templates.forEach((t, i) => wdbg(`#${i}`, prettyPath(t)))
@@ -101,9 +117,10 @@ export const expandWildcardTemplates = (
   const seen = new Set<string>()
 
   for (const tpl of templates) {
-    const hits = expandOneTemplate(tpl, values)
+    const hits = expandOneTemplate(tpl, values, [], [], {
+      includeMissingFinalForWildcard: opts?.includeMissingFinalForWildcard,
+    })
 
-    // push all normal matches first (old behavior)
     for (const p of hits) {
       const k = JSON.stringify(p)
       if (!seen.has(k)) {
@@ -112,7 +129,7 @@ export const expandWildcardTemplates = (
       }
     }
 
-    // only for HIDDEN (when caller opts in):
+    // existing behavior for exact templates with no '*'
     if (!hits.length && opts?.includeMissingExact && !tpl.some(seg => seg === '*')) {
       const k = JSON.stringify(tpl)
       if (!seen.has(k)) {

@@ -103,6 +103,9 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   const navigate = useNavigate()
 
   const [form] = Form.useForm()
+
+  // onValuesChange do not work properly
+  const allValues = Form.useWatch([], form)
   const namespaceFromFormData = Form.useWatch<string>(['metadata', 'namespace'], form)
 
   const [properties, setProperties] = useState<OpenAPIV2.SchemaObject['properties']>(staticProperties)
@@ -419,6 +422,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
     const hiddenResolved = expandWildcardTemplates(hiddenWildcardTemplates, initialValues as any, {
       includeMissingExact: true,
+      includeMissingFinalForWildcard: true,
     })
     wdbg('hidden resolved', hiddenResolved.map(prettyPath))
     setResolvedHiddenPaths(hiddenResolved as TFormName[])
@@ -489,7 +493,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
    * Builds the payload and triggers the debounced sync-to-YAML call.
    */
   const onValuesChangeCallback = useCallback(
-    (values?: any) => {
+    (values?: any, flag?: string) => {
+      console.log('fired', flag)
       // Get the most recent form values (or use the provided ones)
       const vRaw = values ?? form.getFieldsValue(true)
       const v = scrubLiteralWildcardKeys(vRaw)
@@ -500,7 +505,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       const hiddenResolved = expandWildcardTemplates(
         hiddenWildcardTemplates,
         v,
-        { includeMissingExact: true }, // only hidden opts in
+        { includeMissingExact: true, includeMissingFinalForWildcard: true }, // only hidden opts in
       )
       wdbg('hidden resolved', hiddenResolved.map(prettyPath))
 
@@ -636,6 +641,11 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       expandedWildcardTemplates,
     ],
   )
+
+  useEffect(() => {
+    onValuesChangeCallback(undefined, 'fuck me')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allValues])
 
   /**
    * Debounced function that converts YAML → form values via the backend and
@@ -1018,7 +1028,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     <>
       <Styled.Container $designNewLayout={designNewLayout} $designNewLayoutHeight={designNewLayoutHeight}>
         <Styled.OverflowContainer ref={overflowRef}>
-          <Form form={form} initialValues={initialValues} onValuesChange={() => onValuesChangeCallback()}>
+          <Form form={form} initialValues={initialValues} onValuesChange={onValuesChangeCallback}>
             <DesignNewLayoutProvider value={designNewLayout}>
               <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
                 <IsTouchedPersistedProvider value={{}}>
