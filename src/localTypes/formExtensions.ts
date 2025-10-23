@@ -56,5 +56,5 @@ export type TListInputCustomProps = {
     value: unknown
     keepPrefilled?: boolean
   }
-  relatedValuePath?: string[]
+  relatedValuePath?: string
 }
