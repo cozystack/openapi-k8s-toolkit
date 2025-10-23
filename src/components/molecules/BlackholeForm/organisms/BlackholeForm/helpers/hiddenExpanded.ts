@@ -133,3 +133,6 @@ const isPathArray = (p: TFormName): p is (string | number)[] => Array.isArray(p)
 
 export const toStringPath = (p: TFormName): string[] =>
   isPathArray(p) ? (p as (string | number)[]).map(String) : [String(p)]
+
+export const isPrefix = (full: (string | number)[], prefix: (string | number)[]) =>
+  prefix.length <= full.length && prefix.every((seg, i) => full[i] === seg)
