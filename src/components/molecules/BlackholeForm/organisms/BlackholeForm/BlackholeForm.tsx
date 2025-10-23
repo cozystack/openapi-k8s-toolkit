@@ -493,8 +493,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
    * Builds the payload and triggers the debounced sync-to-YAML call.
    */
   const onValuesChangeCallback = useCallback(
-    (values?: any, flag?: string) => {
-      console.log('fired', flag)
+    (values?: any) => {
       // Get the most recent form values (or use the provided ones)
       const vRaw = values ?? form.getFieldsValue(true)
       const v = scrubLiteralWildcardKeys(vRaw)
@@ -643,7 +642,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
   )
 
   useEffect(() => {
-    onValuesChangeCallback(undefined, 'fuck me')
+    onValuesChangeCallback()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allValues])
 
