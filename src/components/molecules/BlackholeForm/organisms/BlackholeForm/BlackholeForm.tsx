@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-plusplus */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-nested-ternary */
@@ -36,7 +37,7 @@ import {
   scrubLiteralWildcardKeys,
 } from './helpers/prefills'
 import { DEBUG_PREFILLS, dbg, group, end, wdbg, wgroup, wend, prettyPath } from './helpers/debugs'
-import { sanitizeWildcardPath, expandWildcardTemplates, toStringPath } from './helpers/hiddenExpanded'
+import { sanitizeWildcardPath, expandWildcardTemplates, toStringPath, isPrefix } from './helpers/hiddenExpanded'
 import { handleSubmitError, handleValidationError } from './utilsErrorHandler'
 import { Styled } from './styled'
 import {
@@ -501,11 +502,11 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         v,
         { includeMissingExact: true }, // only hidden opts in
       )
-      wdbg('hidden resolved', hiddenResolved.map(prettyPath)) // (typo? keep your original prettyPath)
+      wdbg('hidden resolved', hiddenResolved.map(prettyPath))
 
       setResolvedHiddenPaths(hiddenResolved as TFormName[])
 
-      const expandedResolved = expandWildcardTemplates(expandedWildcardTemplates, v) // unchanged
+      const expandedResolved = expandWildcardTemplates(expandedWildcardTemplates, v)
       wdbg('expanded resolved', expandedResolved.map(prettyPath))
 
       // Merge auto-expanded with current expandedKeys (preserve user choices)
@@ -532,6 +533,66 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
       const newLengths = collectArrayLengths(v)
       const prevLengths = prevArrayLengthsRef.current
+
+      // If you delete arr el and then add it again. There is no purge
+      // Adding purge:
+      // --- handle SHRINK: indices removed ---
+      for (const [k, prevLen] of prevLengths.entries()) {
+        const newLen = newLengths.get(k) ?? 0
+        if (newLen < prevLen) {
+          const arrayPath = JSON.parse(k) as (string | number)[]
+          for (let i = newLen; i < prevLen; i++) {
+            // purge UI state + tombstones under removed index
+            const removedPrefix = [...arrayPath, i]
+
+            // drop expansions/persisted under this subtree
+            setExpandedKeys(prev =>
+              prev.filter(p => {
+                const full = Array.isArray(p) ? p : [p]
+                return !isPrefix(full, removedPrefix)
+              }),
+            )
+            setPersistedKeys(prev =>
+              prev.filter(p => {
+                const full = Array.isArray(p) ? p : [p]
+                return !isPrefix(full, removedPrefix)
+              }),
+            )
+
+            // clear any blocks (tombstones) beneath removed index
+            for (const k of [...blockedPathsRef.current]) {
+              const path = JSON.parse(k) as (string | number)[]
+              if (isPrefix(path, removedPrefix)) blockedPathsRef.current.delete(k)
+            }
+          }
+        }
+      }
+
+      // --- handle GROW: indices added ---
+      for (const [k, newLen] of newLengths.entries()) {
+        const prevLen = prevLengths.get(k) ?? 0
+        if (newLen > prevLen) {
+          const arrayPath = JSON.parse(k) as (string | number)[]
+          for (let i = prevLen; i < newLen; i++) {
+            const itemPath = [...arrayPath, i]
+
+            // ensure the node exists to stabilize render/hidden resolution
+            const itemVal = form.getFieldValue(itemPath as any)
+            if (typeof itemVal === 'undefined') {
+              form.setFieldValue(itemPath as any, {}) // for object arrays; harmless for others
+            }
+
+            // guarantee no stale tombstone blocks this subtree
+            blockedPathsRef.current.delete(JSON.stringify(itemPath))
+
+            // your existing prefills (wildcards etc.)
+            applyPrefillForNewArrayItem(arrayPath, i)
+          }
+        }
+      }
+
+      // keep tracker in sync
+      prevArrayLengthsRef.current = newLengths
 
       // dump lengths (readable)
       dbg('array lengths (prev → new)')
