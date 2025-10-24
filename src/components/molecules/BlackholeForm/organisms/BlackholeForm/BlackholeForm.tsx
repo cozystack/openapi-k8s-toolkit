@@ -117,7 +117,34 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
 
   const [isDebugModalOpen, setIsDebugModalOpen] = useState<boolean>(false)
 
-  const [expandedKeys, setExpandedKeys] = useState<TFormName[]>(expandedPaths || [])
+  //     Create a React state variable called `expandedKeys` to store the current expanded form paths.
+  //     `_setExpandedKeys` is the internal setter returned by `useState`, but we’ll wrap it below.
+  const [expandedKeys, _setExpandedKeys] = useState<TFormName[]>(expandedPaths || [])
+  //     Create a mutable ref that always holds the latest value of `expandedKeys`.
+  //     Unlike React state, updating a ref does *not* trigger a re-render —
+  //     this lets us access the most recent expansion list even inside stale closures or async callbacks.
+  const expandedKeysRef = useRef<TFormName[]>(expandedPaths || [])
+  //     Define our own wrapper function `setExpandedKeys`
+  //     so we can update *both* the state and the ref at the same time.
+  //     This ensures they always stay in sync.
+  const setExpandedKeys = (
+    next: TFormName[] | ((prev: TFormName[]) => TFormName[]), // can pass a new array OR an updater function
+  ) => {
+    //     Call the internal React setter `_setExpandedKeys`.
+    //     It can accept a callback that receives the previous value (`prev`).
+    _setExpandedKeys(prev => {
+      //     Determine the new value:
+      //     - If `next` is a function, call it with the previous array to get the new one.
+      //     - If it’s already an array, use it directly.
+      const value = typeof next === 'function' ? (next as (p: TFormName[]) => TFormName[])(prev) : next
+      //     Immediately update the ref so it always mirrors the latest value.
+      //     This is crucial because state updates are asynchronous,
+      //     but ref updates are synchronous and happen right away.
+      expandedKeysRef.current = value
+      // 7️⃣  Return the new value to React so it updates the state as usual.
+      return value
+    })
+  }
   const [persistedKeys, setPersistedKeys] = useState<TFormName[]>(persistedPaths || [])
   const [resolvedHiddenPaths, setResolvedHiddenPaths] = useState<TFormName[]>([])
 
@@ -493,7 +520,7 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
    * Builds the payload and triggers the debounced sync-to-YAML call.
    */
   const onValuesChangeCallback = useCallback(
-    (values?: any) => {
+    (values?: any, changedValues?: any) => {
       // Get the most recent form values (or use the provided ones)
       const vRaw = values ?? form.getFieldsValue(true)
       const v = scrubLiteralWildcardKeys(vRaw)
@@ -535,38 +562,111 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
       group('values change')
       dbg('values snapshot keys', Object.keys(v || {}))
 
+      // 🔹 Helper function to extract a "root" or "head" portion of a path array.
+      //    Example: if a full path is ['spec', 'addressGroups', 0, 'name']
+      //    then headPath(p) → ['spec', 'addressGroups', 0]
+      //    This helps us identify which top-level object/array the change happened in.
+      const headPath = (p: (string | number)[]) => {
+        // You can control how deep you consider something to be the "root" of a change.
+        // slice(0, 3) means we take the first three segments.
+        // So a path like ['spec','containers',0,'env',0,'name'] becomes ['spec','containers',0].
+        // If you want broader or narrower scoping, adjust this number.
+        return p.slice(0, 3)
+      }
+
+      // 🔹 Create a Set to hold the unique "root paths" of everything that changed in this render.
+      //    We’ll use these roots later to decide which arrays are safe to purge expansions for.
+      const changedRoots = new Set<string>()
+
+      // 🔹 If Ant Design’s `onValuesChange` gave us a `changedValues` object (it does),
+      //    and it’s a normal object, collect all the individual field paths inside it.
+      if (changedValues && typeof changedValues === 'object') {
+        // `getAllPathsFromObj` returns arrays of keys/indexes for every nested field.
+        // Example:
+        //   changedValues = { spec: { addressGroups: [ { name: "new" } ] } }
+        //   → getAllPathsFromObj(changedValues)
+        //     returns [ ['spec'], ['spec','addressGroups'], ['spec','addressGroups',0], ['spec','addressGroups',0,'name'] ]
+        const changedPaths = getAllPathsFromObj(changedValues)
+
+        // 🔹 For each changed path, derive its "root" using headPath(),
+        //    then store it as a JSON string in our Set.
+        //    Using JSON.stringify lets us easily compare path arrays later.
+        for (const p of changedPaths) {
+          changedRoots.add(JSON.stringify(headPath(p)))
+        }
+      }
+
       const newLengths = collectArrayLengths(v)
       const prevLengths = prevArrayLengthsRef.current
 
-      // If you delete arr el and then add it again. There is no purge
-      // Adding purge:
+      // We previously had no purge when you delete an array element and add it again.
+      // This block adds a *safe* purge for array SHRIΝKs (when items are actually removed).
+
       // --- handle SHRINK: indices removed ---
+      // IMPORTANT: Only treat an array as "shrunk" if it appears in *both* snapshots.
+      // If it's missing from `newLengths`, we don't know its real length (could be a transient omission),
+      // so we must NOT assume length 0 and accidentally purge unrelated expansions.
       for (const [k, prevLen] of prevLengths.entries()) {
-        const newLen = newLengths.get(k) ?? 0
+        if (!newLengths.has(k)) {
+          // Array is absent in the new snapshot → consider length "unknown", skip purging.
+          // (Prevents false positives where another part of the form caused a temporary omission.)
+          // eslint-disable-next-line no-continue
+          continue
+        }
+
+        // Safe: the array exists in both snapshots; compare lengths.
+        const newLen = newLengths.get(k)!
         if (newLen < prevLen) {
+          // We detected a real shrink: some trailing indices were removed.
           const arrayPath = JSON.parse(k) as (string | number)[]
+
+          // OPTIONAL SCOPE: If we captured change roots via `changedValues`,
+          // only purge when this array is inside one of those roots.
+          // This prevents edits under A from purging expansions under B.
+          if (changedRoots.size) {
+            const shouldPurge = [...changedRoots].some(rootJson =>
+              isPrefix(arrayPath, JSON.parse(rootJson) as (string | number)[]),
+            )
+            if (!shouldPurge) {
+              console.debug('[shrink] skipped unrelated array:', arrayPath)
+              // eslint-disable-next-line no-continue
+              continue
+            }
+          }
+
+          // Purge UI state for each removed index (from newLen up to prevLen - 1).
           for (let i = newLen; i < prevLen; i++) {
-            // purge UI state + tombstones under removed index
-            const removedPrefix = [...arrayPath, i]
+            const removedPrefix = [...arrayPath, i] // e.g., ['spec','addressGroups', 2]
 
-            // drop expansions/persisted under this subtree
-            setExpandedKeys(prev =>
-              prev.filter(p => {
+            // Drop EXPANSION state anywhere under the removed element's subtree.
+            // (Prevents "phantom" expanded panels for items that no longer exist.)
+            setExpandedKeys(prev => {
+              const before = prev.length
+              const next = prev.filter(p => {
                 const full = Array.isArray(p) ? p : [p]
                 return !isPrefix(full, removedPrefix)
-              }),
-            )
-            setPersistedKeys(prev =>
-              prev.filter(p => {
+              })
+              console.debug('[shrink] expanded pruned:', before - next.length, 'under', removedPrefix)
+              return next
+            })
+
+            // Drop PERSISTED markers under the same subtree.
+            // (Prevents keeping persistence flags for fields that were deleted.)
+            setPersistedKeys(prev => {
+              const before = prev.length
+              const next = prev.filter(p => {
                 const full = Array.isArray(p) ? p : [p]
                 return !isPrefix(full, removedPrefix)
-              }),
-            )
+              })
+              console.debug('[shrink] persisted pruned:', before - next.length, 'under', removedPrefix)
+              return next
+            })
 
-            // clear any blocks (tombstones) beneath removed index
-            for (const k of [...blockedPathsRef.current]) {
-              const path = JSON.parse(k) as (string | number)[]
-              if (isPrefix(path, removedPrefix)) blockedPathsRef.current.delete(k)
+            // Clear any "tombstone" blocks for paths under the removed element,
+            // so that if a new element is added later, it won't be blocked from materializing.
+            for (const bk of [...blockedPathsRef.current]) {
+              const path = JSON.parse(bk) as (string | number)[]
+              if (isPrefix(path, removedPrefix)) blockedPathsRef.current.delete(bk)
             }
           }
         }
@@ -710,6 +810,22 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
           if (dataPathSet.has(k)) blockedPathsRef.current.delete(k)
         })
 
+        // 🧩 When YAML → values sync finishes, the backend sends a brand-new `data` object,
+        //     and we immediately call `form.setFieldsValue(data)` to replace all form fields.
+        //
+        // ⚠️  That replacement often causes parts of the form UI (especially dynamic arrays
+        //     and nested objects) to unmount and remount — because React sees new keys,
+        //     new field paths, or different schema nodes.
+        //
+        // 👇  This line restores the user’s previous expansion state (`expandedKeysRef.current`)
+        //     right after we inject the new values, so any sections the user had expanded
+        //     stay visible instead of collapsing back to their default closed state.
+        //
+        // TL;DR — Without this line, every time YAML updates the form, all expanded panels
+        //         would snap shut; this re-applies the last known expansion model immediately
+        //         to preserve a stable, intuitive editing experience.
+        setExpandedKeys(expandedKeysRef.current)
+
         // --- Bring schema in sync: prune missing additional props, then materialize new ones ---
         setProperties(prevProps => {
           // Remove additionalProperties entries that are now absent or blocked
@@ -742,6 +858,27 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
               return merged
             })
           }
+
+          // 🧠 Why we need this:
+          //     Updating `setProperties(...)` can cause the form schema to re-render.
+          //     That re-render might temporarily unmount and recreate form sections
+          //     (especially when `additionalProperties` or dynamic arrays change).
+          //
+          // ⚠️  React applies the `setProperties` state update asynchronously.
+          //     If we immediately call `setExpandedKeys` *inside* this callback,
+          //     the UI may not yet reflect the new schema — our expansion restore
+          //     could run too early and be lost during the render that follows.
+          //
+          // ✅  Wrapping it in `queueMicrotask(...)` schedules the restore to run
+          //     right after React finishes applying the `setProperties` update,
+          //     but before the browser paints. That guarantees the expansion state
+          //     is re-applied *after* the new schema has stabilized.
+          //
+          // TL;DR — Wait one micro-tick after schema update, then re-apply expansions
+          //         so newly materialized fields appear in the correct expanded state
+          //         and nothing collapses due to the schema refresh.
+          queueMicrotask(() => setExpandedKeys(expandedKeysRef.current))
+
           return materialized
         })
       })
@@ -1027,7 +1164,11 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     <>
       <Styled.Container $designNewLayout={designNewLayout} $designNewLayoutHeight={designNewLayoutHeight}>
         <Styled.OverflowContainer ref={overflowRef}>
-          <Form form={form} initialValues={initialValues} onValuesChange={onValuesChangeCallback}>
+          <Form
+            form={form}
+            initialValues={initialValues}
+            onValuesChange={(_changedValues, all) => onValuesChangeCallback(all, _changedValues)}
+          >
             <DesignNewLayoutProvider value={designNewLayout}>
               <OnValuesChangeCallbackProvider value={onValuesChangeCallback}>
                 <IsTouchedPersistedProvider value={{}}>
