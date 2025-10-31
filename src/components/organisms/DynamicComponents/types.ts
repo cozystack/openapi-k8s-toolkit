@@ -121,6 +121,7 @@ export type TDynamicComponentsAppTypeMap = {
     typeName: string
     prefillValuesRequestIndex: number
     substractHeight?: number
+    readOnly?: boolean
   }
   VisibilityContainer: {
     id: number | string
