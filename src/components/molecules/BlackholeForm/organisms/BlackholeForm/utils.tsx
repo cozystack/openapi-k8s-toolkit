@@ -11,6 +11,7 @@ import { TListInputCustomProps, TRangeInputCustomProps } from 'localTypes/formEx
 import { TFormName, TExpandedControls, TNamespaceData, TPersistedControls, TUrlParams } from 'localTypes/form'
 import { PlusIcon } from 'components/atoms'
 import { deepMerge } from 'utils/deepMerge'
+import { getSortedPropertyKeys } from './helpers/getSortedPropertyKeys'
 import { ResetedFormItem, ArrayInsideContainer, HiddenContainer } from '../../atoms'
 import {
   FormNamespaceInput,
@@ -321,6 +322,7 @@ export const getArrayFormItemFromSwagger = ({
   isEdit,
   expandedControls,
   persistedControls,
+  sortPaths,
   urlParams,
   onRemoveByMinus,
 }: {
@@ -354,6 +356,7 @@ export const getArrayFormItemFromSwagger = ({
   isEdit: boolean
   expandedControls: TExpandedControls
   persistedControls: TPersistedControls
+  sortPaths?: string[][]
   urlParams: TUrlParams
   onRemoveByMinus?: () => void
 }) => {
@@ -524,6 +527,7 @@ export const getArrayFormItemFromSwagger = ({
                             isEdit,
                             expandedControls,
                             persistedControls,
+                            sortPaths,
                             urlParams,
                             onRemoveByMinus: () => remove(field.name),
                           })}
@@ -561,6 +565,7 @@ export const getArrayFormItemFromSwagger = ({
                         isEdit,
                         expandedControls,
                         persistedControls,
+                        sortPaths,
                         urlParams,
                         onRemoveByMinus: () => remove(field.name),
                       })}
@@ -605,6 +610,7 @@ export const getObjectFormItemsDraft = ({
   isEdit,
   expandedControls,
   persistedControls,
+  sortPaths,
   urlParams,
 }: {
   properties: {
@@ -639,12 +645,12 @@ export const getObjectFormItemsDraft = ({
   isEdit: boolean
   expandedControls: TExpandedControls
   persistedControls: TPersistedControls
+  sortPaths?: string[][]
   urlParams: TUrlParams
 }) => {
   return (
     <HiddenContainer name={name} key={`${arrKey}-${JSON.stringify(name)}`}>
-      {Object.keys(properties).map((el: keyof typeof properties) => {
-        // if (properties[el].type === 'object' && properties[el]['x-kubernetes-preserve-unknown-fields']) {
+      {getSortedPropertyKeys({ name, sortPaths, properties }).map((el: keyof typeof properties) => {
         if (properties[el]['x-kubernetes-preserve-unknown-fields']) {
           // return <Alert key={String(el)} message="x-kubernetes-preserve-unknown-fields" banner />
           const path = Array.isArray(name) ? [...name, String(el)] : [name, String(el)]
@@ -816,6 +822,7 @@ export const getObjectFormItemsDraft = ({
             isEdit,
             expandedControls,
             persistedControls,
+            sortPaths,
             urlParams,
           })
         }
@@ -848,6 +855,7 @@ export const getObjectFormItemsDraft = ({
                 isEdit,
                 expandedControls,
                 persistedControls,
+                sortPaths,
                 urlParams,
               })
             : undefined
@@ -901,6 +909,7 @@ export const getObjectFormItemsDraft = ({
             isEdit,
             expandedControls,
             persistedControls,
+            sortPaths,
             urlParams,
           })
         }
@@ -929,6 +938,7 @@ export const getObjectFormItemFromSwagger = ({
   isEdit,
   expandedControls,
   persistedControls,
+  sortPaths,
   urlParams,
   onRemoveByMinus,
 }: {
@@ -966,6 +976,7 @@ export const getObjectFormItemFromSwagger = ({
   isEdit: boolean
   expandedControls: TExpandedControls
   persistedControls: TPersistedControls
+  sortPaths?: string[][]
   urlParams: TUrlParams
   onRemoveByMinus?: () => void
 }) => {
@@ -986,6 +997,7 @@ export const getObjectFormItemFromSwagger = ({
     isEdit,
     expandedControls,
     persistedControls,
+    sortPaths,
     urlParams,
   })
   return (

@@ -25,7 +25,14 @@ export const YamlEditor: FC<TYamlEditProps> = ({ theme, currentValues, onChange,
   const isApplyingExternalUpdateRef = useRef<boolean>(false)
 
   useEffect(() => {
-    const next = yaml.stringify(currentValues)
+    const next = yaml.stringify(currentValues, {
+      // Use literal block scalar for multiline strings
+      blockQuote: 'literal',
+      // Preserve line breaks
+      lineWidth: 0,
+      // Use double quotes for strings that need escaping
+      doubleQuotedAsJSON: false,
+    })
     if (isFocusedRef.current) {
       // Defer applying external updates to avoid cursor jumps while typing
       pendingExternalYamlRef.current = next ?? ''
