@@ -280,4 +280,27 @@ export type TDynamicComponentsAppTypeMap = {
     abbreviation?: string
     style?: CSSProperties
   }
+  Events: {
+    id: number | string
+    baseprefix?: string
+    clusterNamePartOfUrl: string
+    wsUrl: string
+    pageSize?: number
+    substractHeight?: number
+    limit?: number
+    labelsSelector?: Record<string, string>
+    labelsSelectorFull?: {
+      reqIndex: number
+      pathToLabels: string | string[] // jsonpath or keys as string[]
+    }
+    fieldSelector?: {
+      fieldName: string
+      parsedText: string
+    }
+    baseFactoryNamespacedAPIKey: string
+    baseFactoryClusterSceopedAPIKey: string
+    baseFactoryNamespacedBuiltinKey: string
+    baseFactoryClusterSceopedBuiltinKey: string
+    baseNamespaceFactoryKey: string
+  }
 }

@@ -35,6 +35,7 @@ import {
   ConverterBytes,
   SecretBase64Plain,
   ResourceBadge,
+  Events,
 } from './molecules'
 import { TDynamicComponentsAppTypeMap } from './types'
 
@@ -74,4 +75,5 @@ export const DynamicComponents: TRendererComponents<TDynamicComponentsAppTypeMap
   ConverterBytes,
   SecretBase64Plain,
   ResourceBadge,
+  Events,
 }
