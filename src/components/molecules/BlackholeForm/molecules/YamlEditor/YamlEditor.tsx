@@ -5,7 +5,6 @@ import { theme as antdtheme } from 'antd'
 import Editor from '@monaco-editor/react'
 import type * as monaco from 'monaco-editor'
 import * as yaml from 'yaml'
-import { isMultilineString } from 'utils/isMultilineString'
 import { Styled } from './styled'
 
 type TYamlEditProps = {

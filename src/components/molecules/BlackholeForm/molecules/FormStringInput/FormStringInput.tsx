@@ -100,28 +100,21 @@ export const FormStringInput: FC<TFormStringInputProps> = ({
           placeholder={getStringByName(name)}
           rows={isMultiline ? 4 : 1}
           autoSize={!isMultiline ? { minRows: 1, maxRows: 1 } : { minRows: 2, maxRows: 10 }}
-          onChange={(e) => {
-            const value = e.target.value
+          onChange={e => {
+            const { value } = e.target
             setCurrentValue(value)
           }}
-          onKeyPress={(e) => {
-            // If user presses Enter in single-line mode, switch to multiline
-            if (!isMultiline && e.key === 'Enter' && !e.shiftKey) {
-              // Don't prevent default - let the newline be added
-              setIsMultiline(true)
-            }
-          }}
-          onInput={(e) => {
+          onInput={e => {
             // Handle input changes and check for newlines
-            const value = (e.target as HTMLTextAreaElement).value
+            const { value } = e.target as HTMLTextAreaElement
             setCurrentValue(value)
-            
+
             // If we detect a newline and we're in single-line mode, switch to multiline
             if (!isMultiline && value.includes('\n')) {
               setIsMultiline(true)
             }
           }}
-          onBlur={(e) => {
+          onBlur={e => {
             // If the value becomes single line, switch back to single-line mode
             if (isMultilineString(e.target.value)) {
               setIsMultiline(true)
@@ -129,7 +122,7 @@ export const FormStringInput: FC<TFormStringInputProps> = ({
               setIsMultiline(false)
             }
           }}
-          onPaste={(e) => {
+          onPaste={e => {
             // Handle paste of multiline content
             const pastedText = e.clipboardData.getData('text')
             if (pastedText && isMultilineString(pastedText)) {
