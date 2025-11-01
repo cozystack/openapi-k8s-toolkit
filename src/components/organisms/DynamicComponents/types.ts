@@ -72,15 +72,12 @@ export type TDynamicComponentsAppTypeMap = {
     fetchUrl: string
     pathToItems: string | string[] // jsonpath or keys as string[]
     clusterNamePartOfUrl: string
-    labelsSelector?: Record<string, string>
-    labelsSelectorFull?: {
+    labelSelector?: Record<string, string>
+    labelSelectorFull?: {
       reqIndex: number
       pathToLabels: string | string[] // jsonpath or keys as string[]
     }
-    fieldSelector?: {
-      fieldName: string
-      parsedText: string
-    }
+    fieldSelector?: Record<string, string>
   } & Omit<
     TEnrichedTableProviderProps,
     | 'tableMappingsReplaceValues'
@@ -288,15 +285,12 @@ export type TDynamicComponentsAppTypeMap = {
     pageSize?: number
     substractHeight?: number
     limit?: number
-    labelsSelector?: Record<string, string>
-    labelsSelectorFull?: {
+    labelSelector?: Record<string, string>
+    labelSelectorFull?: {
       reqIndex: number
       pathToLabels: string | string[] // jsonpath or keys as string[]
     }
-    fieldSelector?: {
-      fieldName: string
-      parsedText: string
-    }
+    fieldSelector?: Record<string, string>
     baseFactoryNamespacedAPIKey: string
     baseFactoryClusterSceopedAPIKey: string
     baseFactoryNamespacedBuiltinKey: string
