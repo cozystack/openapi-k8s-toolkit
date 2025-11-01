@@ -428,7 +428,7 @@ export const Events: FC<TEventsProps> = ({
             />
           ))
         ) : (
-          <Empty />
+          <Empty description="No events" />
         )}
         {/* Infinite scroll sentinel */}
         <Styled.Sentinel ref={sentinelRef} />
