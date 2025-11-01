@@ -10,6 +10,7 @@ const Root = styled.div<TRootProps>`
   width: 100%;
   height: 100%;
   max-height: calc(100vh - ${({ $substractHeight }) => $substractHeight}px);
+
   /* border-radius: 12px; */
   overflow: hidden;
   position: relative;
