@@ -27,8 +27,8 @@ export const Events: FC<{ data: TDynamicComponentsAppTypeMap['Events']; children
     pageSize,
     substractHeight,
     limit,
-    labelsSelector,
-    labelsSelectorFull,
+    labelSelector,
+    labelSelectorFull,
     fieldSelector,
     baseFactoryNamespacedAPIKey,
     baseFactoryClusterSceopedAPIKey,
@@ -59,9 +59,9 @@ export const Events: FC<{ data: TDynamicComponentsAppTypeMap['Events']; children
     params.set('limit', limit.toString())
   }
 
-  if (labelsSelector && Object.keys(labelsSelector).length > 0) {
+  if (labelSelector && Object.keys(labelSelector).length > 0) {
     const parsedObject: Record<string, string> = Object.fromEntries(
-      Object.entries(labelsSelector).map(
+      Object.entries(labelSelector).map(
         ([k, v]) => [k, parseAll({ text: v, replaceValues, multiQueryData })] as [string, string],
       ),
     )
@@ -69,25 +69,29 @@ export const Events: FC<{ data: TDynamicComponentsAppTypeMap['Events']; children
     if (serializedLabels.length > 0) params.set('labelSelector', serializedLabels)
   }
 
-  if (labelsSelectorFull) {
-    const root = multiQueryData[`req${labelsSelectorFull.reqIndex}`]
-    const value = Array.isArray(labelsSelectorFull.pathToLabels)
-      ? _.get(root, labelsSelectorFull.pathToLabels)
-      : jp.query(root, `$${labelsSelectorFull.pathToLabels}`)[0]
+  if (labelSelectorFull) {
+    const root = multiQueryData[`req${labelSelectorFull.reqIndex}`]
+    const value = Array.isArray(labelSelectorFull.pathToLabels)
+      ? _.get(root, labelSelectorFull.pathToLabels)
+      : jp.query(root, `$${labelSelectorFull.pathToLabels}`)[0]
 
     const serializedLabels = serializeLabelsWithNoEncoding(value)
     if (serializedLabels.length > 0) params.set('labelSelector', serializedLabels)
   }
 
   if (fieldSelector) {
-    const preparedFieldSelectorValueText = parseAll({ text: fieldSelector?.parsedText, replaceValues, multiQueryData })
+    const parsedObject: Record<string, string> = Object.fromEntries(
+      Object.entries(fieldSelector).map(
+        ([k, v]) =>
+          [
+            parseAll({ text: k, replaceValues, multiQueryData }),
+            parseAll({ text: v, replaceValues, multiQueryData }),
+          ] as [string, string],
+      ),
+    )
+    const serializedFields = serializeLabelsWithNoEncoding(parsedObject)
 
-    const preparedFieldSelectorValueTextWithPartsOfUrl = prepareTemplate({
-      template: preparedFieldSelectorValueText,
-      replaceValues,
-    })
-
-    params.set('fieldSelector', `${fieldSelector.fieldName}=${preparedFieldSelectorValueTextWithPartsOfUrl}`)
+    if (serializedFields.length > 0) params.set('fieldSelector', serializedFields)
   }
 
   const searchParams = params.toString()

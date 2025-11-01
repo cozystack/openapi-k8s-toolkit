@@ -17,7 +17,7 @@ import { useMultiQuery } from '../../../DynamicRendererWithProviders/multiQueryP
 import { usePartsOfUrl } from '../../../DynamicRendererWithProviders/partsOfUrlContext'
 import { useTheme } from '../../../DynamicRendererWithProviders/themeContext'
 import { parseAll } from '../utils'
-import { serializeLabels } from './utils'
+import { serializeLabelsWithNoEncoding } from './utils'
 
 export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTable']; children?: any }> = ({
   data,
@@ -43,8 +43,8 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
     fetchUrl,
     pathToItems,
     clusterNamePartOfUrl,
-    labelsSelector,
-    labelsSelectorFull,
+    labelSelector,
+    labelSelectorFull,
     fieldSelector,
     namespace,
     k8sResource,
@@ -108,48 +108,52 @@ export const EnrichedTable: FC<{ data: TDynamicComponentsAppTypeMap['EnrichedTab
 
   const fetchUrlPrepared = parseAll({ text: fetchUrl, replaceValues, multiQueryData })
 
-  let labelsSuffix: string | undefined
-  if (labelsSelector) {
+  const sParams = new URLSearchParams()
+
+  if (labelSelector && Object.keys(labelSelector).length > 0) {
     const parsedObject: Record<string, string> = Object.fromEntries(
-      Object.entries(labelsSelector).map(
-        ([key, value]) => [key, parseAll({ text: value, replaceValues, multiQueryData })] as [string, string],
+      Object.entries(labelSelector).map(
+        ([k, v]) => [k, parseAll({ text: v, replaceValues, multiQueryData })] as [string, string],
       ),
     )
-    const serializedLabels = serializeLabels(parsedObject)
-    labelsSuffix = serializeLabels.length > 0 ? `?labelSelector=${serializedLabels}` : undefined
+    const serializedLabels = serializeLabelsWithNoEncoding(parsedObject)
+    if (serializedLabels.length > 0) sParams.set('labelSelector', serializedLabels)
   }
 
-  if (labelsSelectorFull) {
-    const value = Array.isArray(labelsSelectorFull.pathToLabels)
-      ? _.get(multiQueryData[`req${labelsSelectorFull.reqIndex}`], labelsSelectorFull.pathToLabels)
-      : jp.query(multiQueryData[`req${labelsSelectorFull.reqIndex}`], `$${labelsSelectorFull.pathToLabels}`)[0]
-    const serializedLabels = serializeLabels(value)
-    labelsSuffix = serializeLabels.length > 0 ? `?labelSelector=${serializedLabels}` : undefined
+  if (labelSelectorFull) {
+    const root = multiQueryData[`req${labelSelectorFull.reqIndex}`]
+    const value = Array.isArray(labelSelectorFull.pathToLabels)
+      ? _.get(root, labelSelectorFull.pathToLabels)
+      : jp.query(root, `$${labelSelectorFull.pathToLabels}`)[0]
+
+    const serializedLabels = serializeLabelsWithNoEncoding(value)
+    if (serializedLabels.length > 0) sParams.set('labelSelector', serializedLabels)
   }
 
-  let fieldSelectorSuffix: string | undefined
   if (fieldSelector) {
-    const preparedFieldSelectorValueText = parseAll({ text: fieldSelector?.parsedText, replaceValues, multiQueryData })
-
-    const preparedFieldSelectorValueTextWithPartsOfUrl = prepareTemplate({
-      template: preparedFieldSelectorValueText,
-      replaceValues,
-    })
-
-    const preparedSelector = encodeURIComponent(
-      `${fieldSelector.fieldName}=${preparedFieldSelectorValueTextWithPartsOfUrl}`,
+    const parsedObject: Record<string, string> = Object.fromEntries(
+      Object.entries(fieldSelector).map(
+        ([k, v]) =>
+          [
+            parseAll({ text: k, replaceValues, multiQueryData }),
+            parseAll({ text: v, replaceValues, multiQueryData }),
+          ] as [string, string],
+      ),
     )
-    const prefix = labelsSelector ? '&fieldSelector=' : '?fieldSelector='
-    fieldSelectorSuffix = `${prefix}${preparedSelector}`
+    const serializedFields = serializeLabelsWithNoEncoding(parsedObject)
+
+    if (serializedFields.length > 0) sParams.set('fieldSelector', serializedFields)
   }
+
+  const searchParams = sParams.toString()
 
   const {
     data: fetchedData,
     isLoading: isFetchedDataLoading,
     error: fetchedDataError,
   } = useDirectUnknownResource<unknown>({
-    uri: `${fetchUrlPrepared}${labelsSuffix || ''}${fieldSelectorSuffix || ''}`,
-    queryKey: [`${fetchUrlPrepared}${labelsSuffix || ''}${fieldSelectorSuffix || ''}`],
+    uri: `${fetchUrlPrepared}${searchParams ? `?${searchParams}` : ''}`,
+    queryKey: [`${fetchUrlPrepared}${searchParams ? `?${searchParams}` : ''}`],
     isEnabled: !isMultiqueryLoading,
   })
 
