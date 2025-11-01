@@ -24,6 +24,7 @@ type TYamlEditorSingletonProps = {
   designNewLayout?: boolean
   designNewLayoutHeight?: number
   openNotification?: boolean
+  readOnly?: boolean
 }
 
 export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
@@ -39,6 +40,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
   designNewLayout,
   designNewLayoutHeight,
   openNotification,
+  readOnly = false,
 }) => {
   const { token } = antdtheme.useToken()
   const navigate = useNavigate()
@@ -117,22 +119,27 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
           height={designNewLayoutHeight || '75vh'}
           value={yamlData}
           onChange={value => {
-            setYamlData(value || '')
+            if (!readOnly) {
+              setYamlData(value || '')
+            }
           }}
           theme={theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs'}
           options={{
             theme: theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs',
+            readOnly: readOnly,
           }}
         />
       </Styled.BorderRadiusContainer>
-      <Styled.ControlsRowContainer $bgColor={token.colorPrimaryBg} $designNewLayout={designNewLayout}>
-        <Flex gap={designNewLayout ? 10 : 16} align="center">
-          <Button type="primary" onClick={onSubmit} loading={isLoading}>
-            Submit
-          </Button>
-          {backlink && <Button onClick={() => navigate(backlink)}>Cancel</Button>}
-        </Flex>
-      </Styled.ControlsRowContainer>
+      {!readOnly && (
+        <Styled.ControlsRowContainer $bgColor={token.colorPrimaryBg} $designNewLayout={designNewLayout}>
+          <Flex gap={designNewLayout ? 10 : 16} align="center">
+            <Button type="primary" onClick={onSubmit} loading={isLoading}>
+              Submit
+            </Button>
+            {backlink && <Button onClick={() => navigate(backlink)}>Cancel</Button>}
+          </Flex>
+        </Styled.ControlsRowContainer>
+      )}
       {error && (
         <Modal
           open={!!error}
