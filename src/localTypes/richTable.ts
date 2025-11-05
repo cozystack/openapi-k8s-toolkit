@@ -1,7 +1,7 @@
 export type TAdditionalPrinterColumns = {
   name: string
   jsonPath?: string
-  type?: string
+  type?: string // 'flatMap' expands a map object into multiple rows (one per key-value pair)
   customProps?: unknown
 }[]
 
