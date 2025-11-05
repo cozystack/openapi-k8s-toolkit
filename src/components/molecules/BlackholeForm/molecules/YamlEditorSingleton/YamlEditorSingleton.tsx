@@ -126,7 +126,7 @@ export const YamlEditorSingleton: FC<TYamlEditorSingletonProps> = ({
           theme={theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs'}
           options={{
             theme: theme === 'dark' ? 'vs-dark' : theme === undefined ? 'vs-dark' : 'vs',
-            readOnly: readOnly,
+            readOnly,
           }}
         />
       </Styled.BorderRadiusContainer>
