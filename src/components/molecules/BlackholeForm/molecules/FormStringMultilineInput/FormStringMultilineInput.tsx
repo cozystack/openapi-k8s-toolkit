@@ -1,13 +1,14 @@
 /* eslint-disable no-nested-ternary */
-import React, { FC } from 'react'
-import { Flex, Input, Typography, Tooltip, Button } from 'antd'
+import React, { FC, useMemo } from 'react'
+import { Flex, Input, Typography, Tooltip, Button, Form } from 'antd'
 import { getStringByName } from 'utils/getStringByName'
+import { isMultilineString } from 'utils/isMultilineString'
 import { TFormName, TPersistedControls } from 'localTypes/form'
 import { MinusIcon, feedbackIcons } from 'components/atoms'
 import { PersistedCheckbox, HiddenContainer, ResetedFormItem, CustomSizeTitle } from '../../atoms'
 import { useDesignNewLayout } from '../../organisms/BlackholeForm/context'
 
-type TFormStringInputProps = {
+type TFormStringMultilineInputProps = {
   name: TFormName
   arrKey?: number
   arrName?: TFormName
@@ -21,7 +22,7 @@ type TFormStringInputProps = {
   onRemoveByMinus?: () => void
 }
 
-export const FormStringInput: FC<TFormStringInputProps> = ({
+export const FormStringMultilineInput: FC<TFormStringMultilineInputProps> = ({
   name,
   arrKey,
   arrName,
@@ -37,6 +38,11 @@ export const FormStringInput: FC<TFormStringInputProps> = ({
   const designNewLayout = useDesignNewLayout()
 
   const fixedName = name === 'nodeName' ? 'nodeNameBecauseOfSuddenBug' : name
+  const formFieldName = arrName || fixedName
+  const formValue = Form.useWatch(formFieldName)
+
+  // Derive multiline based on current local value
+  const isMultiline = useMemo(() => isMultilineString(formValue), [formValue])
 
   const title = (
     <>
@@ -72,7 +78,11 @@ export const FormStringInput: FC<TFormStringInputProps> = ({
         validateTrigger="onBlur"
         hasFeedback={designNewLayout ? { icons: feedbackIcons } : true}
       >
-        <Input placeholder={getStringByName(name)} />
+        <Input.TextArea
+          placeholder={getStringByName(name)}
+          rows={isMultiline ? 4 : 1}
+          autoSize={!isMultiline ? { minRows: 1, maxRows: 1 } : { minRows: 2, maxRows: 10 }}
+        />
       </ResetedFormItem>
     </HiddenContainer>
   )

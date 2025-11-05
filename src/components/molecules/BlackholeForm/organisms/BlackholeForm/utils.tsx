@@ -20,6 +20,7 @@ import {
   FormNumberInput,
   FormRangeInput,
   FormListInput,
+  FormStringMultilineInput,
   FormBooleanInput,
   FormObjectFromSwagger,
   FormArrayHeader,
@@ -217,6 +218,49 @@ export const getRangeInputFormItemFromSwagger = ({
       customProps={customProps}
       persistedControls={persistedControls}
       urlParams={urlParams}
+      onRemoveByMinus={onRemoveByMinus}
+    />
+  )
+}
+
+export const getStringMultilineFormItemFromSwagger = ({
+  name,
+  arrKey,
+  arrName,
+  persistName,
+  required,
+  forceNonRequired,
+  description,
+  isAdditionalProperties,
+  removeField,
+  persistedControls,
+  onRemoveByMinus,
+}: {
+  name: TFormName
+  arrKey?: number
+  arrName?: TFormName
+  persistName?: TFormName
+  required?: string[]
+  forceNonRequired?: boolean
+  description?: string
+  isAdditionalProperties?: boolean
+  removeField: ({ path }: { path: TFormName }) => void
+  persistedControls: TPersistedControls
+  onRemoveByMinus?: () => void
+}) => {
+  return (
+    <FormStringMultilineInput
+      name={name}
+      arrKey={arrKey}
+      key={`${arrKey}-${JSON.stringify(name)}`}
+      arrName={arrName}
+      persistName={persistName}
+      required={required}
+      forceNonRequired={forceNonRequired}
+      description={description}
+      isAdditionalProperties={isAdditionalProperties}
+      removeField={removeField}
+      persistedControls={persistedControls}
       onRemoveByMinus={onRemoveByMinus}
     />
   )
@@ -487,6 +531,24 @@ export const getArrayFormItemFromSwagger = ({
                             customProps: (schema as unknown as { items: { customProps: TListInputCustomProps } }).items
                               .customProps,
                             urlParams,
+                            onRemoveByMinus: () => remove(field.name),
+                          })}
+                        {fieldType === 'multilineString' &&
+                          getStringMultilineFormItemFromSwagger({
+                            name: Array.isArray(name) ? [...name, field.name] : [name, field.name],
+                            arrKey: field.key,
+                            // arrName: [field.name, getStringByName(name)],
+                            arrName: [field.name],
+                            persistName: persistName
+                              ? Array.isArray(persistName)
+                                ? [...persistName, field.name]
+                                : [persistName, field.name]
+                              : Array.isArray(name)
+                              ? [...name, field.name]
+                              : [name, field.name],
+                            description,
+                            removeField,
+                            persistedControls,
                             onRemoveByMinus: () => remove(field.name),
                           })}
                         {fieldType === 'boolean' &&
@@ -782,6 +844,25 @@ export const getObjectFormItemsDraft = ({
             removeField,
             persistedControls,
             urlParams,
+          })
+        }
+        if (properties[el].type === 'multilineString') {
+          return getStringMultilineFormItemFromSwagger({
+            name: Array.isArray(name) ? [...name, String(el)] : [name, String(el)],
+            arrKey,
+            arrName: Array.isArray(arrName) ? [...arrName, String(el)] : undefined,
+            persistName: persistName
+              ? Array.isArray(persistName)
+                ? [...persistName, String(el)]
+                : [persistName, String(el)]
+              : undefined,
+            // required: required?.includes(getStringByName(objName)) ? [String(el)] : undefined,
+            required: required?.includes(el) ? [String(el)] : undefined,
+            forceNonRequired,
+            description: properties[el].description,
+            isAdditionalProperties: properties[el].isAdditionalProperties,
+            removeField,
+            persistedControls,
           })
         }
         if (properties[el].type === 'boolean') {
