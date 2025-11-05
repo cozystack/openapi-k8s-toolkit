@@ -674,6 +674,22 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
         }
       }
 
+      const getArrayItemType = (schemaProps: OpenAPIV2.SchemaObject['properties'], path: (string | number)[]) => {
+        // Walk the schema roughly along the data path:
+        // - string key → go into `.properties[key]`
+        // - number index → for arrays, go into `.items`
+        let node: any = { type: 'object', properties: schemaProps }
+        for (const seg of path) {
+          if (typeof seg === 'string') {
+            node = node?.properties?.[seg]
+          } else {
+            node = node?.items // numeric index → array item
+          }
+          if (!node) break
+        }
+        return node?.type === 'array' ? (node.items as any)?.type : node?.items?.type ?? node?.type
+      }
+
       // --- handle GROW: indices added ---
       for (const [k, newLen] of newLengths.entries()) {
         const prevLen = prevLengths.get(k) ?? 0
@@ -685,7 +701,12 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
             // ensure the node exists to stabilize render/hidden resolution
             const itemVal = form.getFieldValue(itemPath as any)
             if (typeof itemVal === 'undefined') {
-              form.setFieldValue(itemPath as any, {}) // for object arrays; harmless for others
+              const itemType = getArrayItemType(properties, arrayPath as (string | number)[])
+              if (itemType === 'object') form.setFieldValue(itemPath as any, {})
+              else if (itemType === 'array') form.setFieldValue(itemPath as any, [])
+              else if (itemType === 'number' || itemType === 'integer') form.setFieldValue(itemPath as any, 0)
+              else if (itemType === 'boolean') form.setFieldValue(itemPath as any, false)
+              else form.setFieldValue(itemPath as any, '') // string / unknown
             }
 
             // guarantee no stale tombstone blocks this subtree
@@ -1161,6 +1182,8 @@ export const BlackholeForm: FC<TBlackholeFormCreateProps> = ({
     console.log(value)
     setPersistedKeys([...persistedKeys.filter(arr => JSON.stringify(arr) !== JSON.stringify(value))])
   }
+
+  console.log('allValues', allValues)
 
   return (
     <>
