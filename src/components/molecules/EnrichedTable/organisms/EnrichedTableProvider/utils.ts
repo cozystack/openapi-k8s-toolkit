@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TableProps } from 'antd'
 import jp from 'jsonpath'
 import { TJSON } from 'localTypes/JSON'
@@ -38,7 +39,7 @@ export const prepare = ({
   // Helper function to generate unique field names for flatMap columns
   const getFlatMapFieldNames = (columnName: string) => {
     // Sanitize column name: remove special chars, spaces, convert to camelCase
-    const sanitizedName = columnName.replace(/[^a-zA-Z0-9]/g, '').replace(/^[a-z]/, (char) => char.toUpperCase())
+    const sanitizedName = columnName.replace(/[^a-zA-Z0-9]/g, '').replace(/^[a-z]/, char => char.toUpperCase())
     return {
       keyField: `_flatMap${sanitizedName}_Key`,
       valueField: `_flatMap${sanitizedName}_Value`,
@@ -47,21 +48,22 @@ export const prepare = ({
 
   let columns: TableProps['columns'] = []
   if (additionalPrinterColumns) {
-    columns = additionalPrinterColumns.map(({ name, jsonPath }) => {
-      let newDataIndex: string | undefined
-      let fieldsPath: string | string[] | undefined
+    columns = additionalPrinterColumns
+      .map(({ name, jsonPath }) => {
+        let newDataIndex: string | undefined
+        let fieldsPath: string | string[] | undefined
 
-      if (jsonPath) {
-        if (jsonPath.includes('[')) {
-          // newDataIndex = uuidv4()
-          newDataIndex = JSON.stringify(jsonPath)
-          customFields.push({ dataIndex: newDataIndex, jsonPath })
-        } else {
-          // Handle paths that start with dot (e.g., ".metadata.name") or without dot (e.g., "_flatMapKey")
-          if (jsonPath.startsWith('.')) {
+        if (jsonPath) {
+          if (jsonPath.includes('[')) {
+            // newDataIndex = uuidv4()
+            newDataIndex = JSON.stringify(jsonPath)
+            customFields.push({ dataIndex: newDataIndex, jsonPath })
+            // Handle paths that start with dot (e.g., ".metadata.name") or without dot (e.g., "_flatMapKey")
+          } else if (jsonPath.startsWith('.')) {
             const pathParts = jsonPath.split('.').slice(1)
             // If only one field after dot, use string instead of array for Ant Design
             if (pathParts.length === 1) {
+              // eslint-disable-next-line prefer-destructuring
               fieldsPath = pathParts[0]
             } else {
               fieldsPath = pathParts
@@ -71,21 +73,21 @@ export const prepare = ({
             fieldsPath = jsonPath
           }
         }
-      }
 
-      // For flatMap columns (type === 'flatMap'), skip the original column
-      // User should define Key/Value columns manually with unique field names
-      const isFlatMapColumn = flatMapColumns.some(col => col.name === name && col.jsonPath === jsonPath)
-      if (isFlatMapColumn) {
-        return null
-      }
+        // For flatMap columns (type === 'flatMap'), skip the original column
+        // User should define Key/Value columns manually with unique field names
+        const isFlatMapColumn = flatMapColumns.some(col => col.name === name && col.jsonPath === jsonPath)
+        if (isFlatMapColumn) {
+          return null
+        }
 
-      return {
-        title: name,
-        dataIndex: newDataIndex || fieldsPath,
-        key: name,
-      }
-    }).filter((col): col is NonNullable<typeof col> => col !== null)
+        return {
+          title: name,
+          dataIndex: newDataIndex || fieldsPath,
+          key: name,
+        }
+      })
+      .filter((col): col is NonNullable<typeof col> => col !== null)
   } else if (resourceSchema) {
     columns = [
       ...Object.keys(resourceSchema).map(el => ({
@@ -154,21 +156,21 @@ export const prepare = ({
       let currentDataSource = dataSource
       flatMapColumns.forEach(flatMapColumn => {
         if (!flatMapColumn.jsonPath) return
-        
+
         const expandedDataSource: any[] = []
         const { keyField, valueField } = getFlatMapFieldNames(flatMapColumn.name)
-        
+
         currentDataSource.forEach((el: TJSON) => {
           if (!el || typeof el !== 'object' || Array.isArray(el)) {
             return
           }
-          
+
           const mapValue = jp.query(el, `$${flatMapColumn.jsonPath}`)[0]
-          
+
           // If the value is an object (map), expand it into multiple rows
           if (mapValue && typeof mapValue === 'object' && !Array.isArray(mapValue) && mapValue !== null) {
             const mapEntries = Object.entries(mapValue)
-            
+
             if (mapEntries.length > 0) {
               // Create one row per key-value pair
               mapEntries.forEach(([key, value]) => {
@@ -198,7 +200,7 @@ export const prepare = ({
             })
           }
         })
-        
+
         currentDataSource = expandedDataSource
       })
       dataSource = currentDataSource
